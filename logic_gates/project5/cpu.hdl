@@ -1,0 +1,114 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/5/CPU.hdl
+/**
+ * The Hack Central Processing unit (CPU).
+ * Parses the binary code in the instruction input and executes it according to the
+ * Hack machine language specification. In the case of a C-instruction, computes the
+ * function specified by the instruction. If the instruction specifies to read a memory
+ * value, the inM input is expected to contain this value. If the instruction specifies
+ * to write a value to the memory, sets the outM output to this value, sets the addressM
+ * output to the target address, and asserts the writeM output (when writeM = 0, any
+ * value may appear in outM).
+ * If the reset input is 0, computes the address of the next instruction and sets the
+ * pc output to that value. If the reset input is 1, sets pc to 0.
+ * Note: The outM and writeM outputs are combinational: they are affected by the
+ * instruction's execution during the current cycle. The addressM and pc outputs are
+ * clocked: although they are affected by the instruction's execution, they commit to
+ * their new values only in the next cycle.
+ */
+CHIP CPU {
+    
+    IN  inM[16],         // M value input  (M = contents of RAM[A])
+        instruction[16], // Instruction for execution
+        reset;           // Signals whether to re-start the current
+                         // program (reset==1) or continue executing
+                         // the current program (reset==0).
+
+    OUT outM[16],        // M value output
+        writeM,          // Write to M? 
+        addressM[15],    // Address in data memory (of M)
+        pc[15];          // address of next instruction
+
+    PARTS:
+    And(a= instruction[15],b=true, out=isCInstruction );
+    Not(in= instruction[15], out=isAInstruction );
+    Mux16(a= instruction , b=aluOut , sel=isCInstruction,
+     out=aIn );
+    ARegister(in=aIn, load=instruction[5] , out=aRegOut );
+    //not sure about the order of a and b
+    Mux16(a= aRegOut, b=inM , sel= instruction[12], out= dataFromARegOrMemory);
+    DRegister(in= aluOut, load= instruction[4], out= dRegOut);
+    // if (zx == 1) sets x = 0        // 16-bit constant
+    // if (nx == 1) sets x = !x       // bitwise not
+    // if (zy == 1) sets y = 0        // 16-bit constant
+    // if (ny == 1) sets y = !y       // bitwise not
+    // if (f == 1)  sets out = x + y  // integer 2's complement addition
+    // if (f == 0)  sets out = x & y  // bitwise and
+    // if (no == 1) sets out = !out   // bitwise not
+    //        x[16], y[16],  // 16-bit inputs - how to figure out what are sources?        
+    //    zx, // zero the x input? - 1 bit
+    //    nx, // negate the x input?  -2 bit
+    //    zy, // zero the y input?  - 3 bit 
+    //    ny, // negate the y input? - 4 bit
+    //    f,  // compute (out = x + y) or (out = x & y)? - 5 bit
+    //    no; // negate the out output? 6 bit
+    //comp bits = instruction[9..4]
+    //input M, D or A or nothing
+    //comp bits
+    ALU(x=dRegOut, y=dataFromARegOrMemory, 
+    zx=instruction[9] , nx=instruction[8], zy=instruction[7],
+    ny=instruction[6] , f=instruction[5], no=instruction[4],
+    out=aluOut, out=outM, zr=aluOutIsZero , ng=aluOutIsNegative );
+    And(a=instruction[3],b=isCInstruction, out=writeM);
+    // j1  j2  j3  Branch if   Mnemonic
+    // 0   0   0   No branch   none
+    // 0   0   1   Output greater than 0   JGT
+    // 0   1   0   Output equals 0     JEQ
+    // 0   1   1   Output greater than or equal 0  JGE
+    // 1   0   0   Output less than 0  JLT
+    // 1   0   1   Output not equal 0  JNE
+    // 1   1   0   Output less than or equal 0     JLE
+    // 1   1   1   Unconditional branch    JMP 
+    //create 8way mux for 1 bit
+    //  8-way 16-bit multiplexor:
+    //  out = a if sel = 000
+    //        b if sel = 001
+    //        c if sel = 010
+    //        d if sel = 011
+    //        e if sel = 100
+    //        f if sel = 101
+    //        g if sel = 110
+    //        h if sel = 111
+    Not(in=aluOutIsZero , out=aluOutIsNotZero );
+    Not(in=aluOutIsNegative, out=aluOutIsPositive );
+    Or(a=aluOutIsPositive , b=aluOutIsZero , out=aluOutIsZeroOrPositive);
+    Or(a=aluOutIsNegative , b=aluOutIsZero , 
+    out=aluOutIsZeroOrNegative);
+
+    //a b
+    Mux(a=false, b=aluOutIsPositive, sel=instruction[2], 
+    out=t1 );
+    //c d
+    Mux(a=aluOutIsZero, b= aluOutIsZeroOrPositive, 
+    sel=instruction[2] , out=t2 );
+    // e f
+    Mux(a=aluOutIsNegative, b=aluOutIsNotZero,
+     sel=instruction[2] , out=t3 );
+    // g h
+    Mux(a=aluOutIsZeroOrNegative, 
+    b= true, sel=instruction[2], out=t4 );
+    
+    Mux(a=t1, b= t2, sel=instruction[1] , out=t5 );
+    Mux(a=t3, b= t4, sel=instruction[1] , out=t6 );
+    Mux(a=t5, b= t6, sel=instruction[0] , out=loadPC );
+    
+    //TODO: test
+    PC(in=aRegOut, load=loadPC, inc=true , reset=reset,
+     out[1..15]=pc);
+    
+    Or(a= instruction[0], b= false, out=inst0Is1 );
+    
+
+}
