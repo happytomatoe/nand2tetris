@@ -36,10 +36,11 @@ CHIP CPU {
     Not(in= instruction[15], out=isAInstruction );
     Mux16(a= instruction , b=aluOut , sel=isCInstruction,
      out=aIn );
-    ARegister(in=aIn, load=instruction[5] , out=aRegOut );
-    //not sure about the order of a and b
+     Or(a= instruction[5], b= isAInstruction, out=loadAReg );
+    ARegister(in=aIn, load=loadAReg, out=aRegOut, out[0..14]=addressM );
     Mux16(a= aRegOut, b=inM , sel= instruction[12], out= dataFromARegOrMemory);
-    DRegister(in= aluOut, load= instruction[4], out= dRegOut);
+    And(a=instruction[4], b=isCInstruction , out=dRegLoad );
+    DRegister(in=aluOut, load=dRegLoad, out= dRegOut);
     // if (zx == 1) sets x = 0        // 16-bit constant
     // if (nx == 1) sets x = !x       // bitwise not
     // if (zy == 1) sets y = 0        // 16-bit constant
@@ -57,11 +58,14 @@ CHIP CPU {
     //comp bits = instruction[9..4]
     //input M, D or A or nothing
     //comp bits
-    ALU(x=dRegOut, y=dataFromARegOrMemory, 
-    zx=instruction[9] , nx=instruction[8], zy=instruction[7],
-    ny=instruction[6] , f=instruction[5], no=instruction[4],
-    out=aluOut, out=outM, zr=aluOutIsZero , ng=aluOutIsNegative );
-    And(a=instruction[3],b=isCInstruction, out=writeM);
+    And(a=instruction[11] , b=true , out=zx );
+    And(a= instruction[10], b=true , out=nx );
+    And(a= instruction[9], b=true , out=zy );
+    And(a= instruction[8], b=true , out=ny );
+    And(a=instruction[7], b=true , out=aluAddOrLogical );
+    And(a= instruction[6], b=true , out=no );
+    ALU(x=dRegOut, y= dataFromARegOrMemory , 
+    zx=zx , nx=nx, zy=zy, ny=ny, f=aluAddOrLogical, no=no, out=aluOut, out=outM, zr=aluOutIsZero , ng=aluOutIsNegative );
     // j1  j2  j3  Branch if   Mnemonic
     // 0   0   0   No branch   none
     // 0   0   1   Output greater than 0   JGT
@@ -82,33 +86,42 @@ CHIP CPU {
     //        g if sel = 110
     //        h if sel = 111
     Not(in=aluOutIsZero , out=aluOutIsNotZero );
-    Not(in=aluOutIsNegative, out=aluOutIsPositive );
-    Or(a=aluOutIsPositive , b=aluOutIsZero , out=aluOutIsZeroOrPositive);
+    Not(in=aluOutIsNegative, out=aluOutIsNotNegative );
+    
+    And(a= aluOutIsNotNegative, b=aluOutIsNotZero, out=aluOutIsPositive );
+    Or(a=aluOutIsPositive, b=aluOutIsZero, out=aluOutIsZeroOrPositive);
     Or(a=aluOutIsNegative , b=aluOutIsZero , 
     out=aluOutIsZeroOrNegative);
 
     //a b
-    Mux(a=false, b=aluOutIsPositive, sel=instruction[2], 
+    Mux(a=false, b=aluOutIsNegative, sel=instruction[2], 
     out=t1 );
     //c d
-    Mux(a=aluOutIsZero, b= aluOutIsZeroOrPositive, 
+    Mux(a=aluOutIsZero, b= aluOutIsZeroOrNegative, 
     sel=instruction[2] , out=t2 );
     // e f
-    Mux(a=aluOutIsNegative, b=aluOutIsNotZero,
+    Mux(a=aluOutIsPositive, b=aluOutIsNotZero,
      sel=instruction[2] , out=t3 );
     // g h
-    Mux(a=aluOutIsZeroOrNegative, 
+    Mux(a=aluOutIsZeroOrPositive, 
     b= true, sel=instruction[2], out=t4 );
     
     Mux(a=t1, b= t2, sel=instruction[1] , out=t5 );
     Mux(a=t3, b= t4, sel=instruction[1] , out=t6 );
     Mux(a=t5, b= t6, sel=instruction[0] , out=loadPC );
-    
-    //TODO: test
-    PC(in=aRegOut, load=loadPC, inc=true , reset=reset,
-     out[1..15]=pc);
-    
-    Or(a= instruction[0], b= false, out=inst0Is1 );
+    And(a= loadPC, b=isCInstruction , out=finalLoadPC );
+    And(a=instruction[3],b=isCInstruction, out=writeM);
+    // 0 0 0 false
+    // 0 0 1 >0
+    // 0 1 0  =0
+    // 0 1 1 >=0
+    // 1 0 0 >0 
+    // 1 0 1 !=0
+    // 1 1 0 <=0
+    // 1 1 1 true
     
 
+    //TODO: test
+    PC(in=aRegOut, load=finalLoadPC, inc=true, reset=reset,
+     out[0..14]=pc);
 }
