@@ -22,7 +22,7 @@ vector<pair<string, vector<Token> > > input_expected_value = {
             Token(D, "D", 16),
             Token(Minus, "-", 19),
             Token(A, "A", 21),
-            Token(Jump, "JGE", 25),
+            Token(JGE, "JGE", 25),
             Token(Eof, "", 26)
         }
     },

@@ -4,11 +4,37 @@
 
 #ifndef LEXER_H
 #define LEXER_H
+#include <map>
 #include <ostream>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
-enum Type {
+using namespace std;
+
+// enum OperatorType {
+//     Plus,
+//     Minus,
+//     Assignment,
+//     And,
+//     Or,
+//     Not
+// };
+
+// enum Operands {
+//     Identifier,
+//     Constant
+// };
+
+// enum Identifiers {
+//     D,
+//     A,
+//     M,
+//     OtherIndetifier
+// };
+
+
+enum TokenType {
     //operators
     Plus,
     Minus,
@@ -16,22 +42,34 @@ enum Type {
     And,
     Or,
     Not,
-    //keywords
-    Identifier,
+    //identifiers
     D,
     A,
     M,
-    Jump,
+    OtherIndetifier,
+    //constants
     Constant,
-    MinusOne,
+    NegativeOne,
     Zero,
     One,
+    JGT,
+    JGE,
+    JEQ,
+    JNE,
+    JLT,
+    JLE,
+    JMP,
+    //other
     At, //@
     EOL,
     Eof,
 };
 
-inline const char *ToString(Type v) {
+
+enum JumpType {
+};
+
+inline const char *ToString(TokenType v) {
     switch (v) {
         case Plus:
             return "Plus";
@@ -45,37 +83,49 @@ inline const char *ToString(Type v) {
             return "Or";
         case Not:
             return "Not";
-        case Identifier:
-            return "Identifier";
         case D:
             return "D";
         case A:
             return "A";
         case M:
             return "M";
-        case Jump:
-            return "Jump";
+        case OtherIndetifier:
+            return "OtherIndetifier";
         case Constant:
             return "Constant";
-        case MinusOne:
-            return "MinusOne";
+        case NegativeOne:
+            return "NegativeOne";
         case Zero:
             return "Zero";
         case One:
             return "One";
+        case JGT:
+            return "JGT";
+        case JGE:
+            return "JGE";
+        case JEQ:
+            return "JEQ";
+        case JNE:
+            return "JNE";
+        case JLT:
+            return "JLT";
+        case JLE:
+            return "JLE";
+        case JMP:
+            return "JMP";
         case At:
             return "At";
         case EOL:
             return "EOL";
         case Eof:
-            return "EOF";
+            return "Eof";
         default:
             return "Unknown";
     }
 }
 
 struct Token {
-    Type type;
+    TokenType type;
     std::string text;
     int startPos;
 
@@ -97,9 +147,10 @@ struct Token {
     }
 };
 
-
 class Lexer {
 public:
     static std::vector<Token> lex(std::string text);
+private:
+    static const map<string,TokenType> jumpMap;
 };
 #endif //LEXER_H

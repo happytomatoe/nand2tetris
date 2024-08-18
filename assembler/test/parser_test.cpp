@@ -9,8 +9,7 @@
 
 TEST(ParserTest, BasicTest) {
     std::vector<Token> tokens = {
-        Token(Type::At, "@", 0),
-        Token(Type::Constant, "-212313211", 1)
+        Token(At, "@", 0),
+        Token(Constant, "-212313211", 1)
     };
-
 }

@@ -1,10 +1,27 @@
 #include "Lexer.h"
 
+#include <map>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 #include <vector>
+using namespace std;
+
+
+const map<std::string, TokenType> jump_map = {
+    {"JGT", JGT},
+    {"JGE", JGE},
+    {"JEQ", JEQ},
+    {"JNE", JNE},
+    {"JLT", JLT},
+    {"JLE", JLE},
+    {"JMP", JMP},
+};
+
 
 std::vector<Token> Lexer::lex(std::string text) {
+
+
     auto res = std::vector<Token>();
     for (int i = 0; i < text.length(); i++) {
         auto c = text[i];
@@ -45,11 +62,14 @@ std::vector<Token> Lexer::lex(std::string text) {
             case ';': {
                 //TODO: validate jump?
                 std::string jump = "";
-                while (i+1 < text.length() && text[i+1] != '\n') {
-                    jump += text[i+1];
+                while (i + 1 < text.length() && text[i + 1] != '\n') {
+                    jump += text[i + 1];
                     i++;
                 }
-                res.push_back(Token(Jump, jump, i));
+                if (jump_map.find(jump) == jump_map.end()) {
+                    throw std::invalid_argument("Unknown jump: " + jump);
+                }
+                res.push_back(Token(jump_map.at(jump), jump, i));
                 break;
             }
             case 'D':
@@ -78,7 +98,7 @@ std::vector<Token> Lexer::lex(std::string text) {
                     number = "-";
                     start_pos--;
                 }
-                for (;i < text.length() && isdigit(text[i]);i++) {
+                for (; i < text.length() && isdigit(text[i]); i++) {
                     number += text[i];
                 }
                 i--;
