@@ -33,7 +33,7 @@ struct Destination {
     }
 };
 
-optional<tuple<Destination, int>> get_destination(std::vector<Token> tokens) {
+optional<tuple<Destination, int> > get_destination(std::vector<Token> tokens) {
     Destination dest = {false, false, false};
     for (int i = 0; i < tokens.size(); ++i) {
         if (tokens[i].type == Assignment) {
@@ -41,19 +41,19 @@ optional<tuple<Destination, int>> get_destination(std::vector<Token> tokens) {
                 switch (tokens[j].type) {
                     case A:
                         dest.a = true;
-                    break;
+                        break;
                     case D:
                         dest.d = true;
-                    break;
+                        break;
                     case M:
                         dest.m = true;
-                    break;
+                        break;
                     default:
                         throw std::invalid_argument(
                             "Cannot assign to " + tokens[j].text + ". Possible values=AMD");
                 }
             }
-            return std::optional<tuple<Destination, int>>{{dest, i}};
+            return std::optional<tuple<Destination, int> >{{dest, i}};
         }
     }
     return nullopt;
@@ -80,15 +80,27 @@ std::vector<std::string> assemble(std::vector<std::string> text) {
             auto maybeDestination = get_destination(tokens);
             if (maybeDestination.has_value()) {
                 auto [destination, index] = maybeDestination.value();
-                // s += destination.toBinary();
-                // for (int j = index + 1; j < tokens.size(); ++j) {
-                //     s += tokens[j].text;
-                // }
+                //check for operation
+                for (int k = index; k < tokens.size(); ++k) {
+                    switch (tokens[k].type) {
+                        case Plus:
+                            break;
+                        case Minus:
+                            break;
+                        case And:
+                            break;
+                        case Or:
+                            break;
+                        case Not:
+                            break;
+                        default:
+                            break;
+
+                    }
+                }
+            } else {
+
             }
-            //check for operation
-            // for(int k = j; k < tokens.size(); ++k){
-            //
-            // }
 
             //comp bits
             //a=0 or a==1
