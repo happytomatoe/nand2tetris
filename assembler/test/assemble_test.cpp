@@ -1,25 +1,10 @@
-//
-// #include <string>
-// #include "assemble.hpp"
-//
-// int main() {
-//     std::string text = R"""(
-//         add r0, r1, r2;
-//         """)
-//     std::string assembledText = assemble(text);
-//     if (assembledText == "add r0, r1, r2") {
-//         return 0;
-//     } else {
-//         return 1;
-//     }
-// }
-
-
 #include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <gtest/gtest.h>
+#include <gmock/gmock-matchers.h>
 #include <assemble.h>
+#include <Lexer.h>
 
 
 std::vector<std::string> read_file(std::string file_path) {
@@ -46,4 +31,3 @@ TEST(AssembleTest, TrimLines) {
     EXPECT_EQ(actual, expected);
 
 }
-

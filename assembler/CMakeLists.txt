@@ -15,8 +15,12 @@ add_library(assemble)
 target_sources(assemble
         PUBLIC
         src/assemble.h
+        src/Lexer.h
+        src/Parser.h
         PRIVATE
+        src/Lexer.cpp
         src/assemble.cpp
+        src/Parser.cpp
 )
 target_include_directories(assemble PUBLIC src)
 add_executable(assembler src/main.cpp)
@@ -27,7 +31,10 @@ target_link_libraries(assembler PRIVATE assemble)
 
 #find_package(Catch2 REQUIRED)
 find_package(GTest REQUIRED)
-add_executable(tests test/test.cpp)
+add_executable(tests test/assemble_test.cpp test/parser_test.cpp test/lexer_test.cpp
+        test/StringDiff.cpp
+        test/StringDiff.h
+        test/Utils.h)
 #target_link_libraries(tests PRIVATE assemble Catch2::Catch2WithMain)
 target_link_libraries(tests PRIVATE assemble gtest::gtest)
 
@@ -35,9 +42,3 @@ target_link_libraries(tests PRIVATE assemble gtest::gtest)
 enable_testing()
 include(GoogleTest)
 gtest_discover_tests(tests)
-
-## define tests
-#add_test(
-#        NAME tests
-#        COMMAND $<TARGET_FILE:tests>
-#)
