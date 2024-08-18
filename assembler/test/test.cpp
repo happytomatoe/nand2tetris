@@ -18,43 +18,32 @@
 #include <cstdint>
 #include <fstream>
 #include <iostream>
-
-#include "assemble.hpp"
-
 #include <gtest/gtest.h>
+#include <assemble.h>
 
-// Demonstrate some basic assertions.
-TEST(HelloTest, BasicAssertions) {
-    // Expect two strings not to be equal.
-    EXPECT_STRNE("hello", "world");
-    // Expect equality.
-    EXPECT_EQ(7 * 6, 42);
+
+std::vector<std::string> read_file(std::string file_path) {
+    std::ifstream file(file_path);
+    EXPECT_TRUE(file.good()) << "Failed to open file: " << file_path;
+    std::vector<std::string> lines;
+    std::string str;
+    while (file.good() && std::getline(file, str))
+    {
+        lines.push_back(str);
+    }
+    file.close();
+    return lines;
 }
 
 
-std::string read_file(std::string file_path);
+TEST(AssembleTest, TrimLines) {
+    auto text = read_file("../data/add.asm");
+    auto expected = read_file("../data/add_expected.txt");
+    auto actual = assemble(text);
+    for (auto s: actual) {
+        std::cout<< s << std::endl;
+    }
+    EXPECT_EQ(actual, expected);
 
-// TEST_CASE( "Test assemble lines" ) {
-//     INFO("Test case start");
-//     std::string text = read_file("/home/babkamen/git/nand2tetris/nand2tetris/assembler/data/add.asm");
-//     std::string expected = read_file("./data/add_expeced.txt");
-//     std::cout << text;
-//     // auto actual = assemble(text);
-//     CHECK_THAT(text, Catch::Matchers::Equals(expected,Catch::CaseSensitive::Yes));
-//
-// }
+}
 
-// std::string read_file(std::string file_path) {
-//     std::ifstream file(file_path);
-//     REQUIRE(file);
-//     std::vector<std::string> lines;
-//     std::string str;
-//     std::string file_contents;
-//     while (std::getline(file, str))
-//     {
-//         file_contents += str;
-//         file_contents += "\n";
-//     }
-//     file.close();
-//     return file_contents;
-// }

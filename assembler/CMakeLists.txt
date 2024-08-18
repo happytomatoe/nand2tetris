@@ -14,11 +14,11 @@ message("Building with CMake version: ${CMAKE_VERSION}")
 add_library(assemble)
 target_sources(assemble
         PUBLIC
-        lib/assemble.hpp
+        src/assemble.h
         PRIVATE
-        lib/assemble.cpp
+        src/assemble.cpp
 )
-target_include_directories(assemble PUBLIC lib)
+target_include_directories(assemble PUBLIC src)
 add_executable(assembler src/main.cpp)
 target_link_libraries(assembler PRIVATE assemble)
 
@@ -29,7 +29,7 @@ target_link_libraries(assembler PRIVATE assemble)
 find_package(GTest REQUIRED)
 add_executable(tests test/test.cpp)
 #target_link_libraries(tests PRIVATE assemble Catch2::Catch2WithMain)
-target_link_libraries(tests PRIVATE assemble GTest::gtest_main)
+target_link_libraries(tests PRIVATE assemble gtest::gtest)
 
 # enable testing functionality
 enable_testing()

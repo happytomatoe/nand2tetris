@@ -1,4 +1,3 @@
-#include "assemble.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -34,8 +33,12 @@ int main(int argc, char *argv[]) {
     file.close();
 
     std::string file_contents;
-    std::string assembledText = assemble(file_contents);
-    std::cout << assembledText;
+    for (std::string line : lines) {
+        file_contents += line;
+        file_contents += "\n";
+    }
+    // std::string assembledText = assemble(file_contents);
+    // std::cout << assembledText;
     //close file
     return EXIT_SUCCESS;
 }
