@@ -61,6 +61,7 @@ public:
 
     static TreeNode *parse(vector<Token> *tokens);
 private:
+
     static unique_ptr<TreeNode> operator_statement(vector<Token>::iterator it,
                                                    __detail::__unique_ptr_t<TreeNode> operationLeftIdentifier);
     static void assigment_statement(unique_ptr<TreeNode> &root, vector<Token>::iterator it);

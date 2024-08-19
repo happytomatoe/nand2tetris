@@ -149,6 +149,8 @@ struct Token {
 private:
     constexpr const Category getCategory(TokenType type) {
         switch (type) {
+            case At:
+                return AtCategory;
             case Assignment:
                 return AssignmentOperation;
             case Plus:

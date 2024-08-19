@@ -2,5 +2,6 @@
 # To keep your changes, remove these comment lines, but the plugin won't be able to modify your requirements
 
 requirements:
+  - "spdlog/1.14.1"
   - "cpptrace/0.6.3"
   - "gtest/1.15.0"

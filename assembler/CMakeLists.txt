@@ -10,6 +10,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 message("Building with CMake version: ${CMAKE_VERSION}")
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wextra -fsanitize=address")
+
 # example library
 add_library(assemble)
 target_sources(assemble
@@ -23,8 +25,10 @@ target_sources(assemble
         src/Parser.cpp
 )
 target_include_directories(assemble PUBLIC src)
-find_package(cpptrace)
-target_link_libraries(assemble PRIVATE cpptrace::cpptrace)
+find_package(cpptrace REQUIRED)
+find_package(spdlog REQUIRED)
+
+target_link_libraries(assemble PUBLIC cpptrace::cpptrace spdlog::spdlog)
 
 add_executable(assembler src/main.cpp)
 target_link_libraries(assembler PRIVATE assemble)

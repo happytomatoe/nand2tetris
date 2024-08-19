@@ -133,7 +133,7 @@ TreeNode *Parser::parse(vector<Token> *tokens) {
 }
 
 Token eat(vector<Token>::iterator t, TokenType type) {
-    if (*t == nullptr) {
+    if (t == nullptr) {
         string s = "Unexpected end of input, expected ";
         throw new cpptrace::logic_error(s + Token::toString(type));
     }

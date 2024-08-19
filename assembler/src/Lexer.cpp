@@ -7,7 +7,7 @@
 #include <vector>
 #include <cpptrace/cpptrace.hpp>
 using namespace std;
-
+#include "spdlog/spdlog.h"
 
 const map<std::string, TokenType> jump_map = {
     {"JGT", JGT},
@@ -77,6 +77,7 @@ std::vector<Token> Lexer::lex(const std::string &text) {
     auto res = std::vector<Token>();
     for (int i = 0; i < text.length(); i++) {
         auto c = text[i];
+        spdlog::debug("Processing char: {}", c);
         switch (c) {
             case '\n':
                 res.emplace_back(EOL, i);
