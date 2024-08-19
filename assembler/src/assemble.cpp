@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <regex>
+#include <cpptrace/cpptrace.hpp>
 
 #include "Lexer.h"
 using namespace std;
@@ -49,8 +50,8 @@ optional<tuple<Destination, int> > get_destination(std::vector<Token> tokens) {
                         dest.m = true;
                         break;
                     default:
-                        throw std::invalid_argument(
-                            "Cannot assign to " + tokens[j].text + ". Possible values=AMD");
+                        string s = "Cannot assign to " + tokens[j].type;
+                        throw cpptrace::logic_error(s + +". Possible values=AMD");
                 }
             }
             return std::optional<tuple<Destination, int> >{{dest, i}};
@@ -69,8 +70,8 @@ std::vector<std::string> assemble(std::vector<std::string> text) {
         if (tokens[0].type == At) {
             s += "0";
             //check if digit
-            if (tokens[1].type == Constant) {
-                s += std::bitset<15>(stoi(tokens[1].text)).to_string();
+            if (tokens[1].type == Number) {
+                s += std::bitset<15>(tokens[1].constValue).to_string();
             } else {
                 cerr << "Invalid line" << text[i] << endl;
             }
@@ -95,11 +96,9 @@ std::vector<std::string> assemble(std::vector<std::string> text) {
                             break;
                         default:
                             break;
-
                     }
                 }
             } else {
-
             }
 
             //comp bits

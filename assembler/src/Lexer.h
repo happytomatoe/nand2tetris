@@ -12,27 +12,6 @@
 
 using namespace std;
 
-// enum OperatorType {
-//     Plus,
-//     Minus,
-//     Assignment,
-//     And,
-//     Or,
-//     Not
-// };
-
-// enum Operands {
-//     Identifier,
-//     Constant
-// };
-
-// enum Identifiers {
-//     D,
-//     A,
-//     M,
-//     OtherIndetifier
-// };
-
 
 enum TokenType {
     //operators
@@ -46,9 +25,9 @@ enum TokenType {
     D,
     A,
     M,
-    OtherIndetifier,
-    //constants
-    Constant,
+    //TODO: add other identifiers
+    Number,
+    //do I need this?
     NegativeOne,
     Zero,
     One,
@@ -66,73 +45,40 @@ enum TokenType {
 };
 
 
-enum JumpType {
+enum Category {
+    AssignmentOperation,
+    OtherOperation,
+    AtCategory,
+    PredefinedConstant, // -1, 0, 1
+    Identifier,          // D, A, M
+    Jump,
+    Other
 };
 
-inline const char *ToString(TokenType v) {
-    switch (v) {
-        case Plus:
-            return "Plus";
-        case Minus:
-            return "Minus";
-        case Assignment:
-            return "Assignment";
-        case And:
-            return "And";
-        case Or:
-            return "Or";
-        case Not:
-            return "Not";
-        case D:
-            return "D";
-        case A:
-            return "A";
-        case M:
-            return "M";
-        case OtherIndetifier:
-            return "OtherIndetifier";
-        case Constant:
-            return "Constant";
-        case NegativeOne:
-            return "NegativeOne";
-        case Zero:
-            return "Zero";
-        case One:
-            return "One";
-        case JGT:
-            return "JGT";
-        case JGE:
-            return "JGE";
-        case JEQ:
-            return "JEQ";
-        case JNE:
-            return "JNE";
-        case JLT:
-            return "JLT";
-        case JLE:
-            return "JLE";
-        case JMP:
-            return "JMP";
-        case At:
-            return "At";
-        case EOL:
-            return "EOL";
-        case Eof:
-            return "Eof";
-        default:
-            return "Unknown";
-    }
-}
-
 struct Token {
+    Category category;
     TokenType type;
-    std::string text;
-    int startPos;
+    int startPos, constValue;
+
+    Token(TokenType type, int start_pos, int constValue = 0)
+        : type(type),
+          category(getCategory(type)),
+          constValue(constValue),
+          startPos(start_pos) {
+    }
+
+    Token(Token *other)
+        : type(other->type),
+          category(other->category),
+          constValue(other->constValue),
+          startPos(other->startPos) {
+    }
 
     friend bool operator==(const Token &lhs, const Token &rhs) {
-        return lhs.type == rhs.type
-               && lhs.text == rhs.text
-               && lhs.startPos == rhs.startPos;
+        return lhs.category == rhs.category
+               && lhs.type == rhs.type
+               && lhs.startPos == rhs.startPos
+               && lhs.constValue == rhs.constValue;
     }
 
     friend bool operator!=(const Token &lhs, const Token &rhs) {
@@ -141,16 +87,123 @@ struct Token {
 
     friend std::ostream &operator<<(std::ostream &os, const Token &obj) {
         return os
-               << "Token(type:" << ToString(obj.type)
-               << ", text:" << obj.text
-               << ", startPos:" << obj.startPos << ")";
+               << "Token(category: " << toString(obj.category)
+               << ", type: " << toString(obj.type)
+               << ", startPos: " << obj.startPos
+               << ", constValue: " << obj.constValue << ")";
+    }
+
+    static constexpr const char *toString(TokenType v) {
+        switch (v) {
+            case Plus:
+                return "+";
+            case Minus:
+                return "-";
+            case Assignment:
+                return "=";
+            case And:
+                return "&";
+            case Or:
+                return "|";
+            case Not:
+                return "!";
+            case D:
+                return "D";
+            case A:
+                return "A";
+            case M:
+                return "M";
+            case Number:
+                return "Constant";
+            case NegativeOne:
+                return "NegativeOne";
+            case Zero:
+                return "Zero";
+            case One:
+                return "One";
+            case JGT:
+                return "JGT";
+            case JGE:
+                return "JGE";
+            case JEQ:
+                return "JEQ";
+            case JNE:
+                return "JNE";
+            case JLT:
+                return "JLT";
+            case JLE:
+                return "JLE";
+            case JMP:
+                return "JMP";
+            case At:
+                return "At";
+            case EOL:
+                return "EOL";
+            case Eof:
+                return "Eof";
+            default:
+                return "Unknown";
+        }
+    }
+
+private:
+    constexpr const Category getCategory(TokenType type) {
+        switch (type) {
+            case Assignment:
+                return AssignmentOperation;
+            case Plus:
+            case Minus:
+            case And:
+            case Or:
+            case Not:
+                return OtherOperation;
+            case D:
+            case A:
+            case M:
+                return Identifier;
+            case Number:
+            case NegativeOne:
+            case Zero:
+            case One:
+                return PredefinedConstant;
+            case JGT:
+            case JGE:
+            case JEQ:
+            case JNE:
+            case JLT:
+            case JLE:
+            case JMP:
+                return Jump;
+            default:
+                return Other;
+        }
+    }
+
+    static constexpr const char *toString(Category v) {
+        switch (v) {
+            case AssignmentOperation:
+                return "AssignmentOperation";
+            case OtherOperation:
+                return "OtherOperation";
+            case PredefinedConstant:
+                return "PredefinedConstant";
+            case Identifier:
+                return "Identifier";
+            case Jump:
+                return "Jump";
+            case Other:
+                return "Other";
+            default:
+                return "Unknown";
+        }
     }
 };
 
 class Lexer {
 public:
-    static std::vector<Token> lex(std::string text);
+    static std::vector<Token> lex(const std::string &text);
+
 private:
-    static const map<string,TokenType> jumpMap;
+    static const map<string, TokenType> jumpMap;
 };
 #endif //LEXER_H

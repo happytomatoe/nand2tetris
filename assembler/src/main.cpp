@@ -1,10 +1,12 @@
-
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 
 #include <filesystem>
+#include "Lexer.h"
+#include "Parser.h"
+
 namespace fs = std::filesystem;
 
 int main(int argc, char *argv[]) {
@@ -21,24 +23,20 @@ int main(int argc, char *argv[]) {
     std::cout << "Reading file: " << argv[1] << "" << std::endl;
     std::ifstream file(argv[1]);
     if (!file) {
-        std::cerr<< "Failed to open file. Exiting out...";
+        std::cerr << "Failed to open file. Exiting out...";
         exit(0); //failed to open file
     }
     std::vector<std::string> lines;
     std::string str;
-    while (std::getline(file, str))
-    {
+    while (std::getline(file, str)) {
         lines.push_back(str);
+    }
+    for (int i = 0; i < lines.size(); i++) {
+        auto s = Lexer::lex(lines[i]);
+        Parser::parse(&s);
     }
     file.close();
 
-    std::string file_contents;
-    for (std::string line : lines) {
-        file_contents += line;
-        file_contents += "\n";
-    }
-    // std::string assembledText = assemble(file_contents);
-    // std::cout << assembledText;
     //close file
     return EXIT_SUCCESS;
 }

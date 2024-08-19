@@ -23,6 +23,9 @@ target_sources(assemble
         src/Parser.cpp
 )
 target_include_directories(assemble PUBLIC src)
+find_package(cpptrace)
+target_link_libraries(assemble PRIVATE cpptrace::cpptrace)
+
 add_executable(assembler src/main.cpp)
 target_link_libraries(assembler PRIVATE assemble)
 
