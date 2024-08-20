@@ -18,58 +18,6 @@ const map<std::string, TokenType> jump_map = {
     {"JMP", JMP},
 };
 
-
-inline constexpr const char *ToString(TokenType v) {
-    switch (v) {
-        case Plus:
-            return "Plus";
-        case Minus:
-            return "Minus";
-        case Assignment:
-            return "Assignment";
-        case And:
-            return "And";
-        case Or:
-            return "Or";
-        case Not:
-            return "Not";
-        case D:
-            return "D";
-        case A:
-            return "A";
-        case M:
-            return "M";
-        case Number:
-            return "Constant";
-        case NegativeOne:
-            return "NegativeOne";
-        case Zero:
-            return "Zero";
-        case One:
-            return "One";
-        case JGT:
-            return "JGT";
-        case JGE:
-            return "JGE";
-        case JEQ:
-            return "JEQ";
-        case JNE:
-            return "JNE";
-        case JLT:
-            return "JLT";
-        case JLE:
-            return "JLE";
-        case JMP:
-            return "JMP";
-        case At:
-            return "At";
-        case EOL:
-            return "EOL";
-        default:
-            return "Unknown";
-    }
-}
-
 std::vector<Token> Lexer::lex(const std::string &text) {
     auto res = std::vector<Token>();
     for (int i = 0; i < text.length(); i++) {

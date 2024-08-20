@@ -81,7 +81,7 @@ TEST(ParserTest, InvalidIdentifiersOrder1) {
     EXPECT_THROW({
                  auto p = new Parser(tokens);
                  auto const actual = p->parse();
-                 }, invalid_identifiers_order_exception);
+                 }, invalid_identifiers_order_before_assignment_exception);
 }
 
 TEST(ParserTest, InvalidIdentifiersOrder2) {
@@ -97,7 +97,7 @@ TEST(ParserTest, InvalidIdentifiersOrder2) {
     EXPECT_THROW({
                  auto p = new Parser(tokens);
                  auto const actual = p->parse();
-                 }, invalid_identifiers_order_exception);
+                 }, invalid_identifiers_order_before_assignment_exception);
 }
 
 TEST(ParserTest, InvalidIdentifiersOrder3) {
@@ -111,7 +111,7 @@ TEST(ParserTest, InvalidIdentifiersOrder3) {
     EXPECT_THROW({
                  auto p = new Parser(tokens);
                  auto const actual = p->parse();
-                 }, invalid_identifiers_order_exception);
+                 }, invalid_identifiers_order_before_assignment_exception);
 };
 list<TokenType> predefined_constants = {Zero, One, NegativeOne};
 
@@ -232,6 +232,21 @@ TEST(ParserTest, Operation) {
     test_parser(tokens, expected);
 }
 
+TEST(ParserTest, InvalidOperandOrder) {
+    vector<Token> tokens = {
+        Token(A, 2),
+        Token(Minus, 3),
+        Token(D, 4),
+        Token(EOL, 6),
+
+    };
+    EXPECT_THROW({
+                 auto p = new Parser(tokens);
+                 auto const actual = p->parse();
+                 cout << actual << endl;
+                 }, invalid_operand_order_exception);
+}
+
 TEST(ParserTest, OperationWithConstant) {
     vector<Token> tokens = {
         Token(D, 2),
@@ -321,6 +336,29 @@ TEST(ParserTest, ControlInstructionInvalid) {
                  }, cpptrace::logic_error);
 }
 
+class InvalidOperationWithNegativeOneTest : public testing::TestWithParam<TokenType> {
+};
+
+TEST_P(InvalidOperationWithNegativeOneTest, ControlInstructionInvalid2) {
+    vector<Token> tokens = {
+        Token(A, 0),
+        Token(GetParam(), 2),
+        Token(NegativeOne, 2),
+        Token(EOL, 5),
+
+    };
+    EXPECT_THROW({
+                 auto p = new Parser(tokens);
+                 auto const actual = p->parse();
+                 cout << actual << endl;
+                 }, syntax_error_exception);
+}
+inline constexpr const char *ToString(TokenType v);
+INSTANTIATE_TEST_SUITE_P(MyGroup, InvalidOperationWithNegativeOneTest,
+                         testing::Values(Plus, Minus, And, Or, Not),
+                         [](const testing::TestParamInfo<InvalidOperationWithNegativeOneTest::ParamType>& info) { return
+                         ToString(info.param); });
+
 
 void sigsegv_handler(int sig) {
     cpptrace::generate_trace().print();
@@ -334,5 +372,57 @@ int main(int argc, char **argv) {
     return RUN_ALL_TESTS();
 }
 
-//TODO: fix +-1
 //TDO: fix +0
+
+
+
+inline constexpr const char *ToString(TokenType v) {
+    switch (v) {
+        case Plus:
+            return "Plus";
+        case Minus:
+            return "Minus";
+        case Assignment:
+            return "Assignment";
+        case And:
+            return "And";
+        case Or:
+            return "Or";
+        case Not:
+            return "Not";
+        case D:
+            return "D";
+        case A:
+            return "A";
+        case M:
+            return "M";
+        case Number:
+            return "Constant";
+        case NegativeOne:
+            return "NegativeOne";
+        case Zero:
+            return "Zero";
+        case One:
+            return "One";
+        case JGT:
+            return "JGT";
+        case JGE:
+            return "JGE";
+        case JEQ:
+            return "JEQ";
+        case JNE:
+            return "JNE";
+        case JLT:
+            return "JLT";
+        case JLE:
+            return "JLE";
+        case JMP:
+            return "JMP";
+        case At:
+            return "At";
+        case EOL:
+            return "EOL";
+        default:
+            return "Unknown";
+    }
+}

@@ -118,11 +118,11 @@ struct Token {
             case Number:
                 return "Constant";
             case NegativeOne:
-                return "NegativeOne";
+                return "-1";
             case Zero:
-                return "Zero";
+                return "0";
             case One:
-                return "One";
+                return "1";
             case JGT:
                 return "JGT";
             case JGE:

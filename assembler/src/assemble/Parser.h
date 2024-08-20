@@ -69,12 +69,12 @@ private:
     const vector<Token> *tokens;
 
     unique_ptr<TreeNode> operator_statement(vector<Token>::const_iterator &it,
-                                            __detail::__unique_ptr_t<TreeNode> operationLeftIdentifier);
+                                            __detail::__unique_ptr_t<TreeNode> operationLeftIdentifier) const;
 
     unique_ptr<TreeNode> assigment_statement(unique_ptr<TreeNode> &assignmentIdentifier,
                                              vector<Token>::const_iterator &it);
 
-    Token eat(vector<Token>::const_iterator &it, TokenType type);
+    Token eat(vector<Token>::const_iterator &it, TokenType type) const;
 
     bool hasMoreTokens() {
         return it < tokens->end() && it->category != End;
