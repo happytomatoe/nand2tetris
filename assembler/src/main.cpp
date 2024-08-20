@@ -1,16 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <vector>
-
-#include <filesystem>
-
-#include "assemble//Assembler.h"
-#include "assemble/Lexer.h"
-#include "assemble/Parser.h"
+#include "assemble/Assembler.h"
 #include <CLI/CLI.hpp>
-
-namespace fs = std::filesystem;
 
 int main(int argc, char *argv[]) {
     CLI::App app{"Hack assembler"};

@@ -16,22 +16,6 @@ public:
         }
         return ss.str();
     }
-
-    /*! note: imput is assumed to not contain NUL characters
-     */
-    template<typename Input, typename Output, typename Value = typename Output::value_type>
-    void Split(char delimiter, Output &output, Input const &input) {
-        using namespace std;
-        for (auto cur = begin(input), beg = cur; ; ++cur) {
-            if (cur == end(input) || *cur == delimiter || !*cur) {
-                output.insert(output.end(), Value(beg, cur));
-                if (cur == end(input) || !*cur)
-                    break;
-                else
-                    beg = next(cur);
-            }
-        }
-    }
 };
 
 
