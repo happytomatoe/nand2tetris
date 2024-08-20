@@ -12,18 +12,20 @@
 using namespace std;
 vector<pair<string, vector<Token> > > input_expected_value = {
     {
-        "@-212313211\nM = D  - A;JGE",
+        "@-212313211\nAMD = D  - A;JGE",
         {
             Token(At, 0),
             Token(Number, 1, -212313211),
             Token(EOL, 11),
-            Token(M, 12,0 ),
-            Token(Assignment, 14),
-            Token(D, 16),
-            Token(Minus, 19),
-            Token(A, 21),
-            Token(JGE, 25),
-            Token(EOL, 26)
+            Token(A, 12,0 ),
+            Token(M, 13,0 ),
+            Token(D, 14,0 ),
+            Token(Assignment, 16),
+            Token(D, 18),
+            Token(Minus, 21),
+            Token(A, 23),
+            Token(JGE, 27),
+            Token(EOL, 28)
         }
     },
 };

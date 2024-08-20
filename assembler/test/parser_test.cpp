@@ -10,6 +10,7 @@
 #include <list>
 #include <signal.h>
 #include <cpptrace/cpptrace.hpp>
+#include <assemble/exception.h>
 
 void test_parser(const vector<Token> &tokens, const TreeNode &expected) {
     auto p = new Parser(tokens);
@@ -48,6 +49,70 @@ TEST(ParserTest, AssignmentToIdentifier) {
     test_parser(tokens, expected);
 }
 
+TEST(ParserTest, AssignmentForMultipleIdentifiers) {
+    vector<Token> tokens = {
+        Token(A, 0),
+        Token(M, 1),
+        Token(D, 2),
+        Token(Assignment, 3),
+        Token(D, 4),
+        Token(EOL, 5),
+
+    };
+    TreeNode expected = TreeNode(tokens[3]);
+    expected.left = std::make_unique<TreeNode>(tokens[1]);
+    expected.left->left = std::make_unique<TreeNode>(tokens[0]);
+    expected.left->right = std::make_unique<TreeNode>(tokens[2]);
+    expected.right = std::make_unique<TreeNode>(tokens[4]);
+
+    test_parser(tokens, expected);
+}
+
+TEST(ParserTest, InvalidIdentifiersOrder1) {
+    vector<Token> tokens = {
+        Token(A, 0),
+        Token(D, 1),
+        Token(M, 2),
+        Token(Assignment, 3),
+        Token(D, 4),
+        Token(EOL, 5),
+
+    };
+    EXPECT_THROW({
+                 auto p = new Parser(tokens);
+                 auto const actual = p->parse();
+                 }, invalid_identifiers_order_exception);
+}
+
+TEST(ParserTest, InvalidIdentifiersOrder2) {
+    vector<Token> tokens = {
+        Token(M, 0),
+        Token(A, 1),
+        Token(D, 2),
+        Token(Assignment, 3),
+        Token(D, 4),
+        Token(EOL, 5),
+
+    };
+    EXPECT_THROW({
+                 auto p = new Parser(tokens);
+                 auto const actual = p->parse();
+                 }, invalid_identifiers_order_exception);
+}
+
+TEST(ParserTest, InvalidIdentifiersOrder3) {
+    vector<Token> tokens = {
+        Token(D, 0),
+        Token(A, 1),
+        Token(Assignment, 3),
+        Token(D, 4),
+        Token(EOL, 5),
+    };
+    EXPECT_THROW({
+                 auto p = new Parser(tokens);
+                 auto const actual = p->parse();
+                 }, invalid_identifiers_order_exception);
+};
 list<TokenType> predefined_constants = {Zero, One, NegativeOne};
 
 class ParserConstantTest : public testing::TestWithParam<TokenType> {
@@ -69,7 +134,6 @@ TEST_P(ParserConstantTest, AssignmentToConstant) {
 }
 
 INSTANTIATE_TEST_SUITE_P(ParserTest, ParserConstantTest, testing::ValuesIn(predefined_constants));
-
 
 
 TEST(ParserTest, AssignmentAndOperation) {
@@ -191,7 +255,6 @@ TEST(ParserTest, OperationAndJump) {
         Token(A, 4),
         Token(JGE, 5),
         Token(EOL, 6),
-
     };
     TreeNode expected = TreeNode(tokens[1]);
     expected.left = std::make_unique<TreeNode>(tokens[0]);

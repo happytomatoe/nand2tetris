@@ -19,6 +19,7 @@ target_sources(assemble
         src/assemble/Assembler.h
         src/assemble/Lexer.h
         src/assemble/Parser.h
+        src/assemble/exception.h
         PRIVATE
         src/assemble/StringUtils.h
         src/assemble/Lexer.cpp
@@ -37,13 +38,11 @@ target_link_libraries(assembler PRIVATE assemble CLI11::CLI11)
 
 # testing binary
 
-#find_package(Catch2 REQUIRED)
 find_package(GTest REQUIRED)
 add_executable(tests test/assemble_test.cpp test/parser_test.cpp test/lexer_test.cpp
         test/StringDiff.cpp
         test/StringDiff.h
         test/Utils.h)
-#target_link_libraries(tests PRIVATE assemble Catch2::Catch2WithMain)
 target_link_libraries(tests PRIVATE assemble gtest::gtest)
 
 # enable testing functionality

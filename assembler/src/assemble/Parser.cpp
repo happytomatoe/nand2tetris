@@ -5,15 +5,20 @@
 #include "Parser.h"
 
 #include <iostream>
+#include <list>
+#include <set>
 #include <vector>
 #include "Lexer.h"
 #include <cpptrace/cpptrace.hpp>
+#include "exception.h"
 
+
+const set<array<TokenType, 2> > possible_2_identifiers_permutaions = {{A, M}, {M, D}, {A, D}};
 /**
- *
- * Rearrange tokens into a tree
- * Line can have asignment, operation and a jump
- */
+*
+* Rearrange tokens into a tree
+* Line can have asignment, operation and a jump
+*/
 unique_ptr<TreeNode> Parser::parse() {
     if (tokens->empty()) {
         throw cpptrace::logic_error("empty tokens");
@@ -42,8 +47,6 @@ unique_ptr<TreeNode> Parser::parse() {
             }
             break;
         }
-        //identifier
-        //TODO: what about a case with multiple identifiers?
         case Identifier:
             root = make_unique<TreeNode>(eat(it, it->type));
             if (hasMoreTokens()) {
@@ -53,6 +56,48 @@ unique_ptr<TreeNode> Parser::parse() {
                     root = assigment_statement(root, it);
                 } else if (it->category == OtherOperation) {
                     root = operator_statement(it, std::move(root));
+                } else if (it->category == Identifier) {
+                    //2 identifiers
+                    auto identifier = make_unique<TreeNode>(eat(it, it->type));
+                    identifier->left = std::move(root);
+
+
+                    if (it->category == Identifier) {
+                        //3 identifiers
+                        identifier->right = make_unique<TreeNode>(eat(it, it->type));
+
+                        if (identifier->token.type != M || identifier->left->token.type != A || identifier->right->token.type != D) {
+                            //throw exception
+                            string s = "Expected AMD but got ";
+                            throw invalid_identifiers_order_exception(s +
+                                                                      Token::toString(identifier->left->token.type) +
+                                                                      Token::toString(identifier->token.type) +
+                                                                      +Token::toString(identifier->right->token.type));
+                        }
+
+                    }else if (possible_2_identifiers_permutaions.find({
+                                       identifier->token.type, identifier->left->token.type
+                                   }) != possible_2_identifiers_permutaions.end()) {
+                            //convert possible_2_identifiers_permutaions to string
+                            string s1 = "";
+                            for (auto t: possible_2_identifiers_permutaions) {
+                                s1 += Token::toString(t[0]);
+                                s1 += Token::toString(t[1]);
+                                s1 += " ,";
+                            }
+                            string s2 = "Invalid order of identifiers: ";
+                            throw invalid_identifiers_order_exception(
+                                s2 + Token::toString(identifier->left->token.type) + Token::toString(identifier->token.type) +
+                                ".Possible values " + s1
+                            );
+                        }
+
+                    if (it->category != AssignmentOperation) {
+                        string s = "Expected assignment but got ";
+                        throw cpptrace::logic_error(s + Token::toString(it->type));
+                    }
+                    root = std::move(identifier);
+                    root = assigment_statement(root, it);
                 } else {
                     string s = "Unexpected token ";
                     throw cpptrace::logic_error(s + Token::toString(it->type));
