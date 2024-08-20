@@ -14,15 +14,12 @@
  * Rearrange tokens into a tree
  * Line can have asignment, operation and a jump
  */
-TreeNode *Parser::parse(const vector<Token> &tokens) {
-    if (tokens.empty()) {
+unique_ptr<TreeNode> Parser::parse() {
+    if (tokens->empty()) {
         throw cpptrace::logic_error("empty tokens");
     }
 
     unique_ptr<TreeNode> root;
-    // a instruction
-
-    auto it =  tokens.begin();
 
     switch (it->category) {
         case AtCategory: {
@@ -44,18 +41,19 @@ TreeNode *Parser::parse(const vector<Token> &tokens) {
         //TODO: what about a case with multiple identifiers?
         case Identifier:
             root = make_unique<TreeNode>(eat(it, it->type));
-            if (it->category == Jump) {
-                root->right = make_unique<TreeNode>(eat(it, it->type));
-                break;
+            if (hasMoreTokens()) {
+                if (it->category == Jump) {
+                    root->right = make_unique<TreeNode>(eat(it, it->type));
+                } else if (it->category == AssignmentOperation) {
+                    root = assigment_statement(root, it);
+                } else if (it->category == OtherOperation) {
+                    root = operator_statement(it, std::move(root));
+                } else {
+                    string s = "Unexpected token ";
+                    throw cpptrace::logic_error(s + Token::toString(it->type));
+                }
             }
-            if (it->category == AssignmentOperation) {
-                root = assigment_statement(root, it);
-                break;
-            }
-        case OtherOperation:
-            // operation
-            // operation and jump
-            root->right = make_unique<TreeNode>(eat(it, it->type));
+            break;
         default:
             string s = "Unexpected operator ";
             throw cpptrace::logic_error(s + Token::toString(it->type));
@@ -64,8 +62,10 @@ TreeNode *Parser::parse(const vector<Token> &tokens) {
         string s = "Expected end of line or end of file but got ";
         throw cpptrace::logic_error(s + Token::toString(it->type));
     }
-    return root.release();
+    return root;
 }
+
+
 unique_ptr<TreeNode> Parser::operator_statement(vector<Token>::const_iterator &it,
                                                 unique_ptr<TreeNode> operationLeftIdentifier) {
     auto operation = make_unique<TreeNode>(eat(it, it->type));
@@ -84,6 +84,9 @@ unique_ptr<TreeNode> Parser::operator_statement(vector<Token>::const_iterator &i
         if (it->category == Jump) {
             operation->right->right = make_unique<TreeNode>(eat(it, it->type));
         }
+    } else {
+        string s = "Expected identifier or constant after operation but got: ";
+        throw cpptrace::logic_error(s + Token::toString(it->type));
     }
     return operation;
 }
@@ -102,27 +105,35 @@ unique_ptr<TreeNode> Parser::assigment_statement(unique_ptr<TreeNode> &assignmen
         case PredefinedConstant: {
             assignment->right = make_unique<TreeNode>(eat(it, it->type));
             // M=1;JMP
-            if (it->category == Jump) {
-                assignment->right->right = make_unique<TreeNode>(eat(it, it->type));
-            } else {
-                string s = "Unexpected token after constant: ";
-                throw cpptrace::logic_error(s + Token::toString(it->type));
+            if (hasMoreTokens()) {
+                if (it->category == Jump) {
+                    assignment->right->right = make_unique<TreeNode>(eat(it, it->type));
+                } else {
+                    string s = "Unexpected token after constant: ";
+                    throw cpptrace::logic_error(s + Token::toString(it->type));
+                }
             }
             break;
         }
         // M=A
         case Identifier: {
             auto operationLeftIdentifier = make_unique<TreeNode>(eat(it, it->type));
-            // M=A; JMP
-            if (it->category == Jump) {
-                operationLeftIdentifier->right = make_unique<TreeNode>(eat(it, it->type));
-                operationLeftIdentifier->left = std::move(assignment->right);
-                // M=A-
-            } else if (it->category == OtherOperation) {
-                assignment->right = operator_statement(it, std::move(operationLeftIdentifier));;
+
+
+            // M=A
+            if (hasMoreTokens()) {
+                // M=A; JMP
+                if (it->category == Jump) {
+                    operationLeftIdentifier->right = make_unique<TreeNode>(eat(it, it->type));
+                    // M=A-
+                } else if (it->category == OtherOperation) {
+                    assignment->right = operator_statement(it, std::move(operationLeftIdentifier));;
+                } else {
+                    string s = "Unexpected token after identifier: ";
+                    throw cpptrace::logic_error(s + Token::toString(it->type));
+                }
             } else {
-                string s = "Unexpected token after identifier: ";
-                throw cpptrace::logic_error(s + Token::toString(it->type));
+                assignment->right = std::move(operationLeftIdentifier);
             }
             break;
         }
@@ -135,18 +146,19 @@ unique_ptr<TreeNode> Parser::assigment_statement(unique_ptr<TreeNode> &assignmen
 
 
 //TODO: refactor
-Token Parser::eat(vector<Token>::const_iterator& t, TokenType type) {
-    // if (t == nullptr) {
-    //     string s = "Unexpected end of input, expected ";
-    //     throw new cpptrace::logic_error(s + Token::toString(type));
-    // }
+Token Parser::eat(vector<Token>::const_iterator &it, TokenType type) {
+    auto end = tokens->end();
+    if (it >= end) {
+        string s = "Unexpected end of input, expected ";
+        throw cpptrace::logic_error(s + Token::toString(type));
+    }
     cout << "1";
-    if (t->type != type) {
+    if (it->type != type) {
         string s = "expected ";
-        throw cpptrace::logic_error(s + Token::toString(type) + " but got " + Token::toString(t->type));
+        throw cpptrace::logic_error(s + Token::toString(type) + " but got " + Token::toString(it->type));
     }
 
-    Token res = *t;
-    ++t;
+    Token res = *it;
+    it++;
     return res;
 }

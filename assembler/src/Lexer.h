@@ -52,6 +52,7 @@ enum Category {
     PredefinedConstant, // -1, 0, 1
     Identifier,          // D, A, M
     Jump,
+    End,
     Other
 };
 
@@ -149,6 +150,10 @@ struct Token {
 private:
     constexpr const Category getCategory(TokenType type) {
         switch (type) {
+            case EOL:
+                return End;
+            case Eof:
+                return End;
             case At:
                 return AtCategory;
             case Assignment:

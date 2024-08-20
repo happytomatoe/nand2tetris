@@ -58,15 +58,28 @@ private:
 
 class Parser {
 public:
+    unique_ptr<TreeNode> parse();
 
-    static TreeNode *parse(const vector<Token> &tokens);
+    explicit Parser(const vector<Token> &tokens)
+        : it(), tokens(&tokens) {
+        it = tokens.begin();
+    }
+
 private:
+    vector<Token>::const_iterator it;
+    const vector<Token> *tokens;
 
-    static unique_ptr<TreeNode> operator_statement(vector<Token>::const_iterator &it,
-                                                   __detail::__unique_ptr_t<TreeNode> operationLeftIdentifier);
-    static unique_ptr<TreeNode> assigment_statement(unique_ptr<TreeNode> &assignmentIdentifier,
-                                                    vector<Token>::const_iterator &it);
-    static Token eat(vector<Token>::const_iterator &t, TokenType type);
+    unique_ptr<TreeNode> operator_statement(vector<Token>::const_iterator &it,
+                                            __detail::__unique_ptr_t<TreeNode> operationLeftIdentifier);
+
+    unique_ptr<TreeNode> assigment_statement(unique_ptr<TreeNode> &assignmentIdentifier,
+                                             vector<Token>::const_iterator &it);
+
+    Token eat(vector<Token>::const_iterator &it, TokenType type);
+
+    bool hasMoreTokens() {
+        return it < tokens->end() && it->category != End;
+    }
 };
 
 

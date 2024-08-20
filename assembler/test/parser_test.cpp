@@ -3,43 +3,75 @@
 #include <iostream>
 #include <gtest/gtest.h>
 #include <gmock/gmock-matchers.h>
-#include <assemble.h>
 #include <Lexer.h>
-
 #include "Parser.h"
 #include <stdio.h>
 #include <execinfo.h>
 #include <signal.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <cpptrace/cpptrace.hpp>
 
+void test_parser(const vector<Token> &tokens, const TreeNode &expected) {
+    auto p = new Parser(tokens);
+    auto const actual = p->parse();
+    EXPECT_TRUE(actual != nullptr);
+    EXPECT_EQ(*actual, expected);
+}
 
-TEST(ParserTest, BasicTest) {
+
+TEST(ParserTest, AInstruction) {
     vector<Token> tokens = {
         Token(At, 0),
         Token(Number, 1, 1),
         Token(EOL, 2),
 
     };
-    TreeNode tree = TreeNode(tokens[0]);
-    tree.right = std::make_unique<TreeNode>(tokens[1]);
+    TreeNode expected = TreeNode(tokens[0]);
+    expected.right = std::make_unique<TreeNode>(tokens[1]);
 
-    auto const node = Parser::parse(tokens);
-    cout << *node;
-    EXPECT_EQ(*node, tree);
+    test_parser(tokens, expected);
+}
+
+TEST(ParserTest, AssignmentToIdentifier) {
+    vector<Token> tokens = {
+        Token(A, 0),
+        Token(Assignment, 1),
+        Token(D, 2),
+        Token(Eof, 3),
+
+    };
+    TreeNode expected = TreeNode(tokens[1]);
+    expected.left = std::make_unique<TreeNode>(tokens[0]);
+    expected.right = std::make_unique<TreeNode>(tokens[2]);
+
+    test_parser(tokens, expected);
 }
 
 
-TEST(ParserTest, ControlInstruction) {
+TEST(ParserTest, AssignmentToConstant) {
+    //TODO: add all constants
+    vector tokens = {
+        Token(A, 0),
+        Token(Assignment, 1),
+        Token(Zero, 2),
+        Token(Eof, 3),
+
+    };
+    TreeNode expected = TreeNode(tokens[1]);
+    expected.left = std::make_unique<TreeNode>(tokens[0]);
+    expected.right = std::make_unique<TreeNode>(tokens[2]);
+
+    test_parser(tokens, expected);
+}
+
+
+TEST(ParserTest, AssignmentAndOperation) {
     vector<Token> tokens = {
         Token(A, 0),
         Token(Assignment, 1),
         Token(D, 2),
         Token(Minus, 3),
         Token(A, 4),
-        Token(Eof, 5),
-
+        Token(EOL, 5),
     };
     TreeNode expected = TreeNode(tokens[1]);
     expected.left = std::make_unique<TreeNode>(tokens[0]);
@@ -47,11 +79,174 @@ TEST(ParserTest, ControlInstruction) {
     expected.right->left = std::make_unique<TreeNode>(tokens[2]);
     expected.right->right = std::make_unique<TreeNode>(tokens[4]);
 
-    auto const actual = Parser::parse(tokens);
-    EXPECT_TRUE(actual != nullptr);
-    cout << *actual;
-    EXPECT_EQ(*actual, expected);
+    test_parser(tokens, expected);
 }
+
+TEST(ParserTest, AssignmentAndOperationWithConstant) {
+    vector<Token> tokens = {
+        Token(A, 0),
+        Token(Assignment, 1),
+        Token(D, 2),
+        Token(Minus, 3),
+        Token(One, 4),
+        Token(EOL, 5),
+    };
+    TreeNode expected = TreeNode(tokens[1]);
+    expected.left = std::make_unique<TreeNode>(tokens[0]);
+    expected.right = std::make_unique<TreeNode>(tokens[3]);
+    expected.right->left = std::make_unique<TreeNode>(tokens[2]);
+    expected.right->right = std::make_unique<TreeNode>(tokens[4]);
+
+    test_parser(tokens, expected);
+}
+
+
+TEST(ParserTest, AssignmentAndOperationAndJump) {
+    vector<Token> tokens = {
+        Token(A, 0),
+        Token(Assignment, 1),
+        Token(D, 2),
+        Token(Minus, 3),
+        Token(A, 4),
+        Token(JGE, 5),
+        Token(Eof, 6),
+
+    };
+    TreeNode expected = TreeNode(tokens[1]);
+    expected.left = std::make_unique<TreeNode>(tokens[0]);
+    expected.right = std::make_unique<TreeNode>(tokens[3]);
+    expected.right->left = std::make_unique<TreeNode>(tokens[2]);
+    expected.right->right = std::make_unique<TreeNode>(tokens[4]);
+    expected.right->right->right = std::make_unique<TreeNode>(tokens[5]);
+
+    test_parser(tokens, expected);
+}
+
+TEST(ParserTest, AssignmentAndOperationAndJumpWithConstant) {
+    vector<Token> tokens = {
+        Token(A, 0),
+        Token(Assignment, 1),
+        Token(D, 2),
+        Token(Minus, 3),
+        Token(One, 4),
+        Token(JGE, 5),
+        Token(Eof, 6),
+
+    };
+    TreeNode expected = TreeNode(tokens[1]);
+    expected.left = std::make_unique<TreeNode>(tokens[0]);
+    expected.right = std::make_unique<TreeNode>(tokens[3]);
+    expected.right->left = std::make_unique<TreeNode>(tokens[2]);
+    expected.right->right = std::make_unique<TreeNode>(tokens[4]);
+    expected.right->right->right = std::make_unique<TreeNode>(tokens[5]);
+
+    test_parser(tokens, expected);
+}
+//Is it valid just to have an operation?
+
+TEST(ParserTest, Operation) {
+    vector<Token> tokens = {
+        Token(D, 2),
+        Token(Minus, 3),
+        Token(A, 4),
+        Token(Eof, 6),
+
+    };
+    TreeNode expected = TreeNode(tokens[1]);
+    expected.left = std::make_unique<TreeNode>(tokens[0]);
+    expected.right = std::make_unique<TreeNode>(tokens[2]);
+
+    test_parser(tokens, expected);
+}
+TEST(ParserTest, OperationWithConstant) {
+    vector<Token> tokens = {
+        Token(D, 2),
+        Token(Minus, 3),
+        Token(One, 4),
+        Token(Eof, 6),
+
+    };
+    TreeNode expected = TreeNode(tokens[1]);
+    expected.left = std::make_unique<TreeNode>(tokens[0]);
+    expected.right = std::make_unique<TreeNode>(tokens[2]);
+
+    test_parser(tokens, expected);
+}
+
+//generate test for operation and jump
+TEST(ParserTest, OperationAndJump) {
+    vector<Token> tokens = {
+        Token(D, 2),
+        Token(Minus, 3),
+        Token(A, 4),
+        Token(JGE, 5),
+        Token(Eof, 6),
+
+    };
+    TreeNode expected = TreeNode(tokens[1]);
+    expected.left = std::make_unique<TreeNode>(tokens[0]);
+    expected.right = std::make_unique<TreeNode>(tokens[2]);
+    expected.right->right = std::make_unique<TreeNode>(tokens[3]);
+
+    test_parser(tokens, expected);
+}
+TEST(ParserTest, OperationAndJumpWithConstant) {
+    vector<Token> tokens = {
+        Token(D, 2),
+        Token(Minus, 3),
+        Token(One, 4),
+        Token(JGT, 5),
+        Token(Eof, 6),
+
+    };
+    TreeNode expected = TreeNode(tokens[1]);
+    expected.left = std::make_unique<TreeNode>(tokens[0]);
+    expected.right = std::make_unique<TreeNode>(tokens[2]);
+    expected.right->right = std::make_unique<TreeNode>(tokens[3]);
+
+    test_parser(tokens, expected);
+}
+
+TEST(ParserTest, Constant) {
+    vector<Token> tokens = {
+        Token(NegativeOne, 0),
+        Token(Eof, 2),
+
+    };
+    TreeNode expected = TreeNode(tokens[0]);
+
+    test_parser(tokens, expected);
+}
+
+
+TEST(ParserTest, ConstantAndJump) {
+    vector<Token> tokens = {
+        Token(NegativeOne, 0),
+        Token(JGE, 1),
+        Token(Eof, 2),
+
+    };
+    TreeNode expected = TreeNode(tokens[0]);
+    expected.right = std::make_unique<TreeNode>(tokens[1]);
+
+    test_parser(tokens, expected);
+}
+
+
+TEST(ParserTest, ControlInstructionInvalid) {
+    vector<Token> tokens = {
+        Token(A, 0),
+        Token(Minus, 2),
+        Token(Eof, 5),
+
+    };
+    EXPECT_THROW({
+                 auto p = new Parser(tokens);
+                 auto const actual = p->parse();
+                 cout << actual << endl;
+                 }, cpptrace::logic_error);
+}
+
 
 void sigsegv_handler(int sig) {
     cpptrace::generate_trace().print();
