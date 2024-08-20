@@ -336,14 +336,14 @@ TEST(ParserTest, ControlInstructionInvalid) {
                  }, cpptrace::logic_error);
 }
 
-class InvalidOperationWithNegativeOneTest : public testing::TestWithParam<TokenType> {
+class InvalidOperationWithNegativeOneTest : public testing::TestWithParam<tuple<TokenType, TokenType> > {
 };
 
 TEST_P(InvalidOperationWithNegativeOneTest, ControlInstructionInvalid2) {
     vector<Token> tokens = {
         Token(A, 0),
-        Token(GetParam(), 2),
-        Token(NegativeOne, 2),
+        Token(get<0>(GetParam()), 2),
+        Token(get<1>(GetParam()), 2),
         Token(EOL, 5),
 
     };
@@ -353,11 +353,20 @@ TEST_P(InvalidOperationWithNegativeOneTest, ControlInstructionInvalid2) {
                  cout << actual << endl;
                  }, syntax_error_exception);
 }
+
+const auto operations = testing::Values(Plus, Minus, And, Or, Not);
+const auto operands = testing::Values(NegativeOne, Zero);
+
 inline constexpr const char *ToString(TokenType v);
+
 INSTANTIATE_TEST_SUITE_P(MyGroup, InvalidOperationWithNegativeOneTest,
-                         testing::Values(Plus, Minus, And, Or, Not),
-                         [](const testing::TestParamInfo<InvalidOperationWithNegativeOneTest::ParamType>& info) { return
-                         ToString(info.param); });
+                         testing::Combine(operations,operands),
+                         [](const testing::TestParamInfo<InvalidOperationWithNegativeOneTest::ParamType>& info) {
+                         string name;
+                         name += ToString(get<0>(info.param));
+                         name += ToString(get<1>(info.param));
+                         return name;
+                         });
 
 
 void sigsegv_handler(int sig) {
@@ -372,8 +381,7 @@ int main(int argc, char **argv) {
     return RUN_ALL_TESTS();
 }
 
-//TDO: fix +0
-
+//TODO: fix +0
 
 
 inline constexpr const char *ToString(TokenType v) {

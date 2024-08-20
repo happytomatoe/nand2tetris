@@ -136,7 +136,7 @@ unique_ptr<TreeNode> Parser::operator_statement(vector<Token>::const_iterator &i
     } else if (it->category == PredefinedConstant) {
         // M = A-1
         operation->right = make_unique<TreeNode>(eat(it, it->type));
-        if (operation->right->token.type == NegativeOne) {
+        if (operation->right->token.type == NegativeOne|| operation->right->token.type == Zero) {
             string s = "Invalid operation: ";
             throw syntax_error_exception(s + Token::toString(operation->token.type) +
                                          Token::toString(operation->right->token.type));
