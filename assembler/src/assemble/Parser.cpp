@@ -24,7 +24,12 @@ unique_ptr<TreeNode> Parser::parse() {
     switch (it->category) {
         case AtCategory: {
             root = make_unique<TreeNode>(eat(it, At));
-            root->right = make_unique<TreeNode>(eat(it, Number));
+            if (it->category == NumberCategory || it->category == PredefinedConstant) {
+                root->right = make_unique<TreeNode>(eat(it, it->type));
+            } else {
+                string s = "Expected number but got ";
+                throw cpptrace::logic_error(s + Token::toString(it->type));
+            }
             break;
         }
         // c instruction
@@ -145,14 +150,12 @@ unique_ptr<TreeNode> Parser::assigment_statement(unique_ptr<TreeNode> &assignmen
 }
 
 
-//TODO: refactor
 Token Parser::eat(vector<Token>::const_iterator &it, TokenType type) {
     auto end = tokens->end();
     if (it >= end) {
         string s = "Unexpected end of input, expected ";
         throw cpptrace::logic_error(s + Token::toString(type));
     }
-    cout << "1";
     if (it->type != type) {
         string s = "expected ";
         throw cpptrace::logic_error(s + Token::toString(type) + " but got " + Token::toString(it->type));

@@ -10,7 +10,7 @@ build-debug: FORCE
 	cmake ../.. -DCMAKE_TOOLCHAIN_FILE=generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug
 	cmake --build .
 run:
-	./build/Debug/assembler data/add.asm
+	./build/Release/assembler data/add.asm
 clean:
 	rm -rf build
 test: build FORCE

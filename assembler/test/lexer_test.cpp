@@ -3,8 +3,8 @@
 #include <iostream>
 #include <gtest/gtest.h>
 #include <gmock/gmock-matchers.h>
-#include <assemble.h>
-#include <Lexer.h>
+#include <assemble/Assembler.h>
+#include <assemble/Lexer.h>
 #include <list>
 
 #include "StringDiff.h"

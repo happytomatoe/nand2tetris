@@ -13,10 +13,9 @@ using namespace std;
 
 struct TreeNode {
     Token token;
-    TreeNode *parent;
     unique_ptr<TreeNode> left, right;
 
-    TreeNode(const Token data, TreeNode *parent = nullptr): token(data), parent(parent), left(nullptr), right(nullptr) {
+    TreeNode(const Token data, TreeNode *parent = nullptr): token(data), left(nullptr), right(nullptr) {
     }
 
     friend bool operator==(const TreeNode &lhs, const TreeNode &rhs) {

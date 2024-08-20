@@ -3,16 +3,18 @@
 #include <iostream>
 #include <gtest/gtest.h>
 #include <gmock/gmock-matchers.h>
-#include <Lexer.h>
-#include "Parser.h"
+#include <assemble/Lexer.h>
+#include "assemble/Parser.h"
 #include <stdio.h>
 #include <execinfo.h>
+#include <list>
 #include <signal.h>
 #include <cpptrace/cpptrace.hpp>
 
 void test_parser(const vector<Token> &tokens, const TreeNode &expected) {
     auto p = new Parser(tokens);
     auto const actual = p->parse();
+    cout << *actual << endl;
     EXPECT_TRUE(actual != nullptr);
     EXPECT_EQ(*actual, expected);
 }
@@ -46,13 +48,16 @@ TEST(ParserTest, AssignmentToIdentifier) {
     test_parser(tokens, expected);
 }
 
+list<TokenType> predefined_constants = {Zero, One, NegativeOne};
 
-TEST(ParserTest, AssignmentToConstant) {
-    //TODO: add all constants
+class ParserConstantTest : public testing::TestWithParam<TokenType> {
+};
+
+TEST_P(ParserConstantTest, AssignmentToConstant) {
     vector tokens = {
         Token(A, 0),
         Token(Assignment, 1),
-        Token(Zero, 2),
+        Token(GetParam(), 2),
         Token(Eof, 3),
 
     };
@@ -62,6 +67,9 @@ TEST(ParserTest, AssignmentToConstant) {
 
     test_parser(tokens, expected);
 }
+
+INSTANTIATE_TEST_SUITE_P(ParserTest, ParserConstantTest, testing::ValuesIn(predefined_constants));
+
 
 
 TEST(ParserTest, AssignmentAndOperation) {
@@ -142,6 +150,7 @@ TEST(ParserTest, AssignmentAndOperationAndJumpWithConstant) {
 
     test_parser(tokens, expected);
 }
+
 //Is it valid just to have an operation?
 
 TEST(ParserTest, Operation) {
@@ -158,6 +167,7 @@ TEST(ParserTest, Operation) {
 
     test_parser(tokens, expected);
 }
+
 TEST(ParserTest, OperationWithConstant) {
     vector<Token> tokens = {
         Token(D, 2),
@@ -190,6 +200,7 @@ TEST(ParserTest, OperationAndJump) {
 
     test_parser(tokens, expected);
 }
+
 TEST(ParserTest, OperationAndJumpWithConstant) {
     vector<Token> tokens = {
         Token(D, 2),
@@ -259,3 +270,6 @@ int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
+
+//TODO: fix +-1
+//TDO: fix +0

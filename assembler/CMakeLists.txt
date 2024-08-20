@@ -16,22 +16,23 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wextra -fsanitize=address")
 add_library(assemble)
 target_sources(assemble
         PUBLIC
-        src/assemble.h
-        src/Lexer.h
-        src/Parser.h
+        src/assemble/Assembler.h
+        src/assemble/Lexer.h
+        src/assemble/Parser.h
         PRIVATE
-        src/Lexer.cpp
-        src/assemble.cpp
-        src/Parser.cpp
+        src/assemble/StringUtils.h
+        src/assemble/Lexer.cpp
+        src/assemble/Assembler.cpp
+        src/assemble/Parser.cpp
 )
 target_include_directories(assemble PUBLIC src)
 find_package(cpptrace REQUIRED)
-find_package(spdlog REQUIRED)
 
-target_link_libraries(assemble PUBLIC cpptrace::cpptrace spdlog::spdlog)
+target_link_libraries(assemble PUBLIC cpptrace::cpptrace )
 
+find_package(CLI11)
 add_executable(assembler src/main.cpp)
-target_link_libraries(assembler PRIVATE assemble)
+target_link_libraries(assembler PRIVATE assemble CLI11::CLI11)
 
 
 # testing binary

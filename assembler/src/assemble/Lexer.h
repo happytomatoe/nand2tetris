@@ -50,7 +50,8 @@ enum Category {
     OtherOperation,
     AtCategory,
     PredefinedConstant, // -1, 0, 1
-    Identifier,          // D, A, M
+    NumberCategory,
+    Identifier, // D, A, M
     Jump,
     End,
     Other
@@ -93,6 +94,7 @@ struct Token {
                << ", startPos: " << obj.startPos
                << ", constValue: " << obj.constValue << ")";
     }
+
 
     static constexpr const char *toString(TokenType v) {
         switch (v) {
@@ -169,6 +171,7 @@ private:
             case M:
                 return Identifier;
             case Number:
+                return NumberCategory;
             case NegativeOne:
             case Zero:
             case One:
