@@ -63,14 +63,14 @@ unique_ptr<TreeNode> Parser::parse() {
             string s = "Unexpected operator ";
             throw cpptrace::logic_error(s + Token::toString(it->type));
     }
-    if (it->type != Eof && it->type != EOL) {
+    if (it->type != EOL) {
         string s = "Expected end of line or end of file but got ";
         throw cpptrace::logic_error(s + Token::toString(it->type));
     }
     return root;
 }
 
-
+//TODO: A cant be 1 operand. Did you mean...
 unique_ptr<TreeNode> Parser::operator_statement(vector<Token>::const_iterator &it,
                                                 unique_ptr<TreeNode> operationLeftIdentifier) {
     auto operation = make_unique<TreeNode>(eat(it, it->type));

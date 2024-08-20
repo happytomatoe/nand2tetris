@@ -65,8 +65,6 @@ inline constexpr const char *ToString(TokenType v) {
             return "At";
         case EOL:
             return "EOL";
-        case Eof:
-            return "Eof";
         default:
             return "Unknown";
     }

@@ -38,7 +38,7 @@ TEST(ParserTest, AssignmentToIdentifier) {
         Token(A, 0),
         Token(Assignment, 1),
         Token(D, 2),
-        Token(Eof, 3),
+        Token(EOL, 3),
 
     };
     TreeNode expected = TreeNode(tokens[1]);
@@ -58,7 +58,7 @@ TEST_P(ParserConstantTest, AssignmentToConstant) {
         Token(A, 0),
         Token(Assignment, 1),
         Token(GetParam(), 2),
-        Token(Eof, 3),
+        Token(EOL, 3),
 
     };
     TreeNode expected = TreeNode(tokens[1]);
@@ -117,7 +117,7 @@ TEST(ParserTest, AssignmentAndOperationAndJump) {
         Token(Minus, 3),
         Token(A, 4),
         Token(JGE, 5),
-        Token(Eof, 6),
+        Token(EOL, 6),
 
     };
     TreeNode expected = TreeNode(tokens[1]);
@@ -138,7 +138,7 @@ TEST(ParserTest, AssignmentAndOperationAndJumpWithConstant) {
         Token(Minus, 3),
         Token(One, 4),
         Token(JGE, 5),
-        Token(Eof, 6),
+        Token(EOL, 6),
 
     };
     TreeNode expected = TreeNode(tokens[1]);
@@ -158,7 +158,7 @@ TEST(ParserTest, Operation) {
         Token(D, 2),
         Token(Minus, 3),
         Token(A, 4),
-        Token(Eof, 6),
+        Token(EOL, 6),
 
     };
     TreeNode expected = TreeNode(tokens[1]);
@@ -173,7 +173,7 @@ TEST(ParserTest, OperationWithConstant) {
         Token(D, 2),
         Token(Minus, 3),
         Token(One, 4),
-        Token(Eof, 6),
+        Token(EOL, 6),
 
     };
     TreeNode expected = TreeNode(tokens[1]);
@@ -190,7 +190,7 @@ TEST(ParserTest, OperationAndJump) {
         Token(Minus, 3),
         Token(A, 4),
         Token(JGE, 5),
-        Token(Eof, 6),
+        Token(EOL, 6),
 
     };
     TreeNode expected = TreeNode(tokens[1]);
@@ -207,7 +207,7 @@ TEST(ParserTest, OperationAndJumpWithConstant) {
         Token(Minus, 3),
         Token(One, 4),
         Token(JGT, 5),
-        Token(Eof, 6),
+        Token(EOL, 6),
 
     };
     TreeNode expected = TreeNode(tokens[1]);
@@ -221,7 +221,7 @@ TEST(ParserTest, OperationAndJumpWithConstant) {
 TEST(ParserTest, Constant) {
     vector<Token> tokens = {
         Token(NegativeOne, 0),
-        Token(Eof, 2),
+        Token(EOL, 2),
 
     };
     TreeNode expected = TreeNode(tokens[0]);
@@ -234,7 +234,7 @@ TEST(ParserTest, ConstantAndJump) {
     vector<Token> tokens = {
         Token(NegativeOne, 0),
         Token(JGE, 1),
-        Token(Eof, 2),
+        Token(EOL, 2),
 
     };
     TreeNode expected = TreeNode(tokens[0]);
@@ -248,7 +248,7 @@ TEST(ParserTest, ControlInstructionInvalid) {
     vector<Token> tokens = {
         Token(A, 0),
         Token(Minus, 2),
-        Token(Eof, 5),
+        Token(EOL, 5),
 
     };
     EXPECT_THROW({

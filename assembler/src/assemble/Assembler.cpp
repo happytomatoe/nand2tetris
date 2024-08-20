@@ -41,8 +41,6 @@ const map<list<TokenType>, string> compBitsMap = {
     {{A, Plus, One}, "110111"},
     {{M, Plus, One}, "110111"},
     {{M, Plus, One}, "110111"},
-    //
-
     {{D, Minus, One}, "001110"},
     {{A, Minus, One}, "110010"},
     {{M, Minus, One}, "110010"},
@@ -56,8 +54,6 @@ const map<list<TokenType>, string> compBitsMap = {
     {{D, And, M}, "000000"},
     {{D, Or, A}, "010101"},
     {{D, Or, M}, "010101"},
-    //TODO: operations where A is 1-st operand
-
 };
 
 string Assembler::assemble(string file_path) {

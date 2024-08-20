@@ -41,7 +41,6 @@ enum TokenType {
     //other
     At, //@
     EOL,
-    Eof,
 };
 
 
@@ -142,8 +141,6 @@ struct Token {
                 return "At";
             case EOL:
                 return "EOL";
-            case Eof:
-                return "Eof";
             default:
                 return "Unknown";
         }
@@ -153,8 +150,6 @@ private:
     constexpr const Category getCategory(TokenType type) {
         switch (type) {
             case EOL:
-                return End;
-            case Eof:
                 return End;
             case At:
                 return AtCategory;

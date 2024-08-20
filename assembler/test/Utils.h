@@ -8,7 +8,7 @@
 
 class Utils {
 public:
-    template<typename Range, typename Value = typename Range::value_type>
+    template<typename Range>
     static std::string Join(Range const &elements, const char *const delimiter) {
         std::stringstream ss;
         for (auto const &element: elements) {
