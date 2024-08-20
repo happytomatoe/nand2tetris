@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
     }
     for (int i = 0; i < lines.size(); i++) {
         auto s = Lexer::lex(lines[i]);
-        Parser::parse(&s);
+        Parser::parse(s);
     }
     file.close();
 

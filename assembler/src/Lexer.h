@@ -181,8 +181,10 @@ private:
         }
     }
 
-    static constexpr const char *toString(Category v) {
+    static constexpr const char *toString(const Category v) {
         switch (v) {
+            case AtCategory:
+                return "AtCategory";
             case AssignmentOperation:
                 return "AssignmentOperation";
             case OtherOperation:

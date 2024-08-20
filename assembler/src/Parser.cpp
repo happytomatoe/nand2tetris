@@ -4,14 +4,69 @@
 
 #include "Parser.h"
 
+#include <iostream>
 #include <vector>
 #include "Lexer.h"
 #include <cpptrace/cpptrace.hpp>
 
+/**
+ *
+ * Rearrange tokens into a tree
+ * Line can have asignment, operation and a jump
+ */
+TreeNode *Parser::parse(const vector<Token> &tokens) {
+    if (tokens.empty()) {
+        throw cpptrace::logic_error("empty tokens");
+    }
 
-Token eat(vector<Token>::iterator t, TokenType type);
+    unique_ptr<TreeNode> root;
+    // a instruction
 
-unique_ptr<TreeNode> Parser::operator_statement(vector<Token>::iterator it,
+    auto it =  tokens.begin();
+
+    switch (it->category) {
+        case AtCategory: {
+            root = make_unique<TreeNode>(eat(it, At));
+            root->right = make_unique<TreeNode>(eat(it, Number));
+            break;
+        }
+        // c instruction
+        //constant
+        case PredefinedConstant: {
+            root = make_unique<TreeNode>(eat(it, it->type));
+            // constant and jump
+            if (it->category == Jump) {
+                root->right = make_unique<TreeNode>(eat(it, it->type));
+            }
+            break;
+        }
+        //identifier
+        //TODO: what about a case with multiple identifiers?
+        case Identifier:
+            root = make_unique<TreeNode>(eat(it, it->type));
+            if (it->category == Jump) {
+                root->right = make_unique<TreeNode>(eat(it, it->type));
+                break;
+            }
+            if (it->category == AssignmentOperation) {
+                root = assigment_statement(root, it);
+                break;
+            }
+        case OtherOperation:
+            // operation
+            // operation and jump
+            root->right = make_unique<TreeNode>(eat(it, it->type));
+        default:
+            string s = "Unexpected operator ";
+            throw cpptrace::logic_error(s + Token::toString(it->type));
+    }
+    if (it->type != Eof && it->type != EOL) {
+        string s = "Expected end of line or end of file but got ";
+        throw cpptrace::logic_error(s + Token::toString(it->type));
+    }
+    return root.release();
+}
+unique_ptr<TreeNode> Parser::operator_statement(vector<Token>::const_iterator &it,
                                                 unique_ptr<TreeNode> operationLeftIdentifier) {
     auto operation = make_unique<TreeNode>(eat(it, it->type));
     operation->left = std::move(operationLeftIdentifier);
@@ -33,7 +88,8 @@ unique_ptr<TreeNode> Parser::operator_statement(vector<Token>::iterator it,
     return operation;
 }
 
-void Parser::assigment_statement(unique_ptr<TreeNode> &assignmentIdentifier, vector<Token>::iterator it) {
+unique_ptr<TreeNode> Parser::assigment_statement(unique_ptr<TreeNode> &assignmentIdentifier,
+                                                 vector<Token>::const_iterator &it) {
     // assignment
     unique_ptr<TreeNode> assignment = make_unique<TreeNode>(eat(it, it->type));
     assignment->left = std::move(assignmentIdentifier);
@@ -74,75 +130,23 @@ void Parser::assigment_statement(unique_ptr<TreeNode> &assignmentIdentifier, vec
             string s = "Unexpected token after identifier: ";
             throw cpptrace::logic_error(s + Token::toString(it->type));
     }
+    return assignment;
 }
 
-/**
- *
- * Rearrange tokens into a tree
- * Line can have asignment, operation and a jump
- */
-TreeNode *Parser::parse(vector<Token> *tokens) {
-    if (tokens->empty()) {
-        throw cpptrace::logic_error("empty tokens");
-    }
 
-    unique_ptr<TreeNode> root;
-    // a instruction
-    auto it = tokens->begin();
-    switch (it->category) {
-        case AtCategory: {
-            root = make_unique<TreeNode>(eat(it, At));
-            root->right = make_unique<TreeNode>(eat(it, Number));
-            break;
-        }
-        // c instruction
-        //constant
-        case PredefinedConstant: {
-            root = make_unique<TreeNode>(eat(it, it->type));
-            // constant and jump
-            if (it->category == Jump) {
-                root->right = make_unique<TreeNode>(eat(it, it->type));
-            }
-            break;
-        }
-        //identifier
-        //TODO: what about a case with multiple identifiers?
-        case Identifier:
-            root = make_unique<TreeNode>(eat(it, it->type));
-            if (it->category == Jump) {
-                root->right = make_unique<TreeNode>(eat(it, it->type));
-                break;
-            }
-            if (it->category == AssignmentOperation) {
-                assigment_statement(root, it);
-                break;
-            }
-        case OtherOperation:
-            // operation
-            // operation and jump
-            root->right = make_unique<TreeNode>(eat(it, it->type));
-        default:
-            string s = "Unexpected operator ";
-            throw cpptrace::logic_error(s + Token::toString(it->type));
-    }
-    if (it->type != Eof && it->type != EOL) {
-        string s = "Expected end of line or end of file but got ";
-        throw cpptrace::logic_error(s + Token::toString(it->type));
-    }
-    return root.release();
-}
-
-Token eat(vector<Token>::iterator t, TokenType type) {
-    if (t == nullptr) {
-        string s = "Unexpected end of input, expected ";
-        throw new cpptrace::logic_error(s + Token::toString(type));
-    }
+//TODO: refactor
+Token Parser::eat(vector<Token>::const_iterator& t, TokenType type) {
+    // if (t == nullptr) {
+    //     string s = "Unexpected end of input, expected ";
+    //     throw new cpptrace::logic_error(s + Token::toString(type));
+    // }
+    cout << "1";
     if (t->type != type) {
         string s = "expected ";
         throw cpptrace::logic_error(s + Token::toString(type) + " but got " + Token::toString(t->type));
     }
 
     Token res = *t;
-    t++;
+    ++t;
     return res;
 }

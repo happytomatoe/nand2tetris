@@ -59,13 +59,14 @@ private:
 class Parser {
 public:
 
-    static TreeNode *parse(vector<Token> *tokens);
+    static TreeNode *parse(const vector<Token> &tokens);
 private:
 
-    static unique_ptr<TreeNode> operator_statement(vector<Token>::iterator it,
+    static unique_ptr<TreeNode> operator_statement(vector<Token>::const_iterator &it,
                                                    __detail::__unique_ptr_t<TreeNode> operationLeftIdentifier);
-    static void assigment_statement(unique_ptr<TreeNode> &root, vector<Token>::iterator it);
-
+    static unique_ptr<TreeNode> assigment_statement(unique_ptr<TreeNode> &assignmentIdentifier,
+                                                    vector<Token>::const_iterator &it);
+    static Token eat(vector<Token>::const_iterator &t, TokenType type);
 };
 
 

@@ -6,7 +6,7 @@
 #define RED "\033[40;31m"
 #define GRN "\033[40;32m"
 
-std::tuple<std::string, std::string> StringDiff::get_diff_string(std::string const actual, std::string const expected) {
+std::tuple<std::string, std::string> StringDiff::get_diff_string(std::string const& actual, std::string const &expected) {
     std::string res1 = "", res2 = "";
     auto ne = false;
     for (int i = 0; i < actual.length(); ++i) {
