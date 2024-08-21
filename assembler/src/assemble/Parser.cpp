@@ -10,6 +10,11 @@
 #include <cpptrace/cpptrace.hpp>
 #include "exception.h"
 
+map<string, int> Parser::predefined_symbols = {
+    {"R0", 0}, {"R1", 1}, {"R2", 2}, {"R3", 3}, {"R4", 4}, {"R5", 5}, {"R6", 6}, {"R7", 7}, {"R8", 8}, {"R9", 9},
+    {"R10", 10}, {"R11", 11}, {"R12", 12}, {"R13", 13}, {"R14", 14}, {"R15", 15},
+    {"SCREEN", 16384}, {"KBD", 24576}
+};
 
 const set<array<TokenType, 2> > possible_2_identifiers_permutaions = {{A, M}, {M, D}, {A, D}};
 /**
@@ -17,11 +22,13 @@ const set<array<TokenType, 2> > possible_2_identifiers_permutaions = {{A, M}, {M
 * Rearrange tokens into a tree
 * Line can have asignment, operation and a jump
 */
-unique_ptr<TreeNode> Parser::parse() {
-    if (tokens->empty()) {
+unique_ptr<TreeNode> Parser::parse(const vector<Token> &tokens) {
+    //TODO: will this copy struct or no?
+    this->tokens = tokens;
+    it = tokens.begin();
+    if (tokens.empty()) {
         throw cpptrace::logic_error("empty tokens");
     }
-
     unique_ptr<TreeNode> root;
 
     switch (it->category) {
@@ -29,6 +36,17 @@ unique_ptr<TreeNode> Parser::parse() {
             root = make_unique<TreeNode>(eat(it, At));
             if (it->category == NumberCategory || it->category == PredefinedConstant) {
                 root->right = make_unique<TreeNode>(eat(it, it->type));
+            } else if (it->category == SymbolCategory) {
+                const auto symbol = eat(it, it->type);
+                int number;
+                if (symbol_table.contains(symbol.text)) {
+                    number = symbol_table.at(symbol.text);
+                } else {
+                    number = free_address;
+                    symbol_table.insert({symbol.text, number});
+                    free_address++;
+                }
+                root->right = make_unique<TreeNode>(Token(Number, symbol.startPos, number));
             } else {
                 string s = "Expected number but got ";
                 throw cpptrace::logic_error(s + Token::toString(it->type));
@@ -136,7 +154,7 @@ unique_ptr<TreeNode> Parser::operator_statement(vector<Token>::const_iterator &i
     } else if (it->category == PredefinedConstant) {
         // M = A-1
         operation->right = make_unique<TreeNode>(eat(it, it->type));
-        if (operation->right->token.type == NegativeOne|| operation->right->token.type == Zero) {
+        if (operation->right->token.type == NegativeOne || operation->right->token.type == Zero) {
             string s = "Invalid operation: ";
             throw syntax_error_exception(s + Token::toString(operation->token.type) +
                                          Token::toString(operation->right->token.type));
@@ -207,8 +225,8 @@ unique_ptr<TreeNode> Parser::assigment_statement(unique_ptr<TreeNode> &assignmen
 
 
 Token Parser::eat(vector<Token>::const_iterator &it, TokenType type) const {
-    auto end = tokens->end();
-    if (it >= end) {
+    auto end = tokens.end();
+    if (it == end) {
         string s = "Unexpected end of input, expected ";
         throw cpptrace::logic_error(s + Token::toString(type));
     }

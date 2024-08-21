@@ -5,19 +5,23 @@
 #include <gmock/gmock-matchers.h>
 #include <assemble/Lexer.h>
 #include "assemble/Parser.h"
-#include <stdio.h>
+#include <cstdio>
 #include <execinfo.h>
 #include <list>
-#include <signal.h>
+#include <csignal>
 #include <cpptrace/cpptrace.hpp>
 #include <assemble/exception.h>
 
-void test_parser(const vector<Token> &tokens, const TreeNode &expected) {
-    auto p = new Parser(tokens);
-    auto const actual = p->parse();
-    cout << *actual << endl;
+#include "StringDiff.h"
+#include "Utils.h"
+
+void test_parser(const vector<Token> &tokens, const TreeNode &expected, shared_ptr<Parser> p = make_shared<Parser>()) {
+    auto const actual = p->parse(tokens);
     EXPECT_TRUE(actual != nullptr);
-    EXPECT_EQ(*actual, expected);
+    if (*actual != expected) {
+        auto [str1,str2] = StringDiff::getDiffString(Utils::toString(*actual), Utils::toString(expected));
+        FAIL() << "Actual:\t\t" << str1 << endl << "Expected:\t" << str2;
+    }
 }
 
 
@@ -33,6 +37,45 @@ TEST(ParserTest, AInstruction) {
 
     test_parser(tokens, expected);
 }
+
+class PredefinedSymbolsTest : public testing::TestWithParam<pair<string, int> > {
+};
+
+TEST_P(PredefinedSymbolsTest, PredefinedSymbolsTest) {
+    vector tokens = {Token(At, 0), Token(Symbol, 1, 0, GetParam().first), Token(Eof, 3)};
+    TreeNode expected = TreeNode(tokens[0]);
+    expected.right = std::make_unique<TreeNode>(Token(Number, 1, GetParam().second));
+    test_parser(tokens, expected);
+}
+
+list<pair<string, int> > predefined_symbols() {
+    list<pair<string, int> > predefined_symbols;
+    for (const auto &s: Parser::predefined_symbols) {
+        predefined_symbols.emplace_back(s);
+    }
+    return predefined_symbols;
+}
+
+INSTANTIATE_TEST_SUITE_P(ParserTest, PredefinedSymbolsTest, testing::ValuesIn(predefined_symbols()));
+
+TEST(ParserTest, SymbolsTest) {
+    auto p = make_shared<Parser>();
+
+    vector tokens = {
+        Token(At, 0), Token(Symbol, 1, 0, "@Ra1_.$:"), Token(Eof, 3)
+    };
+    TreeNode expected = TreeNode(tokens[0]);
+    expected.right = std::make_unique<TreeNode>(Token(Number, 1, 16));
+    test_parser(tokens, expected, p);
+
+    vector tokens2 = {
+        Token(At, 0), Token(Symbol, 1, 0, "@TMP2"), Token(Eof, 3)
+    };
+    TreeNode expected2 = TreeNode(tokens2[0]);
+    expected2.right = make_unique<TreeNode>(Token(Number, 1, 17));
+    test_parser(tokens2, expected2, p);
+}
+
 
 TEST(ParserTest, AssignmentToIdentifier) {
     vector<Token> tokens = {
@@ -79,8 +122,8 @@ TEST(ParserTest, InvalidIdentifiersOrder1) {
 
     };
     EXPECT_THROW({
-                 auto p = new Parser(tokens);
-                 auto const actual = p->parse();
+                 auto p = new Parser();
+                 auto const actual = p->parse(tokens);
                  }, invalid_identifiers_order_before_assignment_exception);
 }
 
@@ -95,8 +138,8 @@ TEST(ParserTest, InvalidIdentifiersOrder2) {
 
     };
     EXPECT_THROW({
-                 auto p = new Parser(tokens);
-                 auto const actual = p->parse();
+                 auto p = new Parser();
+                 auto const actual = p->parse(tokens);
                  }, invalid_identifiers_order_before_assignment_exception);
 }
 
@@ -108,10 +151,7 @@ TEST(ParserTest, InvalidIdentifiersOrder3) {
         Token(D, 4),
         Token(EOL, 5),
     };
-    EXPECT_THROW({
-                 auto p = new Parser(tokens);
-                 auto const actual = p->parse();
-                 }, invalid_identifiers_order_before_assignment_exception);
+    EXPECT_THROW({ (new Parser())->parse(tokens); }, invalid_identifiers_order_before_assignment_exception);
 };
 list<TokenType> predefined_constants = {Zero, One, NegativeOne};
 
@@ -241,9 +281,7 @@ TEST(ParserTest, InvalidOperandOrder) {
 
     };
     EXPECT_THROW({
-                 auto p = new Parser(tokens);
-                 auto const actual = p->parse();
-                 cout << actual << endl;
+                 (new Parser())->parse(tokens);
                  }, invalid_operand_order_exception);
 }
 
@@ -330,9 +368,7 @@ TEST(ParserTest, ControlInstructionInvalid) {
 
     };
     EXPECT_THROW({
-                 auto p = new Parser(tokens);
-                 auto const actual = p->parse();
-                 cout << actual << endl;
+                 (new Parser())->parse(tokens);
                  }, cpptrace::logic_error);
 }
 
@@ -348,9 +384,7 @@ TEST_P(InvalidOperationWithNegativeOneTest, ControlInstructionInvalid2) {
 
     };
     EXPECT_THROW({
-                 auto p = new Parser(tokens);
-                 auto const actual = p->parse();
-                 cout << actual << endl;
+                 (new Parser())->parse(tokens);
                  }, syntax_error_exception);
 }
 

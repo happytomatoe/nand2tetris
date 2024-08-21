@@ -6,12 +6,11 @@
 #include <assemble/Assembler.h>
 #include <assemble/Lexer.h>
 #include "StringDiff.h"
-#include "../src/assemble/StringUtils.h"
 
 
 void compare(const string &actual, const string &expected) {
     if (actual != expected) {
-        auto [str1,str2] = StringDiff::get_diff_string(actual,
+        auto [str1,str2] = StringDiff::getDiffString(actual,
                                                        expected);
         FAIL() << "Actual:\t\t" << str1 << endl << "Expected:\t" << str2;
     }
@@ -22,7 +21,7 @@ void testAssemble(unique_ptr<TreeNode> &ast, const string &expected) {
     compare(actual, expected);
 }
 
-std::vector<std::string> read_file(std::string file_path) {
+std::vector<std::string> read_file(const std::string& file_path) {
     std::ifstream file(file_path);
     EXPECT_TRUE(file.good()) << "Failed to open file: " << file_path;
     std::vector<std::string> lines;

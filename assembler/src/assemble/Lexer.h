@@ -63,11 +63,10 @@ enum Category {
 struct Token {
     Category category;
     TokenType type;
-    int startPos;
-    unsigned short constValue;
+    int startPos, constValue;
     string text;
 
-    Token(TokenType type, int start_pos, unsigned short constValue = 0, string text = "")
+    Token(TokenType type, int start_pos, int constValue = 0, string text = "")
         : type(type),
           category(getCategory(type)),
           constValue(constValue),
@@ -80,14 +79,15 @@ struct Token {
         : type(other->type),
           category(other->category),
           constValue(other->constValue),
-          startPos(other->startPos) {
+          startPos(other->startPos), text(other->text) {
     }
 
     friend bool operator==(const Token &lhs, const Token &rhs) {
         return lhs.category == rhs.category
                && lhs.type == rhs.type
                && lhs.startPos == rhs.startPos
-               && lhs.constValue == rhs.constValue;
+               && lhs.constValue == rhs.constValue
+               && lhs.text == rhs.text;
     }
 
     friend bool operator!=(const Token &lhs, const Token &rhs) {
@@ -99,9 +99,9 @@ struct Token {
                << "Token(category: " << toString(obj.category)
                << ", type: " << toString(obj.type)
                << ", startPos: " << obj.startPos
-               << ", constValue: " << obj.constValue << ")";
+               << ", constValue: " << obj.constValue
+               << ", text: " << obj.text << ")";
     }
-
 
     static constexpr const char *toString(TokenType v) {
         switch (v) {
@@ -149,6 +149,10 @@ struct Token {
                 return "At";
             case EOL:
                 return "EOL";
+            case Eof:
+                return "Eof";
+            case Symbol:
+                return "Symbol";
             default:
                 return "Unknown";
         }
@@ -198,6 +202,12 @@ private:
 
     static constexpr const char *toString(const Category v) {
         switch (v) {
+            case NumberCategory:
+                return "NumberCategory";
+            case SymbolCategory:
+                return "SymbolCategory";
+            case End:
+                return "End";
             case AtCategory:
                 return "AtCategory";
             case AssignmentOperation:
@@ -220,6 +230,8 @@ private:
 
 class Lexer {
 public:
+    static void check_overflow(const std::string &text, int value);
+
     static std::vector<Token> lex(const std::string &text);
 
 private:

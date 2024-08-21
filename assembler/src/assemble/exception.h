@@ -59,5 +59,14 @@ public:
     }
 };
 
+class invalid_a_instruction_exception final : public cpptrace::exception_with_message {
+public:
+    explicit invalid_a_instruction_exception(
+        std::string &&message_arg,
+        cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb()
+    ) noexcept
+        : exception_with_message(std::move(message_arg), std::move(trace)) {
+    }
+};
 
 #endif //INVALIDIDENTIFIERSORDEREXCEPTION_H

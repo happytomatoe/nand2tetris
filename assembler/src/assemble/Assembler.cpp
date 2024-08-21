@@ -63,8 +63,8 @@ string Assembler::assemble(const string &file_path) {
         if (tokens[0].type == EOL || tokens[0].type == Eof) {
             continue;
         }
-        auto p = make_unique<Parser>(tokens);
-        auto ast = p->parse();
+        auto p = make_unique<Parser>();
+        auto ast = p->parse(tokens);
         result += assemble(std::move(ast)) + "\n";
     }
     return result;

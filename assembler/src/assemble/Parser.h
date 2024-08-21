@@ -7,15 +7,44 @@
 #include <memory>
 #include <ostream>
 #include <string>
+#include <utility>
 
 #include "Lexer.h"
+
+struct TreeNode;
 using namespace std;
+
+class Parser {
+public:
+    unique_ptr<TreeNode> parse(const vector<Token> &tokens);
+
+    static map<string, int> predefined_symbols;
+
+private:
+    vector<Token>::const_iterator it;
+    vector<Token> tokens;
+    map<string, int> symbol_table = predefined_symbols;
+    int free_address = 16;
+
+    unique_ptr<TreeNode> operator_statement(vector<Token>::const_iterator &it,
+                                            __detail::__unique_ptr_t<TreeNode> operationLeftIdentifier) const;
+
+    unique_ptr<TreeNode> assigment_statement(unique_ptr<TreeNode> &assignmentIdentifier,
+                                             vector<Token>::const_iterator &it);
+
+    Token eat(vector<Token>::const_iterator &it, TokenType type) const;
+
+    bool hasMoreTokens() {
+        return it < tokens.end() && it->category != End;
+    }
+};
+
 
 struct TreeNode {
     Token token;
     unique_ptr<TreeNode> left, right;
-
-    TreeNode(const Token data, TreeNode *parent = nullptr): token(data), left(nullptr), right(nullptr) {
+    //TODO: Should the tree own the data?
+    explicit TreeNode(Token data): token(std::move(data)), left(nullptr), right(nullptr) {
     }
 
     friend bool operator==(const TreeNode &lhs, const TreeNode &rhs) {
@@ -53,39 +82,5 @@ private:
         }
     }
 };
-
-
-class Parser {
-public:
-    unique_ptr<TreeNode> parse();
-
-    explicit Parser(const vector<Token> &tokens)
-        : it(), tokens(&tokens) {
-        it = tokens.begin();
-    }
-
-private:
-    vector<Token>::const_iterator it;
-    const vector<Token> *tokens;
-    const map<string, unsigned short int> symbol_table = {
-        {"R0", 0}, {"R1", 1}, {"R2", 2}, {"R3", 3}, {"R4", 4}, {"R5", 5}, {"R6", 6}, {"R7", 7}, {"R8", 8}, {"R9", 9},
-        {"R10", 10}, {"R11", 11}, {"R12", 12}, {"R13", 13}, {"R14", 14}, {"R15", 15},
-        {"SCREEN", 16384}, {"KBD", 24576}
-    };
-    unsigned short int free_address = 16;
-
-    unique_ptr<TreeNode> operator_statement(vector<Token>::const_iterator &it,
-                                            __detail::__unique_ptr_t<TreeNode> operationLeftIdentifier) const;
-
-    unique_ptr<TreeNode> assigment_statement(unique_ptr<TreeNode> &assignmentIdentifier,
-                                             vector<Token>::const_iterator &it);
-
-    Token eat(vector<Token>::const_iterator &it, TokenType type) const;
-
-    bool hasMoreTokens() {
-        return it < tokens->end() && it->category != End;
-    }
-};
-
 
 #endif //PARSER_H

@@ -30,7 +30,7 @@ vector<pair<string, vector<Token> > > input_expected_value = {
             Token(Eof, 24),
         }
     },
-    {"@R1", {Token(At, 0), Token(Symbol, 1, 0, "R1"), Token(EOL, 3)}}
+
 };
 
 class LexerTest : public testing::TestWithParam<pair<string, vector<Token> > > {
@@ -42,8 +42,8 @@ TEST_P(LexerTest, BasicTest) {
     auto expected = GetParam().second;
     auto tokens = Lexer::lex(text);
     if (tokens != expected) {
-        auto [str1,str2] = StringDiff::get_diff_string(Utils::Join(tokens, ", "),
-                                                       Utils::Join(expected, ", "));
+        auto [str1,str2] = StringDiff::getDiffString(Utils::join(tokens, ", "),
+                                                       Utils::join(expected, ", "));
         FAIL() << "Actual:\t\t" << str1 << endl << "Expected:\t" << str2;
     }
 }
@@ -55,4 +55,34 @@ TEST(LexerTest, ShortOverflowTest) {
     EXPECT_THROW({
                  auto tokens = Lexer::lex(text);
                  }, number_overflow_exception);
+}
+
+
+TEST(LexerTest, BasicSymbolTest) {
+    auto text = "@R1";
+    vector expected = {Token(At, 0), Token(Symbol, 1, 0, "R1"), Token(Eof, 3)};
+    auto tokens = Lexer::lex(text);
+    if (tokens != expected) {
+        auto [str1,str2] = StringDiff::getDiffString(Utils::join(tokens, ", "),
+                                                       Utils::join(expected, ", "));
+        FAIL() << "Actual:\t\t" << str1 << endl << "Expected:\t" << str2;
+    }
+}
+
+TEST(LexerTest, SymbolTest) {
+    auto text = "@Ra1_.$:";
+    vector expected = {Token(At, 0), Token(Symbol, 1, 0, "Ra1_.$:"), Token(Eof, 8)};
+    auto tokens = Lexer::lex(text);
+    if (tokens != expected) {
+        auto [str1,str2] = StringDiff::getDiffString(Utils::join(tokens, ", "),
+                                                       Utils::join(expected, ", "));
+        FAIL() << "Actual:\t\t" << str1 << endl << "Expected:\t" << str2;
+    }
+}
+
+
+TEST(LexerTest, InvalidSymbol1) {
+    auto text = "@1R";
+    vector expected = {Token(At, 0), Token(Symbol, 1, 0, "R1"), Token(Eof, 3)};
+    EXPECT_THROW({ Lexer::lex(text); }, invalid_symbol_exception);
 }
