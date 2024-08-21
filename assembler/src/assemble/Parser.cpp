@@ -17,6 +17,26 @@ map<string, int> Parser::predefined_symbols = {
 };
 
 const set<array<TokenType, 2> > possible_2_identifiers_permutaions = {{A, M}, {M, D}, {A, D}};
+
+
+void Parser::parse_only_labels(const vector<Token> &tokens) {
+    this->tokens = tokens;
+    it = tokens.begin();
+    if (!tokens.empty() && it->category == LabelCategory) {
+        const auto symbol = eat(it, it->type);
+        if (symbol_table.contains(symbol.text)) {
+            throw duplicate_label_exception("Duplicate label: " + symbol.text);
+        }
+        symbol_table.insert({symbol.text, line_number});
+    } else {
+        line_number++;
+    }
+}
+
+void Parser::reset() {
+    line_number = 0;
+}
+
 /**
 *
 * Rearrange tokens into a tree
@@ -122,11 +142,7 @@ unique_ptr<TreeNode> Parser::parse(const vector<Token> &tokens) {
             }
             break;
         case LabelCategory: {
-            const auto symbol = eat(it, it->type);
-            if (symbol_table.contains(symbol.text)) {
-                throw duplicate_label_exception("Duplicate label: " + symbol.text);
-            }
-            symbol_table.insert({symbol.text, line_number + 1});
+            eat(it, it->type);
             break;
         }
         default:
@@ -140,6 +156,7 @@ unique_ptr<TreeNode> Parser::parse(const vector<Token> &tokens) {
     line_number++;
     return root;
 }
+
 
 unique_ptr<TreeNode> Parser::operator_statement(vector<Token>::const_iterator &it,
                                                 unique_ptr<TreeNode> operationLeftIdentifier) const {

@@ -18,6 +18,8 @@ class Parser {
 public:
     unique_ptr<TreeNode> parse(const vector<Token> &tokens);
 
+    void parse_only_labels(const vector<Token> &tokens);
+    void reset();
     static map<string, int> predefined_symbols;
 
 private:

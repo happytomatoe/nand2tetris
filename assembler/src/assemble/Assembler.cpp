@@ -61,41 +61,48 @@ const map<list<TokenType>, string> compBitsMap = {
 string Assembler::assemble(const string &file_path) {
     string result;
     unsigned i = 0;
-
-    for (const auto &line: read_file(file_path)) {
-        // spdlog::info("Processing line {}: {}", i, line);
+    std::ifstream file(file_path);
+    if (!file.good()) {
+        throw std::runtime_error("Failed to open file: " + file_path);
+    }
+    std::string line;
+    vector<vector<Token> > lineTokens;
+    while (file.good() && std::getline(file, line)) {
         try {
             auto tokens = Lexer::lex(line);
             if (tokens[0].type == EOL || tokens[0].type == Eof) {
                 i++;
                 continue;
             }
-            auto p = make_unique<Parser>();
-            auto ast = p->parse(tokens);
-            if (ast != nullptr) {
-                result += assemble(ast) + "\n";
-            }
+            cout << endl;
+
+            lineTokens.push_back(tokens);
             i++;
         } catch ([[maybe_unused]] exception &e) {
             cout << "Exception on line " + to_string(i) + ": " << line << endl;
             throw;
         }
     }
-    return result;
-}
-
-std::vector<std::string> Assembler::read_file(const std::string &file_path) {
-    std::ifstream file(file_path);
-    if (!file.good()) {
-        throw std::runtime_error("Failed to open file: " + file_path);
-    }
-    std::vector<std::string> lines;
-    std::string str;
-    while (file.good() && std::getline(file, str)) {
-        lines.push_back(str);
-    }
     file.close();
-    return lines;
+    auto p = make_unique<Parser>();
+
+    for (const auto &t: lineTokens) {
+        p->parse_only_labels(t);
+    }
+    p->reset();
+    auto it = lineTokens.begin();
+    if (it == lineTokens.end()) {
+        throw std::runtime_error("Failed to read token ");
+    }
+    for (const auto &t: lineTokens) {
+        auto ast = p->parse(t);
+        if (ast != nullptr) {
+            result += assemble(ast) + "\n";
+        }
+    }
+
+
+    return result;
 }
 
 string Assembler::assemble(const unique_ptr<TreeNode> &root) {
