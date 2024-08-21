@@ -11,17 +11,17 @@
 void compare(const string &actual, const string &expected) {
     if (actual != expected) {
         auto [str1,str2] = StringDiff::getDiffString(actual,
-                                                       expected);
+                                                     expected);
         FAIL() << "Actual:\t\t" << str1 << endl << "Expected:\t" << str2;
     }
 }
 
 void testAssemble(unique_ptr<TreeNode> &ast, const string &expected) {
-    auto actual = Assembler::assemble(std::move(ast));
+    auto actual = Assembler::assemble(ast);
     compare(actual, expected);
 }
 
-std::vector<std::string> read_file(const std::string& file_path) {
+std::vector<std::string> read_file(const std::string &file_path) {
     std::ifstream file(file_path);
     EXPECT_TRUE(file.good()) << "Failed to open file: " << file_path;
     std::vector<std::string> lines;
@@ -33,18 +33,37 @@ std::vector<std::string> read_file(const std::string& file_path) {
     return lines;
 }
 
+const string data_dir = "../../data/";
 
-TEST(AssembleTest, AddTest) {
-    auto expected_file = read_file("../../data/add_expected.txt");
+
+void test_assemble(const string &input_file_name, const string &expected_file_name) {
+    auto expected_file_lines = read_file(data_dir + expected_file_name);
+
     //read file content
 
     string expected;
-    for (const auto& s: expected_file) {
+    for (const auto &s: expected_file_lines) {
         expected += s + "\n";
     }
-    compare(Assembler::assemble("../../data/add.asm"), expected);
+    compare(Assembler::assemble(data_dir + input_file_name), expected);
 }
 
+
+TEST(AssembleTest, MaxLTest) {
+    test_assemble("MaxL.asm", "MaxL.hack");
+}
+
+TEST(AssembleTest, PongLTest) {
+    test_assemble("PongL.asm", "PongL.hack");
+}
+
+TEST(AssembleTest, RectLTest) {
+    test_assemble("RectL.asm", "RectL.hack");
+}
+
+TEST(AssembleTest, AddTest) {
+    test_assemble("Add.asm", "Add.hack");
+}
 
 TEST(AssembleTest, AtInstruction) {
     vector<Token> tokens = {

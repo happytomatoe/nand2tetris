@@ -44,8 +44,7 @@ struct TreeNode {
     Token token;
     unique_ptr<TreeNode> left, right;
     //TODO: Should the tree own the data?
-    explicit TreeNode(Token data): token(std::move(data)), left(nullptr), right(nullptr) {
-    }
+    explicit TreeNode(Token data): token(std::move(data)), left(nullptr), right(nullptr) {}
 
     friend bool operator==(const TreeNode &lhs, const TreeNode &rhs) {
         const auto t = lhs.token == rhs.token;

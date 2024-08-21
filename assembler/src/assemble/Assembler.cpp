@@ -58,14 +58,22 @@ const map<list<TokenType>, string> compBitsMap = {
 
 string Assembler::assemble(const string &file_path) {
     string result;
+    unsigned i = 0;
     for (const auto &line: read_file(file_path)) {
-        auto tokens = Lexer::lex(line);
-        if (tokens[0].type == EOL || tokens[0].type == Eof) {
-            continue;
+        try {
+            auto tokens = Lexer::lex(line);
+            if (tokens[0].type == EOL || tokens[0].type == Eof) {
+                i++;
+                continue;
+            }
+            auto p = make_unique<Parser>();
+            auto ast = p->parse(tokens);
+            result += assemble(ast) + "\n";
+            i++;
+        } catch ([[maybe_unused]] exception &e) {
+            cout << "Exception on line " + to_string(i) + ": " << line << endl;
+            throw;
         }
-        auto p = make_unique<Parser>();
-        auto ast = p->parse(tokens);
-        result += assemble(std::move(ast)) + "\n";
     }
     return result;
 }
@@ -84,7 +92,7 @@ std::vector<std::string> Assembler::read_file(const std::string &file_path) {
     return lines;
 }
 
-string Assembler::assemble(unique_ptr<TreeNode> root) {
+string Assembler::assemble(const unique_ptr<TreeNode> &root) {
     if (root->token.category == AtCategory) {
         auto value = root->right->token.constValue;
         return "0" + std::bitset<15>(value).to_string();

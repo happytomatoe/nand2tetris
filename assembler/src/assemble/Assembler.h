@@ -9,7 +9,7 @@
 
 class Assembler {
 public:
-    static string assemble(unique_ptr<TreeNode> root);
+    static string assemble(const unique_ptr<TreeNode> &root);
     static string assemble(const string &file_path);
 private:
     static std::vector<std::string> read_file(const std::string& file_path);
