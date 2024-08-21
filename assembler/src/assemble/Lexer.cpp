@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <vector>
 #include <cpptrace/cpptrace.hpp>
+
+#include "exception.h"
 using namespace std;
 
 const map<std::string, TokenType> jump_map = {
@@ -22,17 +24,19 @@ std::vector<Token> Lexer::lex(const std::string &text) {
     auto res = std::vector<Token>();
     for (int i = 0; i < text.length(); i++) {
         auto c = text[i];
+
+
         switch (c) {
             case '\n':
                 res.emplace_back(EOL, i);
-            case ' ':
                 break;
             case '/':
                 if (i + 1 < text.length() && text[i + 1] == '/') {
-                    for (; i + 1 < text.length() && text[i + 1] != '\n'; i++);
-                    break;
+                    goto loop_end;
                 }
                 throw cpptrace::logic_error("Should this be a  comment: " + text);
+            case ' ':
+                break;
             //operators
             case '+':
                 res.emplace_back(Plus, i);
@@ -43,7 +47,6 @@ std::vector<Token> Lexer::lex(const std::string &text) {
             case '=':
                 res.emplace_back(Assignment, i);
                 break;
-
             case '&':
                 res.emplace_back(And, i);
                 break;
@@ -99,14 +102,25 @@ std::vector<Token> Lexer::lex(const std::string &text) {
                 }
                 i--;
                 auto value = std::stoi(number);
-                if(value == -1){
+                if (value < numeric_limits<signed short>::min()) {
+                    throw number_overflow_exception(
+                        "Number overflow on line " + text + " \nMin value is " + std::to_string(
+                            numeric_limits<signed short>::min()));
+                }
+                if (value > numeric_limits<signed short>::max()) {
+                    throw number_overflow_exception(
+                        "Number overflow on line " + text + " \nMax value is " + std::to_string(
+                            numeric_limits<signed short>::max()));
+                }
+
+                if (value == -1) {
                     res.emplace_back(NegativeOne, start_pos);
                 } else if (value == 0) {
                     res.emplace_back(Zero, start_pos);
                 } else if (value == 1) {
                     res.emplace_back(One, start_pos);
                 } else {
-                    res.emplace_back(Number, start_pos, value);
+                    res.emplace_back(Number, start_pos, value, "");
                 }
                 break;
             }
@@ -114,7 +128,8 @@ std::vector<Token> Lexer::lex(const std::string &text) {
                 throw cpptrace::logic_error("Unknown symbol: " + std::string(1, c) + " on line " + text);
         }
     }
-    res.emplace_back(EOL, text.length());
+loop_end:
+    res.emplace_back(Eof, text.length());
 
     return res;
 }

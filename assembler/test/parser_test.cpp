@@ -381,9 +381,6 @@ int main(int argc, char **argv) {
     return RUN_ALL_TESTS();
 }
 
-//TODO: fix +0
-
-
 inline constexpr const char *ToString(TokenType v) {
     switch (v) {
         case Plus:

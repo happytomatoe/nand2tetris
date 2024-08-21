@@ -56,11 +56,11 @@ const map<list<TokenType>, string> compBitsMap = {
     {{D, Or, M}, "010101"},
 };
 
-string Assembler::assemble(string file_path) {
+string Assembler::assemble(const string &file_path) {
     string result;
     for (const auto &line: read_file(file_path)) {
         auto tokens = Lexer::lex(line);
-        if (tokens[0].type == EOL) {
+        if (tokens[0].type == EOL || tokens[0].type == Eof) {
             continue;
         }
         auto p = make_unique<Parser>(tokens);

@@ -107,7 +107,7 @@ unique_ptr<TreeNode> Parser::parse() {
             string s = "Unexpected operator ";
             throw cpptrace::logic_error(s + Token::toString(it->type));
     }
-    if (it->type != EOL) {
+    if (it->type != Eof && it->type != EOL) {
         string s = "Expected end of line or end of file but got ";
         throw cpptrace::logic_error(s + Token::toString(it->type));
     }

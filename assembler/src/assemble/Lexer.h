@@ -8,6 +8,7 @@
 #include <ostream>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 using namespace std;
@@ -40,7 +41,9 @@ enum TokenType {
     JMP,
     //other
     At, //@
+    Symbol,
     EOL,
+    Eof,
 };
 
 
@@ -53,20 +56,25 @@ enum Category {
     Identifier, // D, A, M
     Jump,
     End,
+    SymbolCategory,
     Other
 };
 
 struct Token {
     Category category;
     TokenType type;
-    int startPos, constValue;
+    int startPos;
+    unsigned short constValue;
+    string text;
 
-    Token(TokenType type, int start_pos, int constValue = 0)
+    Token(TokenType type, int start_pos, unsigned short constValue = 0, string text = "")
         : type(type),
           category(getCategory(type)),
           constValue(constValue),
+          text(std::move(text)),
           startPos(start_pos) {
     }
+
 
     Token(Token *other)
         : type(other->type),
@@ -147,12 +155,16 @@ struct Token {
     }
 
 private:
-    constexpr const Category getCategory(TokenType type) {
+    static constexpr const Category getCategory(TokenType type) {
         switch (type) {
             case EOL:
                 return End;
+            case Eof:
+                return End;
             case At:
                 return AtCategory;
+            case Symbol:
+                return SymbolCategory;
             case Assignment:
                 return AssignmentOperation;
             case Plus:
