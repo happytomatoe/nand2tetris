@@ -7,12 +7,25 @@
 #include <assemble/Lexer.h>
 #include "StringDiff.h"
 
+string anotate(const string &str) {
+    string anotatedStr = "0:\t\t";
+    int j = 1;
+    for (int i = 0; i < str.length(); ++i) {
+        anotatedStr += str[i];
+        if (str[i] == '\n') {
+            anotatedStr += to_string(j) + ":\t\t";
+            j++;
+        }
+    }
+    return anotatedStr;
+}
 
 void compare(const string &actual, const string &expected) {
     if (actual != expected) {
         auto [str1,str2] = StringDiff::getDiffString(actual,
                                                      expected);
-        FAIL() << "Actual:\t\t" << str1 << endl << "Expected:\t" << str2;
+
+        FAIL() << "Actual:\t\t\n" << anotate(str1) << endl << "Expected:\t\n" << anotate(str2);
     }
 }
 
@@ -33,7 +46,7 @@ std::vector<std::string> read_file(const std::string &file_path) {
     return lines;
 }
 
-const string data_dir = "../../data/";
+const string data_dir = "./data/";
 
 
 void test_assemble(const string &input_file_name, const string &expected_file_name) {
@@ -305,4 +318,46 @@ TEST(AssembleTest, ConstantAndJump3) {
     ast->right = std::make_unique<TreeNode>(tokens[1]);
 
     testAssemble(ast, "1110101010000111");
+}
+
+TEST(AssembleTest, MMinusOne) {
+    //AM=M-1
+    vector<Token> tokens = {
+        Token(A, 0),
+        Token(M, 1),
+        Token(Assignment, 2),
+        Token(M, 3),
+        Token(Minus, 4),
+        Token(One, 5),
+
+    };
+    unique_ptr<TreeNode> ast = make_unique<TreeNode>(tokens[2]);
+    ast->left = std::make_unique<TreeNode>(tokens[1]);
+    ast->left->left = std::make_unique<TreeNode>(tokens[0]);
+    ast->right = std::make_unique<TreeNode>(tokens[4]);
+    ast->right->left = std::make_unique<TreeNode>(tokens[3]);
+    ast->right->right = std::make_unique<TreeNode>(tokens[5]);
+
+    testAssemble(ast, "1111110010101000");
+}
+
+TEST(AssembleTest, MDMinusOne) {
+    //MD=M-1
+    vector<Token> tokens = {
+        Token(M, 0),
+        Token(D, 1),
+        Token(Assignment, 2),
+        Token(M, 3),
+        Token(Minus, 4),
+        Token(One, 5),
+
+    };
+    unique_ptr<TreeNode> ast = make_unique<TreeNode>(tokens[2]);
+    ast->left = std::make_unique<TreeNode>(tokens[1]);
+    ast->left->left = std::make_unique<TreeNode>(tokens[0]);
+    ast->right = std::make_unique<TreeNode>(tokens[4]);
+    ast->right->left = std::make_unique<TreeNode>(tokens[3]);
+    ast->right->right = std::make_unique<TreeNode>(tokens[5]);
+
+    testAssemble(ast, "1111110010011000");
 }

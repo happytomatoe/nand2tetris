@@ -16,10 +16,12 @@
 #include "Parser.h"
 #include "StringUtils.h"
 #include "../test/Utils.h"
+#include "spdlog/spdlog.h"
+
 using namespace std;
 
 
-const map<TokenType, short> destBitsMap = {
+const map<TokenType, int> destBitsMap = {
     {M, 1},
     {D, 2},
     {A, 4}
@@ -59,7 +61,9 @@ const map<list<TokenType>, string> compBitsMap = {
 string Assembler::assemble(const string &file_path) {
     string result;
     unsigned i = 0;
+
     for (const auto &line: read_file(file_path)) {
+        // spdlog::info("Processing line {}: {}", i, line);
         try {
             auto tokens = Lexer::lex(line);
             if (tokens[0].type == EOL || tokens[0].type == Eof) {
@@ -105,7 +109,13 @@ string Assembler::assemble(const unique_ptr<TreeNode> &root) {
 
     switch (root->token.category) {
         case AssignmentOperation: {
-            const auto dest = destBitsMap.at(root->left->token.type);
+            auto dest = destBitsMap.at(root->left->token.type);
+            if (root->left->left != nullptr) {
+                dest += destBitsMap.at(root->left->left->token.type);
+            }
+            if (root->left->right != nullptr) {
+                dest += destBitsMap.at(root->left->right->token.type);
+            }
             destBits = bitset<3>(dest).to_string();
             if (root->right->token.category == PredefinedConstant) {
                 compBits = compBitsMap.at({root->right->token.type});
@@ -114,13 +124,16 @@ string Assembler::assemble(const unique_ptr<TreeNode> &root) {
                 if (root->right->token.type == M) a = "1";
             } else if (root->right->token.category == OtherOperation) {
                 auto operation = std::move(root->right);
-
-                compBits = compBitsMap.at({
-                    operation->left->token.type,
+                list<TokenType> operation_token_types = {
                     operation->token.type,
                     operation->right->token.type,
-                });
-                if (operation->left->token.type == M || operation->right->token.type == M) {
+                };
+                if (operation->left != nullptr) {
+                    operation_token_types.push_front(operation->left->token.type);
+                }
+                compBits = compBitsMap.at(operation_token_types);
+                if (operation->left != nullptr && operation->left->token.type == M || operation->right->token.type ==
+                    M) {
                     a = "1";
                 }
                 //operation and jump
@@ -152,11 +165,17 @@ string Assembler::assemble(const unique_ptr<TreeNode> &root) {
             if (root->right != nullptr && root->right->token.category == Jump) {
                 jumpBits = jumpTypeToBits(root->right->token.type);
             }
+            break;
         }
-        break;
+        case Identifier: {
+            compBits = compBitsMap.at({root->token.type});
+            if (root->right != nullptr && root->right->token.category == Jump) {
+                jumpBits = jumpTypeToBits(root->right->token.type);
+            }
+            break;
+        }
         default: {
             string s = "Unexpected token: ";
-
             throw cpptrace::logic_error(s +
                                         StringUtils::to_string(root->token));
         }

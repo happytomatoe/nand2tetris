@@ -1,4 +1,5 @@
 .ONESHELL:
+
 build: FORCE
 	conan install .  --build=missing
 	cd build/Release
@@ -10,7 +11,7 @@ build-debug: FORCE
 	cmake ../.. -DCMAKE_TOOLCHAIN_FILE=generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug
 	cmake --build .
 run:
-	./build/Release/assembler data/add.asm
+	rr record ./build/Debug/assembler  ./data/MaxL.asm
 clean:
 	rm -rf build
 test: build FORCE

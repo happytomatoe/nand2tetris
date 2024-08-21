@@ -11,7 +11,7 @@ std::tuple<std::string, std::string> StringDiff::getDiffString(std::string const
     auto ne = false;
     auto len = std::max(actual.length(), expected.length());
     for (int i = 0; i < len; ++i) {
-        if (actual[i] != expected[i]) {
+        if (i>=actual.length() || i>=expected.length() || actual[i] != expected[i]) {
             if (!ne) {
                 res1 += RED;
                 res2 += GRN;

@@ -35,7 +35,7 @@ private:
     Token eat(vector<Token>::const_iterator &it, TokenType type) const;
 
     bool hasMoreTokens() {
-        return it < tokens.end() && it->category != End;
+        return it != tokens.end() && it->category != End;
     }
 };
 

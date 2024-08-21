@@ -99,9 +99,8 @@ std::vector<Token> Lexer::lex(const std::string &text) {
                     check_overflow(text, value);
                     res.emplace_back(Number, startPos, value);
                 } else {
-                    if(isdigit(symbol.at(0))) {
+                    if (isdigit(symbol.at(0))) {
                         throw invalid_symbol_exception("Symbol cannot start with digit on line " + text);
-
                     }
                     res.emplace_back(Symbol, startPos, 0, symbol);
                 }
@@ -109,11 +108,11 @@ std::vector<Token> Lexer::lex(const std::string &text) {
             }
             case ';': {
                 std::string jump;
-                while (i + 1 < text.length() && text[i + 1] != '\n') {
+                while (i + 1 < text.length() && text[i + 1] != '\n' && text[i + 1] != ' ') {
                     jump += text[i + 1];
                     i++;
                 }
-                if (jump_map.find(jump) == jump_map.end()) {
+                if (!jump_map.contains(jump)) {
                     throw cpptrace::logic_error("Unknown jump: " + jump);
                 }
                 res.emplace_back(jump_map.at(jump), i);
@@ -140,7 +139,8 @@ std::vector<Token> Lexer::lex(const std::string &text) {
             case '0': {
                 std::string number;
                 auto start_pos = i;
-                if (res.back().type == Minus) {
+                if (!res.empty() && res.back().type == Minus && (
+                        res.size() < 2 || res[res.size() - 2].category != Identifier)) {
                     res.pop_back();
                     number = "-";
                     start_pos--;

@@ -111,6 +111,20 @@ TEST(ParserTest, AssignmentForMultipleIdentifiers) {
     test_parser(tokens, expected);
 }
 
+TEST(ParserTest, IdentifierJump) {
+    vector<Token> tokens = {
+        Token(D, 0),
+        Token(JGT, 1),
+        Token(Eof, 2),
+
+    };
+    TreeNode expected = TreeNode(tokens[0]);
+    expected.right = std::make_unique<TreeNode>(tokens[1]);
+
+    test_parser(tokens, expected);
+}
+
+
 TEST(ParserTest, InvalidIdentifiersOrder1) {
     vector<Token> tokens = {
         Token(A, 0),
@@ -357,6 +371,38 @@ TEST(ParserTest, ConstantAndJump) {
     expected.right = std::make_unique<TreeNode>(tokens[1]);
 
     test_parser(tokens, expected);
+}
+
+TEST(ParserTest, NotTest) {
+    vector<Token> tokens = {
+        Token(M, 0),
+        Token(Assignment, 1),
+        Token(Not, 2),
+        Token(M, 3),
+        Token(EOL, 4),
+
+    };
+    TreeNode expected = TreeNode(tokens[1]);
+    expected.left = std::make_unique<TreeNode>(tokens[0]);
+    expected.right = std::make_unique<TreeNode>(tokens[2]);
+    expected.right->right = std::make_unique<TreeNode>(tokens[3]);
+
+    test_parser(tokens, expected);
+}
+
+TEST(ParserTest, NotTestInvalid) {
+    vector<Token> tokens = {
+        Token(M, 0),
+        Token(Assignment, 1),
+        Token(Not, 2),
+        Token(Zero, 3),
+        Token(EOL, 4),
+
+    };
+
+    EXPECT_THROW({
+                 (new Parser())->parse(tokens);
+                 }, syntax_error_exception);
 }
 
 

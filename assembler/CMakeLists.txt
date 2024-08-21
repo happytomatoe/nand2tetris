@@ -26,10 +26,12 @@ target_sources(assemble
         src/assemble/Assembler.cpp
         src/assemble/Parser.cpp
 )
-target_include_directories(assemble PUBLIC src)
-find_package(cpptrace REQUIRED)
 
-target_link_libraries(assemble PUBLIC cpptrace::cpptrace )
+target_include_directories(assemble PUBLIC src)
+
+find_package(spdlog)
+find_package(cpptrace REQUIRED)
+target_link_libraries(assemble PUBLIC cpptrace::cpptrace spdlog::spdlog)
 
 find_package(CLI11)
 add_executable(assembler src/main.cpp)

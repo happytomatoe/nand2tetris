@@ -26,7 +26,6 @@ enum TokenType {
     D,
     A,
     M,
-    //TODO: add other identifiers like R1, R2, R3
     Number,
     //do I need this?
     NegativeOne,

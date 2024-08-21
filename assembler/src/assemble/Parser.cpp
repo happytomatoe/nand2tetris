@@ -139,7 +139,7 @@ unique_ptr<TreeNode> Parser::operator_statement(vector<Token>::const_iterator &i
     if (it->category == Identifier) {
         // M=A-D
         operation->right = make_unique<TreeNode>(eat(it, it->type));
-        if (operation->left->token.type == A) {
+        if (operation->left != nullptr && operation->left->token.type == A) {
             string s = "A cant be the first operand. Did you mean ";
             throw invalid_operand_order_exception(s +
                                                   Token::toString(operation->right->token.type) +
@@ -197,8 +197,6 @@ unique_ptr<TreeNode> Parser::assigment_statement(unique_ptr<TreeNode> &assignmen
         // M=A
         case Identifier: {
             auto operationLeftIdentifier = make_unique<TreeNode>(eat(it, it->type));
-
-
             // M=A
             if (hasMoreTokens()) {
                 // M=A; JMP
@@ -216,8 +214,16 @@ unique_ptr<TreeNode> Parser::assigment_statement(unique_ptr<TreeNode> &assignmen
             }
             break;
         }
+        case OtherOperation: {
+            if (it->type != Minus && it->type != Not) {
+                string s = "Unexpected token after assignment: ";
+                throw cpptrace::logic_error(s + Token::toString(it->type));
+            }
+            assignment->right = operator_statement(it, nullptr);
+            break;
+        }
         default:
-            string s = "Unexpected token after identifier: ";
+            string s = "Unexpected token after assignment: ";
             throw cpptrace::logic_error(s + Token::toString(it->type));
     }
     return assignment;
