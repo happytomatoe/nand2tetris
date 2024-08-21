@@ -72,7 +72,9 @@ string Assembler::assemble(const string &file_path) {
             }
             auto p = make_unique<Parser>();
             auto ast = p->parse(tokens);
-            result += assemble(ast) + "\n";
+            if (ast != nullptr) {
+                result += assemble(ast) + "\n";
+            }
             i++;
         } catch ([[maybe_unused]] exception &e) {
             cout << "Exception on line " + to_string(i) + ": " << line << endl;

@@ -9,7 +9,11 @@
 
 class StringDiff {
 public:
-    static std::tuple<std::string, std::string> getDiffString(std::string const &actual, std::string const &expected);
+    static std::tuple<std::string, std::string> get_diff_single_line_strings(
+        std::string const &actual, std::string const &expected);
+
+    static std::string get_diff_multi_line_strings(
+        const std::string &string, const std::string &expected, bool anotate);
 };
 
 

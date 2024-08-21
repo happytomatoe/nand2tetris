@@ -6,6 +6,7 @@
 #define LEXER_H
 #include <map>
 #include <ostream>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -40,6 +41,7 @@ enum TokenType {
     JMP,
     //other
     At, //@
+    Label,
     Symbol,
     EOL,
     Eof,
@@ -52,6 +54,7 @@ enum Category {
     AtCategory,
     PredefinedConstant, // -1, 0, 1
     NumberCategory,
+    LabelCategory,
     Identifier, // D, A, M
     Jump,
     End,
@@ -152,6 +155,8 @@ struct Token {
                 return "Eof";
             case Symbol:
                 return "Symbol";
+            case Label:
+                return "Label";
             default:
                 return "Unknown";
         }
@@ -162,6 +167,8 @@ private:
         switch (type) {
             case EOL:
                 return End;
+            case Label:
+                return LabelCategory;
             case Eof:
                 return End;
             case At:
@@ -203,6 +210,8 @@ private:
         switch (v) {
             case NumberCategory:
                 return "NumberCategory";
+            case LabelCategory:
+                return "LabelCategory";
             case SymbolCategory:
                 return "SymbolCategory";
             case End:
@@ -230,6 +239,8 @@ private:
 class Lexer {
 public:
     static void check_overflow(const std::string &text, int value);
+
+    static tuple<string, int, bool> scan_symbol(const std::string &text, int i, const set<char> &stop_symbols);
 
     static std::vector<Token> lex(const std::string &text);
 

@@ -1,6 +1,8 @@
 #include "Lexer.h"
 
+#include <list>
 #include <map>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -33,6 +35,34 @@ void Lexer::check_overflow(const std::string &text, int value) {
     }
 }
 
+tuple<string, int, bool>
+Lexer::scan_symbol(const std::string &text, int i, const set<char> &additional_stop_symbols = {}) {
+    const set<char> &stop_symbols = {'\n', '/'};
+    string symbol;
+    bool hasOnlyDigits = true;
+    while (i + 1 < text.length() && !stop_symbols.contains(text[i + 1]) && !additional_stop_symbols.
+           contains(text[i + 1])) {
+        /**
+                     *A symbol may be any sequence of alphabetic (upper and lower case) or numeric digits.
+                     *Symbols may also contain any of the following characters: under bar (“_”),
+                     *period(“.”), dollar sign (“$”), and colon (“:”).
+                     *Symbols may not begin with a digit character.
+                     *
+                     */
+        if (isalpha(text[i + 1]) || text[i + 1] == '_' || text[i + 1] == '.' || text[i + 1] == '$' ||
+            text[i + 1] == ':') {
+            symbol += text[i + 1];
+            hasOnlyDigits = false;
+        } else if (isdigit(text[i + 1])) {
+            symbol += text[i + 1];
+        } else {
+            throw invalid_symbol_exception("Invalid symbol on line " + text);
+        }
+        i++;
+    }
+    return {symbol, i, hasOnlyDigits};
+}
+
 std::vector<Token> Lexer::lex(const std::string &text) {
     auto res = std::vector<Token>();
     for (int i = 0; i < text.length(); i++) {
@@ -41,11 +71,22 @@ std::vector<Token> Lexer::lex(const std::string &text) {
             case '\n':
                 res.emplace_back(EOL, i);
                 break;
+            case '(': {
+                int startPos = i + 1;
+                auto [symbol, lastSymbolIndex, _] = scan_symbol(text, i, {')'});
+                i = lastSymbolIndex;
+                if (symbol.empty() || i + 1 >= text.length() || text[i + 1] != ')') {
+                    throw invalid_a_instruction_exception("Invalid label on line " + text);
+                }
+                res.emplace_back(Label, startPos, 0, symbol);
+                i++;
+                break;
+            }
             case '/':
                 if (i + 1 < text.length() && text[i + 1] == '/') {
                     goto loop_end;
                 }
-                throw cpptrace::logic_error("Should this be a  comment: " + text);
+                throw cpptrace::logic_error("Should this be a comment: " + text);
             case ' ':
                 break;
             //operators
@@ -69,28 +110,9 @@ std::vector<Token> Lexer::lex(const std::string &text) {
                 break;
             case '@': {
                 res.emplace_back(At, i);
-                string symbol;
-                bool hasOnlyDigits = true;
                 int startPos = i + 1;
-                while (i + 1 < text.length() && text[i + 1] != '\n' && text[i + 1] != '/') {
-                    /**
-                     *A symbol may be any sequence of alphabetic (upper and lower case) or numeric digits.
-                     *Symbols may also contain any of the following characters: under bar (“_”),
-                     *period(“.”), dollar sign (“$”), and colon (“:”).
-                     *Symbols may not begin with a digit character.
-                     *
-                     */
-                    if (isalpha(text[i + 1]) || text[i + 1] == '_' || text[i + 1] == '.' || text[i + 1] == '$' ||
-                        text[i + 1] == ':') {
-                        symbol += text[i + 1];
-                        hasOnlyDigits = false;
-                    } else if (isdigit(text[i + 1])) {
-                        symbol += text[i + 1];
-                    } else {
-                        throw invalid_symbol_exception("Invalid symbol on line " + text);
-                    }
-                    i++;
-                }
+                auto [symbol, lastSymbolIndex, hasOnlyDigits] = scan_symbol(text, i);
+                i = lastSymbolIndex;
                 if (symbol.empty()) {
                     throw invalid_a_instruction_exception("Invalid A instruction on line " + text);
                 }

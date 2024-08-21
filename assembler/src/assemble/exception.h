@@ -69,4 +69,13 @@ public:
     }
 };
 
+class duplicate_label_exception final : public cpptrace::exception_with_message {
+public:
+    explicit duplicate_label_exception(
+        std::string &&message_arg,
+        cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb()
+    ) noexcept
+        : exception_with_message(std::move(message_arg), std::move(trace)) {
+    }
+};
 #endif //INVALIDIDENTIFIERSORDEREXCEPTION_H

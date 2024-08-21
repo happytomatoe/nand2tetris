@@ -25,6 +25,7 @@ private:
     vector<Token> tokens;
     map<string, int> symbol_table = predefined_symbols;
     int free_address = 16;
+    int line_number = 0;
 
     unique_ptr<TreeNode> operator_statement(vector<Token>::const_iterator &it,
                                             __detail::__unique_ptr_t<TreeNode> operationLeftIdentifier) const;
@@ -44,15 +45,19 @@ struct TreeNode {
     Token token;
     unique_ptr<TreeNode> left, right;
     //TODO: Should the tree own the data?
-    explicit TreeNode(Token data): token(std::move(data)), left(nullptr), right(nullptr) {}
+    explicit TreeNode(Token data, unique_ptr<TreeNode> &&left = nullptr,
+                      unique_ptr<TreeNode> &&right = nullptr): token(std::move(data)), left(std::move(left)),
+                                                               right(std::move(right)) {
+    }
 
     friend bool operator==(const TreeNode &lhs, const TreeNode &rhs) {
+
         const auto t = lhs.token == rhs.token;
         const auto l = (lhs.left == nullptr && rhs.left == nullptr) ||
                        (lhs.left != nullptr && rhs.left != nullptr && *lhs.left == *rhs.left);
         const auto r = (!lhs.right && !rhs.right) ||
                        (lhs.right && rhs.right && *lhs.right == *rhs.right);
-        return t && l && r;
+        return  t && l && r;
     }
 
 

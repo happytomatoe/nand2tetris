@@ -121,6 +121,14 @@ unique_ptr<TreeNode> Parser::parse(const vector<Token> &tokens) {
                 }
             }
             break;
+        case LabelCategory: {
+            const auto symbol = eat(it, it->type);
+            if (symbol_table.contains(symbol.text)) {
+                throw duplicate_label_exception("Duplicate label: " + symbol.text);
+            }
+            symbol_table.insert({symbol.text, line_number + 1});
+            break;
+        }
         default:
             string s = "Unexpected operator ";
             throw cpptrace::logic_error(s + Token::toString(it->type));
@@ -129,6 +137,7 @@ unique_ptr<TreeNode> Parser::parse(const vector<Token> &tokens) {
         string s = "Expected end of line or end of file but got ";
         throw cpptrace::logic_error(s + Token::toString(it->type));
     }
+    line_number++;
     return root;
 }
 

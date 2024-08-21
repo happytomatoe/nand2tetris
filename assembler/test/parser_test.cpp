@@ -19,7 +19,7 @@ void test_parser(const vector<Token> &tokens, const TreeNode &expected, shared_p
     auto const actual = p->parse(tokens);
     EXPECT_TRUE(actual != nullptr);
     if (*actual != expected) {
-        auto [str1,str2] = StringDiff::getDiffString(Utils::toString(*actual), Utils::toString(expected));
+        auto [str1,str2] = StringDiff::get_diff_single_line_strings(Utils::toString(*actual), Utils::toString(expected));
         FAIL() << "Actual:\t\t" << str1 << endl << "Expected:\t" << str2;
     }
 }
@@ -400,9 +400,7 @@ TEST(ParserTest, NotTestInvalid) {
 
     };
 
-    EXPECT_THROW({
-                 (new Parser())->parse(tokens);
-                 }, syntax_error_exception);
+    EXPECT_THROW({ (new Parser())->parse(tokens); }, syntax_error_exception);
 }
 
 
@@ -417,6 +415,34 @@ TEST(ParserTest, ControlInstructionInvalid) {
                  (new Parser())->parse(tokens);
                  }, cpptrace::logic_error);
 }
+
+TEST(ParserTest, LabelTest) {
+    auto p = make_shared<Parser>();
+
+    vector<Token> tokens = {
+        Token(Label, 0, 0, "END"),
+        Token(EOL, 5),
+
+    };
+    auto const actual = p->parse(tokens);
+    ASSERT_EQ(actual, nullptr);
+
+
+    vector tokens2 = {
+        Token(At, 0), Token(Symbol, 1, 0, "@TMP2"), Token(Eof, 3)
+    };
+    TreeNode expected2 = TreeNode(tokens2[0], nullptr, make_unique<TreeNode>(Token(Number, 1, 16)));
+    test_parser(tokens2, expected2, p);
+
+
+    vector tokens3 = {
+        Token(At, 0), Token(Symbol, 1, 0, "END"), Token(Eof, 3)
+    };
+    TreeNode expected3 = TreeNode(tokens2[0], nullptr, make_unique<TreeNode>(Token(Number, 1, 1)));
+
+    test_parser(tokens3, expected3, p);
+}
+
 
 class InvalidOperationWithNegativeOneTest : public testing::TestWithParam<tuple<TokenType, TokenType> > {
 };
@@ -471,6 +497,12 @@ inline constexpr const char *ToString(TokenType v) {
             return "Assignment";
         case And:
             return "And";
+        case Label:
+            return "Label";
+        case Eof:
+            return "Eof";
+        case EOL:
+            return "EOL";
         case Or:
             return "Or";
         case Not:
@@ -505,8 +537,6 @@ inline constexpr const char *ToString(TokenType v) {
             return "JMP";
         case At:
             return "At";
-        case EOL:
-            return "EOL";
         default:
             return "Unknown";
     }

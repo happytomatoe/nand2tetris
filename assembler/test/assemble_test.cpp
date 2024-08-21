@@ -7,29 +7,15 @@
 #include <assemble/Lexer.h>
 #include "StringDiff.h"
 
-string anotate(const string &str) {
-    string anotatedStr = "0:\t\t";
-    int j = 1;
-    for (int i = 0; i < str.length(); ++i) {
-        anotatedStr += str[i];
-        if (str[i] == '\n') {
-            anotatedStr += to_string(j) + ":\t\t";
-            j++;
-        }
-    }
-    return anotatedStr;
-}
-
 void compare(const string &actual, const string &expected) {
     if (actual != expected) {
-        auto [str1,str2] = StringDiff::getDiffString(actual,
-                                                     expected);
+        auto diff = StringDiff::get_diff_multi_line_strings(actual, expected, true);
 
-        FAIL() << "Actual:\t\t\n" << anotate(str1) << endl << "Expected:\t\n" << anotate(str2);
+        FAIL() << "Diff:\t\t\n" << diff ;
     }
 }
 
-void testAssemble(unique_ptr<TreeNode> &ast, const string &expected) {
+void testAssemble(const unique_ptr<TreeNode> &ast, const string &expected) {
     auto actual = Assembler::assemble(ast);
     compare(actual, expected);
 }
@@ -77,6 +63,20 @@ TEST(AssembleTest, RectLTest) {
 TEST(AssembleTest, AddTest) {
     test_assemble("Add.asm", "Add.hack");
 }
+
+
+TEST(AssembleTest, MaxTest) {
+    test_assemble("MaxL.asm", "Max.hack");
+}
+
+// TEST(AssembleTest, PongTest) {
+//     test_assemble("Pong.asm", "Pong.hack");
+// }
+
+TEST(AssembleTest, RectTest) {
+    test_assemble("Rect.asm", "Rect.hack");
+}
+
 
 TEST(AssembleTest, AtInstruction) {
     vector<Token> tokens = {
