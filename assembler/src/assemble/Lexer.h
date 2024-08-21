@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <cpptrace/cpptrace.hpp>
 
 using namespace std;
 
@@ -63,31 +64,45 @@ enum Category {
 };
 
 struct Token {
-    Category category;
-    TokenType type;
-    int startPos, constValue;
-    string text;
 
-    Token(TokenType type, int start_pos, int constValue = 0, string text = "")
+    //TODO: make this read only
+   Category category;
+   TokenType type;
+   int constValue;
+   string text;
+
+    explicit Token(const TokenType type, int constValue): type(type), category(getCategory(type)),
+                                                          constValue(constValue) {
+        if (constValue != 0 && type != Number) {
+            string s = "Expected number but got ";
+            throw cpptrace::logic_error(s + Token::toString(type));
+        }
+    }
+
+    explicit Token(TokenType type, string text): type(type), category(getCategory(type)), constValue(0),
+                                                 text(std::move(text)) {
+    }
+
+
+    explicit Token(TokenType type)
         : type(type),
           category(getCategory(type)),
-          constValue(constValue),
-          text(std::move(text)),
-          startPos(start_pos) {
+          constValue(0) {
     }
 
 
-    Token(Token *other)
+    explicit Token(Token *other)
         : type(other->type),
           category(other->category),
-          constValue(other->constValue),
-          startPos(other->startPos), text(other->text) {
+          constValue(other->constValue), text(other->text) {
     }
+
+    Token(const Token& other) = default;
+    Token& operator=(const Token& other) = default;
 
     friend bool operator==(const Token &lhs, const Token &rhs) {
         return lhs.category == rhs.category
                && lhs.type == rhs.type
-               && lhs.startPos == rhs.startPos
                && lhs.constValue == rhs.constValue
                && lhs.text == rhs.text;
     }
@@ -100,7 +115,6 @@ struct Token {
         return os
                << "Token(category: " << toString(obj.category)
                << ", type: " << toString(obj.type)
-               << ", startPos: " << obj.startPos
                << ", constValue: " << obj.constValue
                << ", text: " << obj.text << ")";
     }

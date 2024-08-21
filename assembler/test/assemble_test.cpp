@@ -80,9 +80,9 @@ TEST(AssembleTest, RectTest) {
 
 TEST(AssembleTest, AtInstruction) {
     vector<Token> tokens = {
-        Token(At, 0),
-        Token(Number, 1, 1),
-        Token(EOL, 2),
+        Token(At),
+        Token(Number,  1),
+        Token(EOL),
 
     };
     unique_ptr<TreeNode> ast = make_unique<TreeNode>(tokens[0]);
@@ -93,10 +93,10 @@ TEST(AssembleTest, AtInstruction) {
 
 TEST(AssembleTest, AssignmentToIdentifier) {
     vector<Token> tokens = {
-        Token(A, 0),
-        Token(Assignment, 1),
-        Token(D, 2),
-        Token(EOL, 3),
+        Token(A),
+        Token(Assignment),
+        Token(D),
+        Token(EOL),
 
     };
     unique_ptr<TreeNode> ast = make_unique<TreeNode>(tokens[1]);
@@ -108,10 +108,10 @@ TEST(AssembleTest, AssignmentToIdentifier) {
 
 TEST(AssembleTest, AssignmentToConstant) {
     vector<Token> tokens = {
-        Token(A, 0),
-        Token(Assignment, 1),
-        Token(One, 2),
-        Token(EOL, 3),
+        Token(A),
+        Token(Assignment),
+        Token(One),
+        Token(EOL),
 
     };
     unique_ptr<TreeNode> ast = make_unique<TreeNode>(tokens[1]);
@@ -123,12 +123,12 @@ TEST(AssembleTest, AssignmentToConstant) {
 
 TEST(AssembleTest, AssignmentAndOperation) {
     vector<Token> tokens = {
-        Token(A, 0),
-        Token(Assignment, 1),
-        Token(D, 2),
-        Token(Minus, 3),
-        Token(A, 4),
-        Token(EOL, 5),
+        Token(A),
+        Token(Assignment),
+        Token(D),
+        Token(Minus),
+        Token(A),
+        Token(EOL),
 
     };
     unique_ptr<TreeNode> ast = make_unique<TreeNode>(tokens[1]);
@@ -142,12 +142,12 @@ TEST(AssembleTest, AssignmentAndOperation) {
 
 TEST(AssembleTest, AssignmentAndOperationWithConstant) {
     vector<Token> tokens = {
-        Token(A, 0),
-        Token(Assignment, 1),
-        Token(D, 2),
-        Token(Minus, 3),
-        Token(One, 4),
-        Token(EOL, 5),
+        Token(A),
+        Token(Assignment),
+        Token(D),
+        Token(Minus),
+        Token(One),
+        Token(EOL),
     };
     unique_ptr<TreeNode> ast = make_unique<TreeNode>(tokens[1]);
     ast->left = std::make_unique<TreeNode>(tokens[0]);
@@ -161,13 +161,13 @@ TEST(AssembleTest, AssignmentAndOperationWithConstant) {
 
 TEST(AssembleTest, AssignmentAndOperationAndJump) {
     vector<Token> tokens = {
-        Token(M, 0),
-        Token(Assignment, 1),
-        Token(D, 2),
-        Token(Minus, 3),
-        Token(A, 4),
-        Token(JGT, 5),
-        Token(EOL, 6),
+        Token(M),
+        Token(Assignment),
+        Token(D),
+        Token(Minus),
+        Token(A),
+        Token(JGT),
+        Token(EOL),
 
     };
     unique_ptr<TreeNode> ast = make_unique<TreeNode>(tokens[1]);
@@ -183,13 +183,13 @@ TEST(AssembleTest, AssignmentAndOperationAndJump) {
 
 TEST(AssembleTest, AssignmentAndOperationAndJumpWithConstant) {
     vector<Token> tokens = {
-        Token(A, 0),
-        Token(Assignment, 1),
-        Token(D, 2),
-        Token(Plus, 3),
-        Token(One, 4),
-        Token(JEQ, 5),
-        Token(EOL, 6),
+        Token(A),
+        Token(Assignment),
+        Token(D),
+        Token(Plus),
+        Token(One),
+        Token(JEQ),
+        Token(EOL),
 
     };
     unique_ptr<TreeNode> ast = make_unique<TreeNode>(tokens[1]);
@@ -206,10 +206,10 @@ TEST(AssembleTest, AssignmentAndOperationAndJumpWithConstant) {
 
 TEST(AssembleTest, Operation) {
     vector<Token> tokens = {
-        Token(D, 2),
-        Token(Minus, 3),
-        Token(M, 4),
-        Token(EOL, 6),
+        Token(D),
+        Token(Minus),
+        Token(M),
+        Token(EOL),
 
     };
     unique_ptr<TreeNode> ast = make_unique<TreeNode>(tokens[1]);
@@ -221,10 +221,10 @@ TEST(AssembleTest, Operation) {
 
 TEST(AssembleTest, OperationWithConstant) {
     vector<Token> tokens = {
-        Token(D, 2),
-        Token(Minus, 3),
-        Token(One, 4),
-        Token(EOL, 6),
+        Token(D),
+        Token(Minus),
+        Token(One),
+        Token(EOL),
 
     };
     unique_ptr<TreeNode> ast = make_unique<TreeNode>(tokens[1]);
@@ -237,11 +237,11 @@ TEST(AssembleTest, OperationWithConstant) {
 //generate test for operation and jump
 TEST(AssembleTest, OperationAndJump) {
     vector<Token> tokens = {
-        Token(D, 2),
-        Token(Minus, 3),
-        Token(A, 4),
-        Token(JGE, 5),
-        Token(EOL, 6),
+        Token(D),
+        Token(Minus),
+        Token(A),
+        Token(JGE),
+        Token(EOL),
 
     };
     unique_ptr<TreeNode> ast = make_unique<TreeNode>(tokens[1]);
@@ -254,11 +254,11 @@ TEST(AssembleTest, OperationAndJump) {
 
 TEST(AssembleTest, OperationAndJumpWithConstant) {
     vector<Token> tokens = {
-        Token(D, 2),
-        Token(Minus, 3),
-        Token(One, 4),
-        Token(JLT, 5),
-        Token(EOL, 6),
+        Token(D),
+        Token(Minus),
+        Token(One),
+        Token(JLT),
+        Token(EOL),
 
     };
     unique_ptr<TreeNode> ast = make_unique<TreeNode>(tokens[1]);
@@ -271,8 +271,8 @@ TEST(AssembleTest, OperationAndJumpWithConstant) {
 
 TEST(AssembleTest, Constant) {
     vector<Token> tokens = {
-        Token(NegativeOne, 0),
-        Token(EOL, 2),
+        Token(NegativeOne),
+        Token(EOL),
 
     };
     unique_ptr<TreeNode> ast = make_unique<TreeNode>(tokens[0]);
@@ -283,9 +283,9 @@ TEST(AssembleTest, Constant) {
 
 TEST(AssembleTest, ConstantAndJump) {
     vector<Token> tokens = {
-        Token(Zero, 0),
-        Token(JNE, 1),
-        Token(EOL, 2),
+        Token(Zero),
+        Token(JNE),
+        Token(EOL),
 
     };
     unique_ptr<TreeNode> ast = make_unique<TreeNode>(tokens[0]);
@@ -296,9 +296,9 @@ TEST(AssembleTest, ConstantAndJump) {
 
 TEST(AssembleTest, ConstantAndJump2) {
     vector<Token> tokens = {
-        Token(Zero, 0),
-        Token(JLE, 1),
-        Token(EOL, 2),
+        Token(Zero),
+        Token(JLE),
+        Token(EOL),
 
     };
     unique_ptr<TreeNode> ast = make_unique<TreeNode>(tokens[0]);
@@ -309,9 +309,9 @@ TEST(AssembleTest, ConstantAndJump2) {
 
 TEST(AssembleTest, ConstantAndJump3) {
     vector<Token> tokens = {
-        Token(Zero, 0),
-        Token(JMP, 1),
-        Token(EOL, 2),
+        Token(Zero),
+        Token(JMP),
+        Token(EOL),
 
     };
     unique_ptr<TreeNode> ast = make_unique<TreeNode>(tokens[0]);
@@ -323,12 +323,12 @@ TEST(AssembleTest, ConstantAndJump3) {
 TEST(AssembleTest, MMinusOne) {
     //AM=M-1
     vector<Token> tokens = {
-        Token(A, 0),
-        Token(M, 1),
-        Token(Assignment, 2),
-        Token(M, 3),
-        Token(Minus, 4),
-        Token(One, 5),
+        Token(A),
+        Token(M),
+        Token(Assignment),
+        Token(M),
+        Token(Minus),
+        Token(One),
 
     };
     unique_ptr<TreeNode> ast = make_unique<TreeNode>(tokens[2]);
@@ -344,12 +344,12 @@ TEST(AssembleTest, MMinusOne) {
 TEST(AssembleTest, MDMinusOne) {
     //MD=M-1
     vector<Token> tokens = {
-        Token(M, 0),
-        Token(D, 1),
-        Token(Assignment, 2),
-        Token(M, 3),
-        Token(Minus, 4),
-        Token(One, 5),
+        Token(M),
+        Token(D),
+        Token(Assignment),
+        Token(M),
+        Token(Minus),
+        Token(One),
 
     };
     unique_ptr<TreeNode> ast = make_unique<TreeNode>(tokens[2]);

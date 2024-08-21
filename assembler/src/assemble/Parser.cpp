@@ -66,7 +66,7 @@ unique_ptr<TreeNode> Parser::parse(const vector<Token> &tokens) {
                     symbol_table.insert({symbol.text, number});
                     free_address++;
                 }
-                root->right = make_unique<TreeNode>(Token(Number, symbol.startPos, number));
+                root->right = make_unique<TreeNode>(Token(Number,  number));
             } else {
                 string s = "Expected number but got ";
                 throw cpptrace::logic_error(s + Token::toString(it->type));

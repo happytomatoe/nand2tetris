@@ -69,16 +69,15 @@ std::vector<Token> Lexer::lex(const std::string &text) {
         auto c = text[i];
         switch (c) {
             case '\n':
-                res.emplace_back(EOL, i);
+                res.emplace_back(EOL);
                 break;
             case '(': {
-                int startPos = i + 1;
                 auto [symbol, lastSymbolIndex, _] = scan_symbol(text, i, {')'});
                 i = lastSymbolIndex;
                 if (symbol.empty() || i + 1 >= text.length() || text[i + 1] != ')') {
                     throw invalid_a_instruction_exception("Invalid label on line " + text);
                 }
-                res.emplace_back(Label, startPos, 0, symbol);
+                res.emplace_back(Label, symbol);
                 i++;
                 break;
             }
@@ -91,26 +90,25 @@ std::vector<Token> Lexer::lex(const std::string &text) {
                 break;
             //operators
             case '+':
-                res.emplace_back(Plus, i);
+                res.emplace_back(Plus);
                 break;
             case '-':
-                res.emplace_back(Minus, i);
+                res.emplace_back(Minus);
                 break;
             case '=':
-                res.emplace_back(Assignment, i);
+                res.emplace_back(Assignment);
                 break;
             case '&':
-                res.emplace_back(And, i);
+                res.emplace_back(And);
                 break;
             case '|':
-                res.emplace_back(Or, i);
+                res.emplace_back(Or);
                 break;
             case '!':
-                res.emplace_back(Not, i);
+                res.emplace_back(Not);
                 break;
             case '@': {
-                res.emplace_back(At, i);
-                int startPos = i + 1;
+                res.emplace_back(At);
                 auto [symbol, lastSymbolIndex, hasOnlyDigits] = scan_symbol(text, i);
                 i = lastSymbolIndex;
                 if (symbol.empty()) {
@@ -119,12 +117,12 @@ std::vector<Token> Lexer::lex(const std::string &text) {
                 if (hasOnlyDigits) {
                     auto value = std::stoi(symbol);
                     check_overflow(text, value);
-                    res.emplace_back(Number, startPos, value);
+                    res.emplace_back(Number, value);
                 } else {
                     if (isdigit(symbol.at(0))) {
                         throw invalid_symbol_exception("Symbol cannot start with digit on line " + text);
                     }
-                    res.emplace_back(Symbol, startPos, 0, symbol);
+                    res.emplace_back(Symbol, symbol);
                 }
                 break;
             }
@@ -137,17 +135,17 @@ std::vector<Token> Lexer::lex(const std::string &text) {
                 if (!jump_map.contains(jump)) {
                     throw cpptrace::logic_error("Unknown jump: " + jump);
                 }
-                res.emplace_back(jump_map.at(jump), i);
+                res.emplace_back(jump_map.at(jump));
                 break;
             }
             case 'D':
-                res.emplace_back(D, i);
+                res.emplace_back(D);
                 break;
             case 'A':
-                res.emplace_back(A, i);
+                res.emplace_back(A);
                 break;
             case 'M':
-                res.emplace_back(M, i);
+                res.emplace_back(M);
                 break;
             case '9':
             case '8':
@@ -175,13 +173,13 @@ std::vector<Token> Lexer::lex(const std::string &text) {
                 check_overflow(text, value);
 
                 if (value == -1) {
-                    res.emplace_back(NegativeOne, start_pos);
+                    res.emplace_back(NegativeOne);
                 } else if (value == 0) {
-                    res.emplace_back(Zero, start_pos);
+                    res.emplace_back(Zero);
                 } else if (value == 1) {
-                    res.emplace_back(One, start_pos);
+                    res.emplace_back(One);
                 } else {
-                    res.emplace_back(Number, start_pos, value, "");
+                    res.emplace_back(Number, value);
                 }
                 break;
             }
@@ -190,7 +188,7 @@ std::vector<Token> Lexer::lex(const std::string &text) {
         }
     }
 loop_end:
-    res.emplace_back(Eof, text.length());
+    res.emplace_back(Eof);
 
     return res;
 }

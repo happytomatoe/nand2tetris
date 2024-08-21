@@ -28,9 +28,9 @@ void test_parser(const vector<Token> &tokens, const TreeNode &expected, shared_p
 
 TEST(ParserTest, AInstruction) {
     vector<Token> tokens = {
-        Token(At, 0),
-        Token(Number, 1, 1),
-        Token(EOL, 2),
+        Token(At),
+        Token(Number, 1),
+        Token(EOL),
 
     };
     TreeNode expected = TreeNode(tokens[0]);
@@ -43,9 +43,9 @@ class PredefinedSymbolsTest : public testing::TestWithParam<pair<string, int> > 
 };
 
 TEST_P(PredefinedSymbolsTest, PredefinedSymbolsTest) {
-    vector tokens = {Token(At, 0), Token(Symbol, 1, 0, GetParam().first), Token(Eof, 3)};
+    vector tokens = {Token(At), Token(Symbol,  GetParam().first), Token(Eof)};
     TreeNode expected = TreeNode(tokens[0]);
-    expected.right = std::make_unique<TreeNode>(Token(Number, 1, GetParam().second));
+    expected.right = std::make_unique<TreeNode>(Token(Number, GetParam().second));
     test_parser(tokens, expected);
 }
 
@@ -63,27 +63,27 @@ TEST(ParserTest, SymbolsTest) {
     auto p = make_shared<Parser>();
 
     vector tokens = {
-        Token(At, 0), Token(Symbol, 1, 0, "@Ra1_.$:"), Token(Eof, 3)
+        Token(At), Token(Symbol, "@Ra1_.$:"), Token(Eof)
     };
     TreeNode expected = TreeNode(tokens[0]);
-    expected.right = std::make_unique<TreeNode>(Token(Number, 1, 16));
+    expected.right = std::make_unique<TreeNode>(Token(Number, 16));
     test_parser(tokens, expected, p);
 
     vector tokens2 = {
-        Token(At, 0), Token(Symbol, 1, 0, "@TMP2"), Token(Eof, 3)
+        Token(At), Token(Symbol,  "@TMP2"), Token(Eof)
     };
     TreeNode expected2 = TreeNode(tokens2[0]);
-    expected2.right = make_unique<TreeNode>(Token(Number, 1, 17));
+    expected2.right = make_unique<TreeNode>(Token(Number,  17));
     test_parser(tokens2, expected2, p);
 }
 
 
 TEST(ParserTest, AssignmentToIdentifier) {
     vector<Token> tokens = {
-        Token(A, 0),
-        Token(Assignment, 1),
-        Token(D, 2),
-        Token(EOL, 3),
+        Token(A),
+        Token(Assignment),
+        Token(D),
+        Token(EOL),
 
     };
     TreeNode expected = TreeNode(tokens[1]);
@@ -95,12 +95,12 @@ TEST(ParserTest, AssignmentToIdentifier) {
 
 TEST(ParserTest, AssignmentForMultipleIdentifiers) {
     vector<Token> tokens = {
-        Token(A, 0),
-        Token(M, 1),
-        Token(D, 2),
-        Token(Assignment, 3),
-        Token(D, 4),
-        Token(EOL, 5),
+        Token(A),
+        Token(M),
+        Token(D),
+        Token(Assignment),
+        Token(D),
+        Token(EOL),
 
     };
     TreeNode expected = TreeNode(tokens[3]);
@@ -114,9 +114,9 @@ TEST(ParserTest, AssignmentForMultipleIdentifiers) {
 
 TEST(ParserTest, IdentifierJump) {
     vector<Token> tokens = {
-        Token(D, 0),
-        Token(JGT, 1),
-        Token(Eof, 2),
+        Token(D),
+        Token(JGT),
+        Token(Eof),
 
     };
     TreeNode expected = TreeNode(tokens[0]);
@@ -128,12 +128,12 @@ TEST(ParserTest, IdentifierJump) {
 
 TEST(ParserTest, InvalidIdentifiersOrder1) {
     vector<Token> tokens = {
-        Token(A, 0),
-        Token(D, 1),
-        Token(M, 2),
-        Token(Assignment, 3),
-        Token(D, 4),
-        Token(EOL, 5),
+        Token(A),
+        Token(D),
+        Token(M),
+        Token(Assignment),
+        Token(D),
+        Token(EOL),
 
     };
     EXPECT_THROW({
@@ -144,12 +144,12 @@ TEST(ParserTest, InvalidIdentifiersOrder1) {
 
 TEST(ParserTest, InvalidIdentifiersOrder2) {
     vector<Token> tokens = {
-        Token(M, 0),
-        Token(A, 1),
-        Token(D, 2),
-        Token(Assignment, 3),
-        Token(D, 4),
-        Token(EOL, 5),
+        Token(M),
+        Token(A),
+        Token(D),
+        Token(Assignment),
+        Token(D),
+        Token(EOL),
 
     };
     EXPECT_THROW({
@@ -160,11 +160,11 @@ TEST(ParserTest, InvalidIdentifiersOrder2) {
 
 TEST(ParserTest, InvalidIdentifiersOrder3) {
     vector<Token> tokens = {
-        Token(D, 0),
-        Token(A, 1),
-        Token(Assignment, 3),
-        Token(D, 4),
-        Token(EOL, 5),
+        Token(D),
+        Token(A),
+        Token(Assignment),
+        Token(D),
+        Token(EOL),
     };
     EXPECT_THROW({ (new Parser())->parse(tokens); }, invalid_identifiers_order_before_assignment_exception);
 };
@@ -175,10 +175,10 @@ class ParserConstantTest : public testing::TestWithParam<TokenType> {
 
 TEST_P(ParserConstantTest, AssignmentToConstant) {
     vector tokens = {
-        Token(A, 0),
-        Token(Assignment, 1),
-        Token(GetParam(), 2),
-        Token(EOL, 3),
+        Token(A),
+        Token(Assignment),
+        Token(GetParam()),
+        Token(EOL),
 
     };
     TreeNode expected = TreeNode(tokens[1]);
@@ -193,12 +193,12 @@ INSTANTIATE_TEST_SUITE_P(ParserTest, ParserConstantTest, testing::ValuesIn(prede
 
 TEST(ParserTest, AssignmentAndOperation) {
     vector<Token> tokens = {
-        Token(A, 0),
-        Token(Assignment, 1),
-        Token(D, 2),
-        Token(Minus, 3),
-        Token(A, 4),
-        Token(EOL, 5),
+        Token(A),
+        Token(Assignment),
+        Token(D),
+        Token(Minus),
+        Token(A),
+        Token(EOL),
     };
     TreeNode expected = TreeNode(tokens[1]);
     expected.left = std::make_unique<TreeNode>(tokens[0]);
@@ -211,12 +211,12 @@ TEST(ParserTest, AssignmentAndOperation) {
 
 TEST(ParserTest, AssignmentAndOperationWithConstant) {
     vector<Token> tokens = {
-        Token(A, 0),
-        Token(Assignment, 1),
-        Token(D, 2),
-        Token(Minus, 3),
-        Token(One, 4),
-        Token(EOL, 5),
+        Token(A),
+        Token(Assignment),
+        Token(D),
+        Token(Minus),
+        Token(One),
+        Token(EOL),
     };
     TreeNode expected = TreeNode(tokens[1]);
     expected.left = std::make_unique<TreeNode>(tokens[0]);
@@ -230,13 +230,13 @@ TEST(ParserTest, AssignmentAndOperationWithConstant) {
 
 TEST(ParserTest, AssignmentAndOperationAndJump) {
     vector<Token> tokens = {
-        Token(A, 0),
-        Token(Assignment, 1),
-        Token(D, 2),
-        Token(Minus, 3),
-        Token(A, 4),
-        Token(JGE, 5),
-        Token(EOL, 6),
+        Token(A),
+        Token(Assignment),
+        Token(D),
+        Token(Minus),
+        Token(A),
+        Token(JGE),
+        Token(EOL),
 
     };
     TreeNode expected = TreeNode(tokens[1]);
@@ -251,13 +251,13 @@ TEST(ParserTest, AssignmentAndOperationAndJump) {
 
 TEST(ParserTest, AssignmentAndOperationAndJumpWithConstant) {
     vector<Token> tokens = {
-        Token(A, 0),
-        Token(Assignment, 1),
-        Token(D, 2),
-        Token(Minus, 3),
-        Token(One, 4),
-        Token(JGE, 5),
-        Token(EOL, 6),
+        Token(A),
+        Token(Assignment),
+        Token(D),
+        Token(Minus),
+        Token(One),
+        Token(JGE),
+        Token(EOL),
 
     };
     TreeNode expected = TreeNode(tokens[1]);
@@ -274,10 +274,10 @@ TEST(ParserTest, AssignmentAndOperationAndJumpWithConstant) {
 
 TEST(ParserTest, Operation) {
     vector<Token> tokens = {
-        Token(D, 2),
-        Token(Minus, 3),
-        Token(A, 4),
-        Token(EOL, 6),
+        Token(D),
+        Token(Minus),
+        Token(A),
+        Token(EOL),
 
     };
     TreeNode expected = TreeNode(tokens[1]);
@@ -289,10 +289,10 @@ TEST(ParserTest, Operation) {
 
 TEST(ParserTest, InvalidOperandOrder) {
     vector<Token> tokens = {
-        Token(A, 2),
-        Token(Minus, 3),
-        Token(D, 4),
-        Token(EOL, 6),
+        Token(A),
+        Token(Minus),
+        Token(D),
+        Token(EOL),
 
     };
     EXPECT_THROW({
@@ -302,10 +302,10 @@ TEST(ParserTest, InvalidOperandOrder) {
 
 TEST(ParserTest, OperationWithConstant) {
     vector<Token> tokens = {
-        Token(D, 2),
-        Token(Minus, 3),
-        Token(One, 4),
-        Token(EOL, 6),
+        Token(D),
+        Token(Minus),
+        Token(One),
+        Token(EOL),
 
     };
     TreeNode expected = TreeNode(tokens[1]);
@@ -318,11 +318,11 @@ TEST(ParserTest, OperationWithConstant) {
 //generate test for operation and jump
 TEST(ParserTest, OperationAndJump) {
     vector<Token> tokens = {
-        Token(D, 2),
-        Token(Minus, 3),
-        Token(A, 4),
-        Token(JGE, 5),
-        Token(EOL, 6),
+        Token(D),
+        Token(Minus),
+        Token(A),
+        Token(JGE),
+        Token(EOL),
     };
     TreeNode expected = TreeNode(tokens[1]);
     expected.left = std::make_unique<TreeNode>(tokens[0]);
@@ -334,11 +334,11 @@ TEST(ParserTest, OperationAndJump) {
 
 TEST(ParserTest, OperationAndJumpWithConstant) {
     vector<Token> tokens = {
-        Token(D, 2),
-        Token(Minus, 3),
-        Token(One, 4),
-        Token(JGT, 5),
-        Token(EOL, 6),
+        Token(D),
+        Token(Minus),
+        Token(One),
+        Token(JGT),
+        Token(EOL),
 
     };
     TreeNode expected = TreeNode(tokens[1]);
@@ -351,8 +351,8 @@ TEST(ParserTest, OperationAndJumpWithConstant) {
 
 TEST(ParserTest, Constant) {
     vector<Token> tokens = {
-        Token(NegativeOne, 0),
-        Token(EOL, 2),
+        Token(NegativeOne),
+        Token(EOL),
 
     };
     TreeNode expected = TreeNode(tokens[0]);
@@ -363,9 +363,9 @@ TEST(ParserTest, Constant) {
 
 TEST(ParserTest, ConstantAndJump) {
     vector<Token> tokens = {
-        Token(NegativeOne, 0),
-        Token(JGE, 1),
-        Token(EOL, 2),
+        Token(NegativeOne),
+        Token(JGE),
+        Token(EOL),
 
     };
     TreeNode expected = TreeNode(tokens[0]);
@@ -376,11 +376,11 @@ TEST(ParserTest, ConstantAndJump) {
 
 TEST(ParserTest, NotTest) {
     vector<Token> tokens = {
-        Token(M, 0),
-        Token(Assignment, 1),
-        Token(Not, 2),
-        Token(M, 3),
-        Token(EOL, 4),
+        Token(M),
+        Token(Assignment),
+        Token(Not),
+        Token(M),
+        Token(EOL),
 
     };
     TreeNode expected = TreeNode(tokens[1]);
@@ -393,11 +393,11 @@ TEST(ParserTest, NotTest) {
 
 TEST(ParserTest, NotTestInvalid) {
     vector<Token> tokens = {
-        Token(M, 0),
-        Token(Assignment, 1),
-        Token(Not, 2),
-        Token(Zero, 3),
-        Token(EOL, 4),
+        Token(M),
+        Token(Assignment),
+        Token(Not),
+        Token(Zero),
+        Token(EOL),
 
     };
 
@@ -407,9 +407,9 @@ TEST(ParserTest, NotTestInvalid) {
 
 TEST(ParserTest, ControlInstructionInvalid) {
     vector<Token> tokens = {
-        Token(A, 0),
-        Token(Minus, 2),
-        Token(EOL, 5),
+        Token(A),
+        Token(Minus),
+        Token(EOL),
 
     };
     EXPECT_THROW({
@@ -421,8 +421,8 @@ TEST(ParserTest, LabelTest) {
     auto p = make_shared<Parser>();
 
     vector<Token> tokens = {
-        Token(Label, 0, 0, "END"),
-        Token(EOL, 5),
+        Token(Label,  "END"),
+        Token(EOL),
 
     };
     p->parse_only_labels(tokens);
@@ -434,16 +434,16 @@ TEST(ParserTest, LabelTest) {
 
 
     vector tokens2 = {
-        Token(At, 0), Token(Symbol, 1, 0, "@TMP2"), Token(Eof, 3)
+        Token(At), Token(Symbol,  "@TMP2"), Token(Eof)
     };
-    TreeNode expected2 = TreeNode(tokens2[0], nullptr, make_unique<TreeNode>(Token(Number, 1, 16)));
+    TreeNode expected2 = TreeNode(tokens2[0], nullptr, make_unique<TreeNode>(Token(Number,  16)));
     test_parser(tokens2, expected2, p);
 
 
     vector tokens3 = {
-        Token(At, 0), Token(Symbol, 1, 0, "END"), Token(Eof, 3)
+        Token(At), Token(Symbol,   "END"), Token(Eof)
     };
-    TreeNode expected3 = TreeNode(tokens2[0], nullptr, make_unique<TreeNode>(Token(Number, 1, 0)));
+    TreeNode expected3 = TreeNode(tokens2[0], nullptr, make_unique<TreeNode>(Token(Number, 0)));
 
     test_parser(tokens3, expected3, p);
 }
@@ -454,10 +454,10 @@ class InvalidOperationWithNegativeOneTest : public testing::TestWithParam<tuple<
 
 TEST_P(InvalidOperationWithNegativeOneTest, ControlInstructionInvalid2) {
     vector<Token> tokens = {
-        Token(A, 0),
-        Token(get<0>(GetParam()), 2),
-        Token(get<1>(GetParam()), 2),
-        Token(EOL, 5),
+        Token(A),
+        Token(get<0>(GetParam())),
+        Token(get<1>(GetParam())),
+        Token(EOL),
 
     };
     EXPECT_THROW({

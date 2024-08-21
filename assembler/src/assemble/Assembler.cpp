@@ -66,7 +66,7 @@ string Assembler::assemble(const string &file_path) {
         throw std::runtime_error("Failed to open file: " + file_path);
     }
     std::string line;
-    vector<vector<Token> > lineTokens;
+    auto lineTokens = make_shared<vector<vector<Token> > >();
     while (file.good() && std::getline(file, line)) {
         try {
             auto tokens = Lexer::lex(line);
@@ -74,9 +74,7 @@ string Assembler::assemble(const string &file_path) {
                 i++;
                 continue;
             }
-            cout << endl;
-
-            lineTokens.push_back(tokens);
+            lineTokens->push_back(tokens);
             i++;
         } catch ([[maybe_unused]] exception &e) {
             cout << "Exception on line " + to_string(i) + ": " << line << endl;
@@ -86,15 +84,11 @@ string Assembler::assemble(const string &file_path) {
     file.close();
     auto p = make_unique<Parser>();
 
-    for (const auto &t: lineTokens) {
+    for (const auto &t: *lineTokens) {
         p->parse_only_labels(t);
     }
     p->reset();
-    auto it = lineTokens.begin();
-    if (it == lineTokens.end()) {
-        throw std::runtime_error("Failed to read token ");
-    }
-    for (const auto &t: lineTokens) {
+    for (const auto &t: *lineTokens) {
         auto ast = p->parse(t);
         if (ast != nullptr) {
             result += assemble(ast) + "\n";
