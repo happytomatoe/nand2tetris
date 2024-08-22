@@ -77,6 +77,7 @@ string Assembler::assemble(const string &file_path) {
             throw;
         }
     }
+    //TODO: add exception if file is not good
     file.close();
     auto p = make_unique<Parser>();
 

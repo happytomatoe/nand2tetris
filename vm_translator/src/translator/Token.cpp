@@ -16,7 +16,7 @@ Category getCategory(const TokenType &type) {
         case And:
         case Or:
         case Not:
-            return ArithmeticOperation;
+            return ArithmeticOrLogicOperation;
         case Push:
         case Pop:
             return MoveOperation;
@@ -35,14 +35,14 @@ Category getCategory(const TokenType &type) {
         case EOL:
             return Terminal;
         default:
-            throw cpptrace::logic_error("Unknown token type: " + std::to_string((int) type));
+            throw cpptrace::logic_error("Unknown token type: " + std::to_string(type));
     }
 }
 
 
 string toString(const Category category) {
     switch (category) {
-        case ArithmeticOperation:
+        case ArithmeticOrLogicOperation:
             return "ArithmeticOperation";
         case MoveOperation:
             return "MoveOperation";

@@ -15,7 +15,9 @@ target_sources(translator
         src/translator/exception.h
         src/translator/Translator.h
         src/translator/Lexer.h
+        src/translator/Parser.h
         PRIVATE
+        src/translator/Parser.cpp
         src/translator/Token.cpp
         src/translator/Translator.cpp
         src/translator/TreeNode.cpp

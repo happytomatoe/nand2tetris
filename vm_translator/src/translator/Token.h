@@ -1,3 +1,4 @@
+#pragma once
 #include <map>
 #include <ostream>
 #include <cpptrace/cpptrace.hpp>
@@ -37,7 +38,7 @@ enum TokenType {
 enum Category {
     MemorySegment,
     MoveOperation,
-    ArithmeticOperation,
+    ArithmeticOrLogicOperation,
     NumberCategory,
     Terminal
 };
@@ -53,7 +54,7 @@ struct Token {
     Category category;
     int number;
 
-    Token(TokenType type)
+    explicit Token(TokenType type)
         : type(type),
           category(getCategory(type)),
           number(0) {
@@ -83,7 +84,7 @@ struct Token {
     }
 };
 
-inline Category getCategory(TokenType type);
+Category getCategory(TokenType type);
 
 const map<string, TokenType> tokenTypeMap = {
     {"add", Add},

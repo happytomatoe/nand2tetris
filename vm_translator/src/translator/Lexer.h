@@ -9,7 +9,7 @@ using namespace std;
 
 class Lexer {
 public:
-    static vector<Token> lex(const string &input);
+    static vector<Token> lex(const string &inputFile);
 };
 
 

@@ -7,7 +7,9 @@ vector<Token> Lexer::lex(const string &text) {
         auto c = text[i];
         switch (c) {
             case '\n':
-                res.emplace_back(EOL);
+                if (!res.empty() && res.back().type != EOL) {
+                    res.emplace_back(EOL);
+                }
                 continue;
             case '/':
                 if (i + 1 < text.length() && text[i + 1] == '/') {
