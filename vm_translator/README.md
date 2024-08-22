@@ -1,3 +1,4 @@
+
 # VM translator 
 VM translator that translates jack into hack assembly. 
 Solution for https://www.nand2tetris.org/project07. 
@@ -50,3 +51,37 @@ add
 pop constant 21
 ```
 Operations operate on top 2 elements in the stack
+
+
+## Translation formulas
+```
+mem_segment1= {local,argument,this that}
+push mem_segment1 i     addr=LCL+i; *SP=*addr; SP++; 
+pop mem_segment1 i      addr=LCL+i; SP--; *addr=*SP
+
+const:
+push const i            SP=i; SP++` 
+no pop
+
+static: (right side - assembly)
+- push static i       
+D=stack.pop
+@<file-name>.i
+M=D
+
+- pop static i 
+@<file-name>.i
+stack.push(M)
+
+temp:
+push temp i     addr=5+i; *SP=*addr; SP++; 
+pop temp i      addr=5+i; SP--; *addr=*SP
+
+pointer:
+push pointer 0/1 *SP=THIS/THAT; SP++
+pop pointer 0/1		SP--; THIS/THAT=*SP
+0=this address
+1=that address
+```
+
+
