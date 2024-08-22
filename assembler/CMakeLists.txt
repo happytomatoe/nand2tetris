@@ -31,24 +31,14 @@ target_include_directories(assemble PUBLIC src)
 
 find_package(spdlog)
 find_package(cpptrace REQUIRED)
-find_package(OpenMP)
-if(OpenMP_CXX_FOUND)
-    target_link_libraries(assemble PUBLIC cpptrace::cpptrace spdlog::spdlog OpenMP::OpenMP_CXX)
-else()
-    target_link_libraries(assemble PUBLIC cpptrace::cpptrace spdlog::spdlog OpenMP::OpenMP_CXX)
-endif()
+
+target_link_libraries(assemble PUBLIC cpptrace::cpptrace spdlog::spdlog)
 
 
 
 find_package(CLI11 REQUIRED)
 add_executable(assembler src/main.cpp)
 target_link_libraries(assembler PRIVATE assemble CLI11::CLI11)
-
-
-#benchmark
-find_package(benchmark REQUIRED)
-add_executable(benchmark benchmark/benchmark.cpp)
-target_link_libraries(benchmark PRIVATE benchmark::benchmark_main)
 
 # testing binary
 
