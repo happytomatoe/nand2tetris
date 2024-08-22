@@ -8,7 +8,7 @@ using namespace std;
 TEST(LexerTest, BasicTest) {
     auto text = "push constant 21 //comment \npush local 22\nadd";
     vector<Token> expected = {
-        Token(Push), Token(Constant), Token(Number, 21), Token(EOL),
+        Token(Push), Token(ConstantMemorySegment), Token(Number, 21), Token(EOL),
         Token(Push), Token(Local), Token(Number, 22), Token(EOL),
         Token(Add), Token(Eof)
     };

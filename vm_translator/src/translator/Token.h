@@ -23,8 +23,8 @@ enum TokenType {
     Argument,
     This,
     That,
-    Constant,
-    Static,
+    ConstantMemorySegment,
+    StaticMemorySegment,
     Temp,
     Pointer,
     //
@@ -102,8 +102,8 @@ const map<string, TokenType> tokenTypeMap = {
     {"argument", Argument},
     {"this", This},
     {"that", That},
-    {"constant", Constant},
-    {"static", Static},
+    {"constant", ConstantMemorySegment},
+    {"static", StaticMemorySegment},
     {"temp", Temp},
     {"pointer", Pointer},
 };

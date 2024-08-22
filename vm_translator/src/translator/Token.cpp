@@ -24,8 +24,8 @@ Category getCategory(const TokenType &type) {
         case Argument:
         case This:
         case That:
-        case Constant:
-        case Static:
+        case ConstantMemorySegment:
+        case StaticMemorySegment:
         case Temp:
         case Pointer:
             return MemorySegment;

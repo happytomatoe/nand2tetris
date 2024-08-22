@@ -6,15 +6,8 @@
 
 using namespace std;
 
-class OrderChecker {
+class Validator {
 public:
-    /**
-     *
-push constant 21
-push constant 22
-add
-pop constant 21
-     */
     static void checkOrder(const vector<Token> &tokens) {
         //check of order of tokens
         const auto end = tokens.end();
@@ -25,8 +18,13 @@ pop constant 21
                 //move operation+memory segment+ number
                 case MoveOperation: {
                     eat(it->category, it, end, line_number);
-                    eat(MemorySegment, it, end, line_number);
-                    eat(NumberCategory, it, end, line_number);
+                    const auto memory_segment = eat(MemorySegment, it, end, line_number);
+                    const auto number = eat(NumberCategory, it, end, line_number);
+                    if (memory_segment.type != ConstantMemorySegment && number.number <= 0) {
+                        throw InvalidOperation(
+                            "Expected a non negative number but got " + to_string(number.number) + " on line " +
+                            to_string(line_number));
+                    }
                     break;
                 }
                 // AL operation
@@ -49,8 +47,8 @@ pop constant 21
         }
     };
 
-    static void eat(const Category category, vector<Token>::const_iterator &it,
-                    const vector<Token>::const_iterator end, const int &line_number) {
+    static Token eat(const Category category, vector<Token>::const_iterator &it,
+                     const vector<Token>::const_iterator end, const int &line_number) {
         if (it == end) {
             const string s = "Unexpected end of input, expected ";
             throw UnexpectedToken(s + toString(category) + "on line: " + to_string(line_number));
@@ -60,6 +58,9 @@ pop constant 21
             throw UnexpectedToken(
                 s + toString(category) + " but got " + toString(it->type) + " on line: " + to_string(line_number));
         }
+
+        auto res = *it;
         ++it;
+        return res;
     }
 };

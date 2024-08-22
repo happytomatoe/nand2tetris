@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "Lexer.h"
-#include "OrderChecker.h"
+#include "Validator.h"
 #include "Token.h"
 
 string Translator::translate(const string &file_path) {
@@ -20,10 +20,11 @@ string Translator::translate(const string &file_path) {
         text += line + "\n";
     }
     auto tokens = Lexer::lex(text);
-    OrderChecker::checkOrder(tokens);
+    Validator::checkOrder(tokens);
     return translate(tokens);
 }
 
 string Translator::translate(const vector<Token> &tokens) {
+
     return "";
 }
