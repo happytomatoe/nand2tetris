@@ -5,9 +5,9 @@
 using namespace std;
 
 class Translator {
+public:
     string translate(string file_path);
 };
-
 
 
 #endif //TRANSLATOR_H

@@ -71,6 +71,11 @@ std::vector<Token> Lexer::lex(const std::string &text) {
             case '\n':
                 res.emplace_back(EOL);
                 break;
+            case '/':
+                if (i + 1 < text.length() && text[i + 1] == '/') {
+                    goto loop_end;
+                }
+            throw cpptrace::logic_error("Should this be a comment: " + text);
             case '(': {
                 auto [symbol, lastSymbolIndex, _] = scan_symbol(text, i, {')'});
                 i = lastSymbolIndex;
@@ -81,11 +86,6 @@ std::vector<Token> Lexer::lex(const std::string &text) {
                 i++;
                 break;
             }
-            case '/':
-                if (i + 1 < text.length() && text[i + 1] == '/') {
-                    goto loop_end;
-                }
-                throw cpptrace::logic_error("Should this be a comment: " + text);
             case ' ':
                 break;
             //operators
