@@ -47,7 +47,6 @@ add_executable(tests
         test/assemble_test.cpp
         test/parser_test.cpp
         test/lexer_test.cpp
-        test/StringDiff.cpp
         test/StringDiff.h
         test/Utils.h)
 target_link_libraries(tests PRIVATE assemble gtest::gtest)
