@@ -12,9 +12,7 @@ public:
     static string translate(const string &file_path);
 
 private:
-    static string translate(const vector<Token> &tokens) {
-        return "";
-    }
+    static string translate(const vector<Token> &tokens);
 };
 
 
