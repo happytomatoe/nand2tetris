@@ -2,6 +2,8 @@
 # To keep your changes, remove these comment lines, but the plugin won't be able to modify your requirements
 
 requirements:
+  - "benchmark/1.8.4"
+  - "spdlog/1.14.1"
   - "cli11/2.4.2"
   - "cpptrace/0.6.3"
   - "gtest/1.15.0"
