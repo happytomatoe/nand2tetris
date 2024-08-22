@@ -10,8 +10,10 @@ build-debug: FORCE
 	cd build/Debug
 	cmake ../.. -DCMAKE_TOOLCHAIN_FILE=generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug
 	cmake --build .
+run-debug:
+	./build/Debug/assembler  ./data/MaxL.asm
 run:
-	rr record ./build/Debug/assembler  ./data/MaxL.asm
+	./build/Release/assembler  ./data/PongLong.asm -o PongLong.hack
 clean:
 	rm -rf build
 test: build FORCE

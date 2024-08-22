@@ -1,61 +1,57 @@
 #include "Assembler.h"
 
 #include <algorithm>
-#include <assert.h>
 #include <fstream>
 #include <iostream>
 #include <list>
-#include <optional>
 #include <regex>
 #include <string>
 #include <vector>
-#include <regex>
 #include <cpptrace/cpptrace.hpp>
 
 #include "Lexer.h"
 #include "Parser.h"
 #include "StringUtils.h"
-#include "../test/Utils.h"
-#include "spdlog/spdlog.h"
+
 
 using namespace std;
 
 
 const map<TokenType, int> destBitsMap = {
-    {M, 1},
-    {D, 2},
-    {A, 4}
+    {M, 0b1},
+    {D, 0b10},
+    {A, 0b100}
 };
-const map<list<TokenType>, string> compBitsMap = {
-    {{Zero}, "101010"},
-    {{One}, "111111"},
-    {{NegativeOne}, "111010"},
-    {{D}, "001100"},
-    {{A}, "110000"},
-    {{M}, "110000"},
-    {{Not, D}, "001111"},
-    {{Not, A}, "110001"},
-    {{Not, M}, "110001"},
-    {{Minus, D}, "001111"},
-    {{Minus, A}, "110011"},
-    {{Minus, M}, "110011"},
-    {{D, Plus, One}, "011111"},
-    {{A, Plus, One}, "110111"},
-    {{M, Plus, One}, "110111"},
-    {{M, Plus, One}, "110111"},
-    {{D, Minus, One}, "001110"},
-    {{A, Minus, One}, "110010"},
-    {{M, Minus, One}, "110010"},
-    {{D, Plus, A}, "000010"},
-    {{D, Plus, M}, "000010"},
-    {{D, Minus, A}, "010011"},
-    {{D, Minus, M}, "010011"},
-    {{A, Minus, D}, "000111"},
-    {{M, Minus, D}, "000111"},
-    {{D, And, A}, "000000"},
-    {{D, And, M}, "000000"},
-    {{D, Or, A}, "010101"},
-    {{D, Or, M}, "010101"},
+const map<list<TokenType>, int> compBitsMap = {
+    {{Zero}, 0b101010},
+    {{One}, 0b111111},
+    {{NegativeOne}, 0b111010},
+    {{D}, 0b001100},
+    {{A}, 0b110000},
+    {{M}, 0b110000},
+    {{Not, D}, 0b001111},
+    {{Not, A}, 0b110001},
+    {{Not, M}, 0b110001},
+    {{Minus, D}, 0b001111},
+    {{Minus, A}, 0b110011},
+    {{Minus, M}, 0b110011},
+    {{D, Plus, One}, 0b011111},
+    {{A, Plus, One}, 0b110111},
+    {{M, Plus, One}, 0b110111},
+    {{M, Plus, One}, 0b110111},
+    {{D, Minus, One}, 0b001110},
+    {{A, Minus, One}, 0b110010},
+    {{M, Minus, One}, 0b110010},
+    {{D, Plus, A}, 0b000010},
+    {{D, Plus, M}, 0b000010},
+    {{D, Minus, A}, 0b010011},
+    {{D, Minus, M}, 0b010011},
+    {{A, Minus, D}, 0b000111},
+    {{M, Minus, D}, 0b000111},
+    {{D, And, A}, 0b000000},
+    {{D, And, M}, 0b000000},
+    {{D, Or, A}, 0b010101},
+    {{D, Or, M}, 0b010101},
 };
 
 string Assembler::assemble(const string &file_path) {
@@ -89,8 +85,7 @@ string Assembler::assemble(const string &file_path) {
     }
     p->reset();
     for (const auto &t: *lineTokens) {
-        auto ast = p->parse(t);
-        if (ast != nullptr) {
+        if (auto ast = p->parse(t); ast != nullptr) {
             result += assemble(ast) + "\n";
         }
     }
@@ -101,32 +96,29 @@ string Assembler::assemble(const string &file_path) {
 
 string Assembler::assemble(const unique_ptr<TreeNode> &root) {
     if (root->token.category == AtCategory) {
-        auto value = root->right->token.constValue;
-        return "0" + std::bitset<15>(value).to_string();
+        const auto value = root->right->token.constValue;
+        return '0' + std::bitset<15>(value).to_string();
     }
-    const auto instruction = "111";
-    string jumpBits = "000";
-    string destBits = "000";
-    string compBits = "000000";
-    string a = "0";
-
+    int jumpBits = 0b000;
+    int destBits = 0b000;
+    int compBits = 0b000000;
+    int a = 0b0;
     switch (root->token.category) {
         case AssignmentOperation: {
-            auto dest = destBitsMap.at(root->left->token.type);
+            destBits = destBitsMap.at(root->left->token.type);
             if (root->left->left != nullptr) {
-                dest += destBitsMap.at(root->left->left->token.type);
+                destBits += destBitsMap.at(root->left->left->token.type);
             }
             if (root->left->right != nullptr) {
-                dest += destBitsMap.at(root->left->right->token.type);
+                destBits += destBitsMap.at(root->left->right->token.type);
             }
-            destBits = bitset<3>(dest).to_string();
             if (root->right->token.category == PredefinedConstant) {
                 compBits = compBitsMap.at({root->right->token.type});
             } else if (root->right->token.category == Identifier) {
                 compBits = compBitsMap.at({root->right->token.type});
-                if (root->right->token.type == M) a = "1";
+                if (root->right->token.type == M) a = 0b1;
             } else if (root->right->token.category == OtherOperation) {
-                auto operation = std::move(root->right);
+                const auto operation = std::move(root->right);
                 list<TokenType> operation_token_types = {
                     operation->token.type,
                     operation->right->token.type,
@@ -137,7 +129,7 @@ string Assembler::assemble(const unique_ptr<TreeNode> &root) {
                 compBits = compBitsMap.at(operation_token_types);
                 if (operation->left != nullptr && operation->left->token.type == M || operation->right->token.type ==
                     M) {
-                    a = "1";
+                    a = 0b1;
                 }
                 //operation and jump
                 if (operation->right->right != nullptr) {
@@ -154,7 +146,7 @@ string Assembler::assemble(const unique_ptr<TreeNode> &root) {
                 root->right->token.type,
             });
             if (root->left->token.type == M || root->right->token.type == M) {
-                a = "1";
+                a = 0b1;
             }
             //operation and jump
             if (root->right->right != nullptr) {
@@ -162,6 +154,7 @@ string Assembler::assemble(const unique_ptr<TreeNode> &root) {
             }
             break;
         }
+        case Identifier:
         case PredefinedConstant: {
             //dest comp jump
             compBits = compBitsMap.at({root->token.type});
@@ -170,39 +163,33 @@ string Assembler::assemble(const unique_ptr<TreeNode> &root) {
             }
             break;
         }
-        case Identifier: {
-            compBits = compBitsMap.at({root->token.type});
-            if (root->right != nullptr && root->right->token.category == Jump) {
-                jumpBits = jumpTypeToBits(root->right->token.type);
-            }
-            break;
-        }
         default: {
-            string s = "Unexpected token: ";
-            throw cpptrace::logic_error(s +
-                                        StringUtils::to_string(root->token));
+            const string s = "Unexpected token: ";
+            throw cpptrace::logic_error(s + StringUtils::to_string(root->token));
         }
     }
-    return instruction + a + compBits + destBits + jumpBits;
+    constexpr auto instruction = 0b111;
+
+    return std::bitset<16>(instruction << 13 | a << 12 | compBits << 6 | destBits << 3 | jumpBits).to_string();
 }
 
 
-string Assembler::jumpTypeToBits(TokenType type) {
+int Assembler::jumpTypeToBits(TokenType type) {
     switch (type) {
         case JGT:
-            return "001";
+            return 0b001;
         case JEQ:
-            return "010";
+            return 0b010;
         case JGE:
-            return "011";
+            return 0b011;
         case JLT:
-            return "100";
+            return 0b100;
         case JNE:
-            return "101";
+            return 0b101;
         case JLE:
-            return "110";
+            return 0b110;
         case JMP:
-            return "111";
+            return 0b111;
         default:
             string s = "Unexpected jump type: ";
             throw cpptrace::logic_error(s + Token::toString(type));
