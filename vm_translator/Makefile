@@ -20,4 +20,7 @@ test: build FORCE
 test-debug: build FORCE
 	cd  ./build/Debug && ctest
 
+
+test-prog: build FORCE
+	./build/Release/test_prog
 FORCE: ;

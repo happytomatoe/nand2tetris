@@ -28,7 +28,7 @@ Category getCategory(const TokenType &type) {
         case StaticMemorySegment:
         case Temp:
         case Pointer:
-            return MemorySegment;
+            return MemorySegmentCategory;
         case Number:
             return NumberCategory;
         case Eof:
@@ -46,7 +46,7 @@ string toString(const Category category) {
             return "ArithmeticOperation";
         case MoveOperation:
             return "MoveOperation";
-        case MemorySegment:
+        case MemorySegmentCategory:
             return "MemorySegment";
         case NumberCategory:
             return "NumberCategory";

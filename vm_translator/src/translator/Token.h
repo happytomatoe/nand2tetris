@@ -23,10 +23,11 @@ enum TokenType {
     Argument,
     This,
     That,
-    ConstantMemorySegment,
-    StaticMemorySegment,
     Temp,
     Pointer,
+    ConstantMemorySegment,
+    StaticMemorySegment,
+
     //
     Number,
     // Terminal
@@ -36,7 +37,7 @@ enum TokenType {
 
 
 enum Category {
-    MemorySegment,
+    MemorySegmentCategory,
     MoveOperation,
     ArithmeticOrLogicOperation,
     NumberCategory,

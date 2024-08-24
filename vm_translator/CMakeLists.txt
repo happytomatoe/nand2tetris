@@ -8,8 +8,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 #add_subdirectory(translator)
 
-add_library(translator
-        )
+add_library(translator)
 target_sources(translator
         PUBLIC
         src/translator/exception.h
@@ -17,6 +16,7 @@ target_sources(translator
         src/translator/Lexer.h
         src/translator/Validator.h
         PRIVATE
+        src/translator/MemorySegment.cpp
         src/translator/Token.cpp
         src/translator/Translator.cpp
         src/translator/Lexer.cpp
@@ -34,9 +34,12 @@ target_link_libraries(${PROJECT_NAME} PUBLIC CLI11::CLI11 translator)
 
 find_package(GTest)
 add_executable(tests test/lexer_test.cpp
-        test/validator_test.cpp)
+        test/validator_test.cpp
+        test/translator_test.cpp
+        test/string_utils_test.cpp)
 target_link_libraries(tests PUBLIC gtest::gtest translator)
 
 enable_testing()
 include(GoogleTest)
 gtest_discover_tests(tests)
+

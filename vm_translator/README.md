@@ -6,19 +6,19 @@ Solution for https://www.nand2tetris.org/project07.
 # Specification
 ## Memory segments
 
-| Segment | Role | Memory Range | Description | 
-|----------|----------|--------------|------------------|
-| Local | Function's local variables | RAM[16-2047] | Stores the function's local variables, 2032 slots |
-| Argument | Function's arguments | RAM[4-12] | Stores the function's arguments, 9 slots |
-| This | Caller's 'this' | RAM[3] | Stores the 'this' of the caller |
-| That | Caller's 'that' | RAM[4] | Stores the 'that' of the caller |
-| Static | Static variables | RAM[16-2047] | Stores the static variables, 2032 slots |
-| Constant | Constant values | N/A | Stores the constant values 0-32767 |
-| Temp | Temporary storage | RAM[5-12] | Mapped directly to RAM locations 5-12, 8 slots |
-| Pointer | Manipulate this & that | RAM[3-4] | Used to manipulate the 'this' and 'that' pointers |
-| Temp | Temporary storage | RAM[5-12] | Mapped directly to RAM locations 5-12, 8 slots |
-
+| Segment | Role | Memory Range            | Description                                       | 
+|----------|----------|-------------------------|---------------------------------------------------|
+| Local | Function's local variables | Dynamically allocated   | Stores the function's local variables             |
+| Argument | Function's arguments | Dynamically allocated   | Stores the function's arguments                   |
+| This | Caller's 'this' | Dynamically allocated   | Stores the 'this' of the caller                   |
+| That | Caller's 'that' | Dynamically allocated   | Stores the 'that' of the caller                   |
+| Static | Static variables | RAM[16-255]             | Stores the static variables                       |
+| Constant | Constant values | Is not stored in memory | Stores the constant values [-32768,32767]         |
+| Temp | Temporary storage | RAM[5-12]               | Mapped directly to RAM locations 5-12, 8 slots    |
+| Pointer | Manipulate this & that | RAM[3-4]                | Used to manipulate the 'this' and 'that' pointers |
+ 
 ![alt text](doc/memory_seg.png)
+
 ![alt text](doc/memory_seg_2.png)
 
 ## Semantics
@@ -60,18 +60,19 @@ push mem_segment1 i     addr=LCL+i; *SP=*addr; SP++;
 pop mem_segment1 i      addr=LCL+i; SP--; *addr=*SP
 
 const:
-push const i            SP=i; SP++` 
+push const i            SP=i; SP++
 no pop
 
 static: (right side - assembly)
 - push static i       
+@<file-name>.i
+stack.push(M)
+
+- pop static i 
 D=stack.pop
 @<file-name>.i
 M=D
 
-- pop static i 
-@<file-name>.i
-stack.push(M)
 
 temp:
 push temp i     addr=5+i; *SP=*addr; SP++; 

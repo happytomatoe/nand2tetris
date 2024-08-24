@@ -18,7 +18,7 @@ public:
                 //move operation+memory segment+ number
                 case MoveOperation: {
                     eat(it->category, it, end, line_number);
-                    const auto memory_segment = eat(MemorySegment, it, end, line_number);
+                    const auto memory_segment = eat(MemorySegmentCategory, it, end, line_number);
                     const auto number = eat(NumberCategory, it, end, line_number);
                     if (memory_segment.type != ConstantMemorySegment && number.number <= 0) {
                         throw InvalidOperation(
