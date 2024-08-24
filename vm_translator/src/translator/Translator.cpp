@@ -29,12 +29,93 @@ string Translator::translate(const string &file_path) {
 }
 
 
-inline map<memory::MemorySegmentPointer, int> initMemorySegments() {
-    map<memory::MemorySegmentPointer, int> pointerToAddress;
-    for (auto [k,v]: memory::memorySegmentMinMaxAdress) {
-        pointerToAddress[k] = v.min;
+string Translator::translate(const vector<Token> &tokens, const string &file_name) {
+    string res;
+    //init memory segments
+    map<memory::MemorySegmentPointer, int> pointerToAddress = initMemorySegments();
+
+    res += "//memory init\n";
+    for (auto [p,address]: memory::symbolAdress) {
+        res += format(R"(
+            @{}
+            D = A
+            @{}
+            M = D
+        )", pointerToAddress.at(p), address);
     }
-    return pointerToAddress;
+    res += "//memory init end\n\n";
+    int line_number = 0;
+    const auto end = tokens.end();
+    for (auto it = tokens.begin(); it != end; ++it, line_number++) {
+        switch (it->category) {
+            case Terminal:
+                continue;
+            // 2 types of operations
+            //move operation+memory segment+ number
+            case MoveOperation: {
+                auto operation = it->type;
+                if (operation == Push) {
+                    res += handle_push(file_name, pointerToAddress, line_number, it);
+                    break;
+                } else if (operation == Pop) {
+                    res += handle_pop(file_name, pointerToAddress, line_number, it);
+                    break;
+                } else {
+                    throw InvalidOperation("Invalid operaiton on line " + to_string(line_number));
+                }
+                break;
+            }
+            case ArithmeticOrLogicOperation: {
+                switch (it->type) {
+                    case Add:
+                        res += operationComment(it->type);
+                        if (pointerToAddress.at(memory::StackPointer) == memory::getMemorySegmentMinMaxAdress(
+                                memory::StackPointer).min) {
+                            throw InvalidOperation("Cant add if there is only one value on stack");
+                        }
+                        res += stackPop();
+                        res += R"(
+                            A=M
+                            M=D+M
+                        )";
+                        break;
+                    case Subtract:
+                        throw NotImplementedException();
+                        break;
+                    case Negate:
+                        throw NotImplementedException();
+                        break;
+                    case Equals:
+                        throw NotImplementedException();
+                        break;
+                    case Greater:
+                        throw NotImplementedException();
+
+                        break;
+                    case LessThan:
+                        throw NotImplementedException();
+                        break;
+                    case And:
+                        throw NotImplementedException();
+                        break;
+                    case Or:
+                        throw NotImplementedException();
+                        break;
+                    case Not:
+                        throw NotImplementedException();
+                        break;
+                    default:
+                        throw InvalidOperation("Invalid operaiton on line " + to_string(line_number));
+                }
+                break;
+            }
+            default:
+                throw InvalidOperation("Invalid operaiton on line " + to_string(line_number));
+        }
+    }
+
+    //TODO: find if it's possible to strip margin from raw string
+    return res;
 }
 
 
@@ -302,53 +383,6 @@ string Translator::handle_pop(const string &file_name,
     return res;
 }
 
-string Translator::translate(const vector<Token> &tokens, const string &file_name) {
-    string res;
-    //init memory segments
-    map<memory::MemorySegmentPointer, int> pointerToAddress = initMemorySegments();
-
-    res += "//memory init\n";
-    for (auto [p,address]: memory::symbolAdress) {
-        res += format(R"(
-            @{}
-            D = A
-            @{}
-            M = D
-        )", pointerToAddress.at(p), address);
-    }
-    res += "//memory init end\n\n";
-    int line_number = 0;
-    const auto end = tokens.end();
-    for (auto it = tokens.begin(); it != end; ++it, line_number++) {
-        switch (it->category) {
-            case Terminal:
-                continue;
-            // 2 types of operations
-            //move operation+memory segment+ number
-            case MoveOperation: {
-                auto operation = it->type;
-                if (operation == Push) {
-                    res += handle_push(file_name, pointerToAddress, line_number, it);
-                    break;
-                } else if (operation == Pop) {
-                    res += handle_pop(file_name, pointerToAddress, line_number, it);
-                    break;
-                } else {
-                    throw InvalidOperation("Invalid operaiton on line " + to_string(line_number));
-                }
-                break;
-            }
-            case ArithmeticOrLogicOperation: {
-                throw NotImplementedException();
-            }
-            default:
-                throw InvalidOperation("Invalid operaiton on line " + to_string(line_number));
-        }
-    }
-
-    //TODO: find if it's possible to strip margin from raw string
-    return res;
-}
 
 string Translator::stackPush() {
     auto spSymbolAdress = memory::getSymbolAdress(memory::StackPointer);
@@ -392,4 +426,17 @@ void Translator::check_overflow(int value) {
 
 string Translator::operationComment(TokenType operation, TokenType memorySementTokenType, int number) {
     return format("//{} {} {} \n", toString(operation), toString(memorySementTokenType), number);
+}
+
+string Translator::operationComment(TokenType operation) {
+    return format("//{} \n", toString(operation));
+}
+
+
+inline map<memory::MemorySegmentPointer, int> Translator::initMemorySegments() {
+    map<memory::MemorySegmentPointer, int> pointerToAddress;
+    for (auto [k,v]: memory::memorySegmentMinMaxAdress) {
+        pointerToAddress[k] = v.min;
+    }
+    return pointerToAddress;
 }

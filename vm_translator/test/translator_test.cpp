@@ -410,3 +410,55 @@ TEST(TranslatorTest, PopPointerThat) {
     )", number);
     containsExpectedWithoutWhitespaces(t, expected);
 }
+
+// *********  Operations **************
+
+TEST(TranslatorTest, Add) {
+    auto number = 10;
+    vector<Token> tokens = {
+        Token(Push), Token(Constant), Token(Number, number),
+        Token(Push), Token(Constant), Token(Number, number),
+        Token(Add),
+        Token(Eof)
+    };
+    auto actual = Translator::translate(tokens, file_name);
+    auto t = Utils::preprocess(actual);
+    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    /**
+    pop pointer 0/1		SP--; THIS/THAT=*SP
+    0=this address
+    1=that address    */
+    auto expected = format(R"(
+       @0
+       A=M
+       D=M
+       @0
+       M=M-1
+       A=M
+       M=D+M
+    )", number);
+    containsExpectedWithoutWhitespaces(t, expected);
+}
+
+
+TEST(TranslatorTest, AddInvalid) {
+    auto number = 10;
+    vector<Token> tokens = {
+        Token(Push), Token(Constant), Token(Number, number),
+        Token(Add),
+        Token(Eof)
+    };
+    ASSERT_THROW(Translator::translate(tokens, file_name), InvalidOperation);
+}
+
+void sigsegv_handler(int sig) {
+    cpptrace::generate_trace().print();
+    exit(1);
+}
+
+
+int main(int argc, char **argv) {
+    signal(SIGSEGV, sigsegv_handler);
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}

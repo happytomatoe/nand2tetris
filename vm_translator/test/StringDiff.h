@@ -135,11 +135,13 @@ public:
         auto actualLines = remove_if_line_is_empty(split(actual, '\n'));
         auto expectedLines = remove_if_line_is_empty(split(expected, '\n'));
         if (actualLines.size() > expectedLines.size()) {
-            for (int i = 0; i < actualLines.size() - expectedLines.size(); ++i) {
-                expectedLines.emplace_back("");
+            auto lenDiff = actualLines.size() - expectedLines.size();
+            for (int i = 0; i < lenDiff; ++i) {
+                expectedLines.insert(expectedLines.begin(), "");
             }
         } else if (actualLines.size() < expectedLines.size()) {
             for (int i = 0; i < expectedLines.size() - actualLines.size(); ++i) {
+                //TODO: should this be changed as we can have 2 cases - lines are not enough in the front or in the back
                 actualLines.emplace_back("");
             }
         }

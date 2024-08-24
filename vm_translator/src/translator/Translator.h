@@ -19,11 +19,15 @@ public:
 private:
     static string operationComment(TokenType operation, TokenType memorySementTokenType, int number);
 
+    static string operationComment(TokenType operation);
+
     static string file_name_without_extension(const string &file_name);
 
     static string handle_push(const string &file_name,
                               map<memory::MemorySegmentPointer, int> &pointerToAddress,
                               const int line_number, vector<Token>::const_iterator &it);
+
+    static map<memory::MemorySegmentPointer, int> initMemorySegments();
 
 
 
