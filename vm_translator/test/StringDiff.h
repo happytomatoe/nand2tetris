@@ -131,7 +131,7 @@ public:
 
 
     static string get_diff_multi_line_strings_in_reverse_order(
-        const std::string &actual, const std::string &expected) {
+        const std::string &actual, const std::string &expected, int rightPad = 10) {
         auto actualLines = remove_if_line_is_empty(split(actual, '\n'));
         auto expectedLines = remove_if_line_is_empty(split(expected, '\n'));
         if (actualLines.size() > expectedLines.size()) {
@@ -149,11 +149,13 @@ public:
             auto expectedLine = expectedLines[i];
             if (actualLine != expectedLine) {
                 auto [actualLineColored, expectedLineColored] = get_diff_single_line_strings(actualLine, expectedLine);
-                if (!actualLine.empty()) {
-                    res.insert(0, Utils::rightPadTo(actualLineColored, 10));
-                }
+
                 if (!expectedLine.empty()) {
                     res.insert(0, expectedLineColored);
+                }
+                if (!actualLine.empty()) {
+                    auto padded = Utils::rightPadTo(actualLineColored, rightPad, ' ', true);
+                    res.insert(0, padded);
                 }
                 res.insert(0, "\n");
             } else {
@@ -163,4 +165,3 @@ public:
         return res;
     }
 };
-

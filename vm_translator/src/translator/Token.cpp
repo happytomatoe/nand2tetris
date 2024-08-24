@@ -24,8 +24,8 @@ namespace token {
             case Argument:
             case This:
             case That:
-            case ConstantMemorySegment:
-            case StaticMemorySegment:
+            case Constant:
+            case Static:
             case Temp:
             case Pointer:
                 return MemorySegmentCategory;

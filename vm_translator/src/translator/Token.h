@@ -26,9 +26,8 @@ namespace token {
         That,
         Temp,
         Pointer,
-        ConstantMemorySegment,
-        StaticMemorySegment,
-
+        Constant,
+        Static,
         //
         Number,
         // Terminal
@@ -104,8 +103,8 @@ namespace token {
         {"argument", Argument},
         {"this", This},
         {"that", That},
-        {"constant", ConstantMemorySegment},
-        {"static", StaticMemorySegment},
+        {"constant", Constant},
+        {"static", Static},
         {"temp", Temp},
         {"pointer", Pointer},
     };

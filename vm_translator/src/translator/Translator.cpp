@@ -38,6 +38,10 @@ inline map<memory::MemorySegmentPointer, int> initMemorySegments() {
 }
 
 
+string Translator::file_name_without_extension(const string &file_name) {
+    return file_name.substr(0, file_name.find_last_of('.'));
+}
+
 string Translator::handle_push(const string &file_name,
                                map<memory::MemorySegmentPointer, int> &pointerToAddress, const int line_number,
                                vector<Token>::const_iterator &it) {
@@ -76,7 +80,7 @@ string Translator::handle_push(const string &file_name,
             }
             break;
         }
-        case ConstantMemorySegment: {
+        case Constant: {
             // SP=i; SP++
             auto memorySementTokenType = it->type;
             auto number = (++it)->number;
@@ -95,7 +99,7 @@ string Translator::handle_push(const string &file_name,
 
             break;
         }
-        case StaticMemorySegment: {
+        case Static: {
             auto memorySementTokenType = it->type;
             auto number = (++it)->number;
             //TODO: should we do an overflow check?
@@ -103,11 +107,10 @@ string Translator::handle_push(const string &file_name,
             res += operationComment(operation, memorySementTokenType, number);
             // @<file-name>.i
             // stack.push(M)
-            string file_name_without_extension = file_name.substr(0, file_name.find_last_of('.'));
             res += format(R"(
                                 @{}.{}
                                 D=M
-                            )", file_name_without_extension, number);
+                            )", file_name_without_extension(file_name), number);
             res += stackPush();
             if (++pointerToAddress.at(memory::StackPointer) > memory::memorySegmentMinMaxAdress.at(
                     memory::StackPointer).max) {
@@ -177,10 +180,12 @@ string Translator::handle_push(const string &file_name,
     return res;
 }
 
-string Translator::handle_pop(map<memory::MemorySegmentPointer, int> &pointerToAddress, const int line_number,
+string Translator::handle_pop(const string &file_name,
+                              map<memory::MemorySegmentPointer, int> &pointerToAddress,
+                              const int line_number,
                               vector<Token>::const_iterator &it) {
     string res;
-    const TokenType operation = Pop;
+    constexpr TokenType operation = Pop;
     switch ((++it)->type) {
         case Local:
         case Argument:
@@ -202,28 +207,93 @@ string Translator::handle_pop(map<memory::MemorySegmentPointer, int> &pointerToA
                 D=A
                 @{}
                 D=D+A
-                @pop_mem_temp
+                @pop_normal_segment_temp
                 M=D
             )", symbolAdress, number);
             res += stackPop();
+            //TODO: add this to other memory segments
             if (--pointerToAddress.at(memory::StackPointer) < memory::memorySegmentMinMaxAdress.at(
                     memory::StackPointer).min) {
                 throw PointerOutOfRangeException(
                     "Stack pointer is out of range on line " + to_string(line_number));
             }
             res += R"(
-                @pop_mem_temp
+                @pop_normal_segment_temp
+                A=M
                 M=D
             )";
             break;
         }
-        case StaticMemorySegment: {
+        case Static: {
+            auto memorySementTokenType = it->type;
+            auto number = (++it)->number;
+            /**
+            *- pop static i
+            D=stack.pop
+            @<file-name>.i
+            M=D
+            */
+            res += operationComment(operation, memorySementTokenType, number);
+            res += stackPop();
+            if (--pointerToAddress.at(memory::StackPointer) < memory::memorySegmentMinMaxAdress.at(
+                    memory::StackPointer).min) {
+                throw PointerOutOfRangeException(
+                    "Stack pointer is out of range on line " + to_string(line_number));
+            }
+            res += format(R"(
+                @{}.{}
+                M=D
+            )", file_name_without_extension(file_name), number);
             break;
         }
         case Temp: {
+            auto memorySementTokenType = it->type;
+            auto number = (++it)->number;
+            auto memorySegmentPointer = memory::getSegmentPointer(memorySementTokenType);
+            auto memSegmentRange = getMemorySegmentMinMaxAdress(memorySegmentPointer);
+            //TODO: add this to every move operation
+            if (number < 0 || number > memSegmentRange.max - memSegmentRange.min) {
+                throw InvalidOperation(
+                    "Invalid operation on line " + to_string(line_number) +
+                    ".Temp number must be between 0 and 7");
+            }
+
+            res += operationComment(operation, memorySementTokenType, number);
+            //pop temp i      addr=5+i; SP--; *addr=*SP
+            res += stackPop();
+            res += format(R"(
+                @{}
+                M=D
+            )", memSegmentRange.min + number);
+
             break;
         }
         case Pointer: {
+            auto memorySementTokenType = it->type;
+            auto number = (++it)->number;
+            res += operationComment(operation, memorySementTokenType, number);
+
+            if (number != 0 && number != 1) {
+                throw PointerOutOfRangeException("Pointer number can be 0 or 1");
+            }
+            auto symbolAdress = number == 0
+                                    ? memory::getSymbolAdress(memory::getSegmentPointer(This))
+                                    : memory::getSymbolAdress(memory::getSegmentPointer(That));
+            /*
+               pop pointer 0/1		SP--; THIS/THAT=*SP
+               0=this address
+               1=that address */
+            res += stackPop();
+            if (--pointerToAddress.at(memory::StackPointer) < memory::memorySegmentMinMaxAdress.at(
+                    memory::StackPointer).min) {
+                throw PointerOutOfRangeException(
+                    "Stack pointer is out of range on line " + to_string(line_number));
+            }
+            res += format(R"(
+               @{}
+               A=M
+               M=D
+            )", symbolAdress);
             break;
         }
         default:
@@ -261,7 +331,7 @@ string Translator::translate(const vector<Token> &tokens, const string &file_nam
                     res += handle_push(file_name, pointerToAddress, line_number, it);
                     break;
                 } else if (operation == Pop) {
-                    res += handle_pop(pointerToAddress, line_number, it);
+                    res += handle_pop(file_name, pointerToAddress, line_number, it);
                     break;
                 } else {
                     throw InvalidOperation("Invalid operaiton on line " + to_string(line_number));

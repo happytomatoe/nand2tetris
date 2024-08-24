@@ -21,7 +21,7 @@ public:
                     eat(it->category, it, end, line_number);
                     const auto memory_segment = eat(MemorySegmentCategory, it, end, line_number);
                     const auto number = eat(NumberCategory, it, end, line_number);
-                    if (memory_segment.type != ConstantMemorySegment && number.number <= 0) {
+                    if (memory_segment.type != Constant && number.number <= 0) {
                         throw InvalidOperation(
                             "Expected a non negative number but got " + to_string(number.number) + " on line " +
                             to_string(line_number));
