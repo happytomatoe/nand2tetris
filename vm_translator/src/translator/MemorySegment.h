@@ -57,6 +57,14 @@ namespace memory {
         {token::Temp, Temp},
     };
 
+    inline MemorySegmentPointer getSegmentPointer(token::TokenType t) {
+        if (!tokenTypeToMemorySegmentPointer.contains(t)) {
+            throw cpptrace::logic_error("No corresponding segment pointer for token type " +
+                                        token::toString(t));
+        }
+        return tokenTypeToMemorySegmentPointer.at(t);
+    }
+
 
     inline Range getMemorySegmentMinMaxAdress(MemorySegmentPointer p) {
         if (!memorySegmentMinMaxAdress.contains(p)) {
@@ -71,6 +79,7 @@ namespace memory {
         }
         return symbolAdress.at(p);
     }
+
     //TODO: find better option than to inline
     inline string toString(MemorySegmentPointer p) {
         switch (p) {

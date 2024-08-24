@@ -37,12 +37,199 @@ inline map<memory::MemorySegmentPointer, int> initMemorySegments() {
     return pointerToAddress;
 }
 
-memory::MemorySegmentPointer getSegmentPointer(TokenType t) {
-    if (!memory::tokenTypeToMemorySegmentPointer.contains(t)) {
-        throw cpptrace::logic_error("No corresponding segment pointer for token type " +
-                                    token::toString(t));
+
+string Translator::handle_push(const string &file_name,
+                               map<memory::MemorySegmentPointer, int> &pointerToAddress, const int line_number,
+                               vector<Token>::const_iterator &it) {
+    string res;
+    constexpr TokenType operation = Push;
+    switch ((++it)->type) {
+        case Local:
+        case Argument:
+        case This:
+        case That: {
+            //push from memory segment onto stack
+            auto memorySementTokenType = it->type;
+            auto number = (++it)->number;
+            res += format("//push {} {} \n", toString(memorySementTokenType), number);
+            auto memorySegmentPointer = memory::getSegmentPointer(memorySementTokenType);
+            auto symbolAdress = memory::getSymbolAdress(memorySegmentPointer);
+            if (number < 0) {
+                throw InvalidOperation("Invalid operation on line " + to_string(line_number));
+            }
+            //addr=symbolAddress+i; *SP=*addr; SP++;
+            res += format(R"(
+                                //addr=symbolAddress+i;
+                                @{}
+                                D=M
+                                @{}
+                                D=D+A
+                                A=D
+                                D=M
+
+                            )", symbolAdress, number);
+            res += stackPush();
+            if (++pointerToAddress.at(memory::StackPointer) > memory::memorySegmentMinMaxAdress.at(
+                    memory::StackPointer).max) {
+                throw PointerOutOfRangeException(
+                    "Stack pointer is out of range on line " + to_string(line_number));
+            }
+            break;
+        }
+        case ConstantMemorySegment: {
+            // SP=i; SP++
+            auto memorySementTokenType = it->type;
+            auto number = (++it)->number;
+            check_overflow(number);
+            res += format("//push {} {} \n", toString(memorySementTokenType), number);
+            res += format(R"(
+                                                                @{}
+                                                                D=A
+                                                          )", number);
+            res += stackPush();
+            if (++pointerToAddress.at(memory::StackPointer) > memory::memorySegmentMinMaxAdress.at(
+                    memory::StackPointer).max) {
+                throw PointerOutOfRangeException(
+                    "Stack pointer is out of range on line " + to_string(line_number));
+            }
+
+            break;
+        }
+        case StaticMemorySegment: {
+            auto memorySementTokenType = it->type;
+            auto number = (++it)->number;
+            //TODO: should we do an overflow check?
+
+            res += operationComment(operation, memorySementTokenType, number);
+            // @<file-name>.i
+            // stack.push(M)
+            string file_name_without_extension = file_name.substr(0, file_name.find_last_of('.'));
+            res += format(R"(
+                                @{}.{}
+                                D=M
+                            )", file_name_without_extension, number);
+            res += stackPush();
+            if (++pointerToAddress.at(memory::StackPointer) > memory::memorySegmentMinMaxAdress.at(
+                    memory::StackPointer).max) {
+                throw PointerOutOfRangeException(
+                    "Stack pointer is out of range on line " + to_string(line_number));
+            }
+            break;
+        }
+        case Temp: {
+            //push from memory segment onto stack
+            auto memorySementTokenType = it->type;
+            auto number = (++it)->number;
+            res += operationComment(operation, memorySementTokenType, number);
+            auto memorySegmentPointer = memory::getSegmentPointer(memorySementTokenType);
+            auto memSegmentRange = getMemorySegmentMinMaxAdress(memorySegmentPointer);
+
+            if (number < 0 || number > memSegmentRange.max - memSegmentRange.min) {
+                throw InvalidOperation(
+                    "Invalid operation on line " + to_string(line_number) +
+                    ".Temp number must be between 0 and 7");
+            }
+            //addr=symbolAddress+i; *SP=*addr; SP++;
+            res += format(R"(
+                                @{}
+                                D=M
+                            )", number + memSegmentRange.min);
+            res += stackPush();
+            if (++pointerToAddress.at(memory::StackPointer) > memory::memorySegmentMinMaxAdress.at(
+                    memory::StackPointer).max) {
+                throw PointerOutOfRangeException(
+                    "Stack pointer is out of range on line " + to_string(line_number));
+            }
+            break;
+        }
+        case Pointer: {
+            /**
+                                push pointer 0/1 *SP=THIS/THAT; SP++
+                                0=this address
+                                1=that address
+                            */
+            auto memorySementTokenType = it->type;
+            auto number = (++it)->number;
+            res += operationComment(operation, memorySementTokenType, number);
+
+            if (number != 0 && number != 1) {
+                throw PointerOutOfRangeException("Pointer number can be 0 or 1");
+            }
+            auto symbolAdress = number == 1
+                                    ? memory::getSymbolAdress(memory::getSegmentPointer(This))
+                                    : memory::getSymbolAdress(memory::getSegmentPointer(That));
+            res += format(R"(
+                                 @{}
+                                 A=M
+                                 D=M
+                            )", symbolAdress);
+            res += stackPush();
+            if (++pointerToAddress.at(memory::StackPointer) > memory::memorySegmentMinMaxAdress.at(
+                    memory::StackPointer).max) {
+                throw PointerOutOfRangeException(
+                    "Stack pointer is out of range on line " + to_string(line_number));
+            }
+            break;
+        }
+        default:
+            throw InvalidOperation("Invalid operaiton on line " + to_string(line_number));
     }
-    return memory::tokenTypeToMemorySegmentPointer.at(t);
+    return res;
+}
+
+string Translator::handle_pop(map<memory::MemorySegmentPointer, int> &pointerToAddress, const int line_number,
+                              vector<Token>::const_iterator &it) {
+    string res;
+    const TokenType operation = Pop;
+    switch ((++it)->type) {
+        case Local:
+        case Argument:
+        case This:
+        case That: {
+            auto memorySementTokenType = it->type;
+            auto number = (++it)->number;
+            auto memorySegmentPointer = memory::getSegmentPointer(memorySementTokenType);
+            auto symbolAdress = memory::getSymbolAdress(memorySegmentPointer);
+            if (number < 0) {
+                throw InvalidOperation("Invalid operation on line " + to_string(line_number));
+            }
+            res += operationComment(operation, memorySementTokenType, number);
+
+            // pop mem_segment1 i      addr=LCL+i; SP--; *addr=*SP
+            //TODO is it better to calculate LCL+i and use result in assembly?
+            res += format(R"(
+                @{}
+                D=A
+                @{}
+                D=D+A
+                @pop_mem_temp
+                M=D
+            )", symbolAdress, number);
+            res += stackPop();
+            if (--pointerToAddress.at(memory::StackPointer) < memory::memorySegmentMinMaxAdress.at(
+                    memory::StackPointer).min) {
+                throw PointerOutOfRangeException(
+                    "Stack pointer is out of range on line " + to_string(line_number));
+            }
+            res += R"(
+                @pop_mem_temp
+                M=D
+            )";
+            break;
+        }
+        case StaticMemorySegment: {
+            break;
+        }
+        case Temp: {
+            break;
+        }
+        case Pointer: {
+            break;
+        }
+        default:
+            throw InvalidOperation("Invalid operaiton on line " + to_string(line_number));
+    }
+    return res;
 }
 
 string Translator::translate(const vector<Token> &tokens, const string &file_name) {
@@ -69,146 +256,17 @@ string Translator::translate(const vector<Token> &tokens, const string &file_nam
             // 2 types of operations
             //move operation+memory segment+ number
             case MoveOperation: {
-                //Should be translated to
-                if (it->type == Push) {
-                    switch ((++it)->type) {
-                        case Local:
-                        case Argument:
-                        case This:
-                        case That: {
-                            //push from memory segment onto stack
-                            res += "//push " + toString(it->type);
-                            auto memorySegmentPointer = getSegmentPointer(it->type);
-                            auto symbolAdress = memory::getSymbolAdress(memorySegmentPointer);
-                            auto number = (++it)->number;
-                            res += " " + to_string(number) + "\n";
-                            if (number < 0) {
-                                throw InvalidOperation("Invalid operation on line " + to_string(line_number));
-                            }
-                            //addr=symbolAddress+i; *SP=*addr; SP++;
-                            res += format(R"(
-                                //addr=symbolAddress+i;
-                                @{}
-                                D=M
-                                @{}
-                                D=D+A
-                                A=D
-                                D=M
-
-                            )", symbolAdress, number);
-                            res += stackPush();
-                            if (++pointerToAddress.at(memory::StackPointer) >= memory::memorySegmentMinMaxAdress.at(
-                                    memory::StackPointer).max) {
-                                throw PointerOutOfRangeException(
-                                    "Stack pointer out of range on line " + to_string(line_number));
-                            }
-                            break;
-                        }
-                        case ConstantMemorySegment: {
-                            // SP=i; SP++
-                            auto number = (++it)->number;
-                            string s;
-                            check_overflow(number);
-                            auto symbolAdress = memory::symbolAdress.at(memory::StackPointer);
-                            res += "//push constant " + to_string(number) + "\n";
-                            string command = format(R"(
-                                                                @{}
-                                                                D=A
-                                                                @{}
-                                                                A=M
-                                                                M=D
-                                                                @{}
-                                                                M=M+1
-                                                          )", number, symbolAdress, symbolAdress);
-
-                            res += command;
-                            if (++pointerToAddress.at(memory::StackPointer) >= memory::memorySegmentMinMaxAdress.at(
-                                    memory::StackPointer).max) {
-                                throw PointerOutOfRangeException(
-                                    "Stack pointer out of range on line " + to_string(line_number));
-                            }
-
-                            break;
-                        }
-                        case StaticMemorySegment: {
-                            string file_name_without_extension = file_name.substr(0, file_name.find_last_of('.'));
-                            auto number = (++it)->number;
-                            res += "//push static " + to_string(number) + "\n";
-                            // @<file-name>.i
-                            // stack.push(M)
-                            res += format(R"(
-                                @{}.{}
-                                D=M
-                            )", file_name_without_extension, number);
-                            res += stackPush();
-                            if (++pointerToAddress.at(memory::StackPointer) >= memory::memorySegmentMinMaxAdress.at(
-                                    memory::StackPointer).max) {
-                                throw PointerOutOfRangeException(
-                                    "Stack pointer out of range on line " + to_string(line_number));
-                            }
-                            break;
-                        }
-                        case Temp: {
-                            //push from memory segment onto stack
-                            res += "//push " + toString(it->type);
-                            auto memorySegmentPointer = getSegmentPointer(it->type);
-                            auto memSegmentRange = memory::getMemorySegmentMinMaxAdress(memorySegmentPointer);
-
-                            auto spSymbolAdress = memory::getSymbolAdress(memory::StackPointer);
-                            auto number = (++it)->number;
-                            res += " " + to_string(number) + "\n";
-                            if (number < 0 || number > memSegmentRange.max - memSegmentRange.min) {
-                                throw InvalidOperation(
-                                    "Invalid operation on line " + to_string(line_number) +
-                                    ".Temp number must be between 0 and 7");
-                            }
-                            //addr=symbolAddress+i; *SP=*addr; SP++;
-                            res += format(R"(
-                                @{}
-                                D=M
-                            )", number + memSegmentRange.min, spSymbolAdress, spSymbolAdress);
-                            res += stackPush();
-                            if (++pointerToAddress.at(memory::StackPointer) >= memory::memorySegmentMinMaxAdress.at(
-                                    memory::StackPointer).max) {
-                                throw PointerOutOfRangeException(
-                                    "Stack pointer out of range on line " + to_string(line_number));
-                            }
-                            break;
-                        }
-                        case Pointer: {
-                            /**
-                                push pointer 0/1 *SP=THIS/THAT; SP++
-                                0=this address
-                                1=that address
-                            */
-                            auto number = (++it)->number;
-                            if (number != 0 && number != 1) {
-                                throw PointerOutOfRangeException("Pointer number can be 0 or 1");
-                            }
-                            auto symbolAdress = number == 1
-                                                    ? memory::getSymbolAdress(getSegmentPointer(This))
-                                                    : memory::getSymbolAdress(getSegmentPointer(That));
-                            res += format(R"(
-                                 @{}
-                                 A=M
-                                 D=M
-                            )", symbolAdress);
-                            res += stackPush();
-                            if (++pointerToAddress.at(memory::StackPointer) >= memory::memorySegmentMinMaxAdress.at(
-                                    memory::StackPointer).max) {
-                                throw PointerOutOfRangeException(
-                                    "Stack pointer out of range on line " + to_string(line_number));
-                            }
-                            break;
-                        }
-                        default:
-                            throw InvalidOperation("Invalid operaiton on line " + to_string(line_number));
-                    }
+                auto operation = it->type;
+                if (operation == Push) {
+                    res += handle_push(file_name, pointerToAddress, line_number, it);
+                    break;
+                } else if (operation == Pop) {
+                    res += handle_pop(pointerToAddress, line_number, it);
                     break;
                 } else {
-                    throw NotImplementedException();
-                    break;
+                    throw InvalidOperation("Invalid operaiton on line " + to_string(line_number));
                 }
+                break;
             }
             case ArithmeticOrLogicOperation: {
                 throw NotImplementedException();
@@ -217,6 +275,7 @@ string Translator::translate(const vector<Token> &tokens, const string &file_nam
                 throw InvalidOperation("Invalid operaiton on line " + to_string(line_number));
         }
     }
+
     //TODO: find if it's possible to strip margin from raw string
     return res;
 }
@@ -234,6 +293,19 @@ string Translator::stackPush() {
                             )", spSymbolAdress, spSymbolAdress);
 }
 
+string Translator::stackPop() {
+    auto spSymbolAdress = memory::getSymbolAdress(memory::StackPointer);
+    return format(R"(
+                                //D=*SP;
+                                @{}
+                                A=M
+                                D=M
+                                //SP--
+                                @{}
+                                M=M-1
+                            )", spSymbolAdress, spSymbolAdress);
+}
+
 
 void Translator::check_overflow(int value) {
     if (value < numeric_limits<signed short>::min()) {
@@ -246,4 +318,8 @@ void Translator::check_overflow(int value) {
             "Number overflow.\nMax value is " + std::to_string(
                 numeric_limits<signed short>::max()));
     }
+}
+
+string Translator::operationComment(TokenType operation, TokenType memorySementTokenType, int number) {
+    return format("//{} {} {} \n", toString(operation), toString(memorySementTokenType), number);
 }

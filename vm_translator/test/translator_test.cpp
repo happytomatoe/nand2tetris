@@ -86,15 +86,12 @@ constexpr TokenType normalMemorySegments[] = {Local, Argument, This, That};
 class NormalMemorySegmentTest : public testing::TestWithParam<pair<TokenType, int> > {
 };
 
-TEST_P(NormalMemorySegmentTest, Test) {
+TEST_P(NormalMemorySegmentTest, Push) {
     //push mem segment 1
     vector<Token> tokens = {
         Token(Push), Token(GetParam().first), Token(Number, 2),
         Token(Eof)
     };
-    for (auto token: tokens) {
-        cout << token << endl;
-    }
     auto actual = Translator::translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
     ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
@@ -126,7 +123,10 @@ list<pair<TokenType, int> > memorySegmentToSymbolAddress() {
     return result;
 }
 
-INSTANTIATE_TEST_SUITE_P(TranslatorTest, NormalMemorySegmentTest, testing::ValuesIn(memorySegmentToSymbolAddress()));
+INSTANTIATE_TEST_SUITE_P(TranslatorTest, NormalMemorySegmentTest, testing::ValuesIn(memorySegmentToSymbolAddress()),
+                         [](const testing::TestParamInfo<NormalMemorySegmentTest::ParamType>& info) {
+                             return toString(info.param.first);
+                         });
 
 TEST(TranslatorTest, PushTemp) {
     //push constant 1
@@ -134,9 +134,6 @@ TEST(TranslatorTest, PushTemp) {
         Token(Push), Token(Temp), Token(Number, 2),
         Token(Eof)
     };
-    for (auto token: tokens) {
-        cout << token << endl;
-    }
     auto actual = Translator::translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
     ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
@@ -256,11 +253,10 @@ TEST(TranslatorTest, PushPointerInvalid) {
 
 // ****************** POP *************************
 // pop mem_segment1 i      addr=LCL+i; SP--; *addr=*SP
-TEST(TranslatorTest, PopThat) {
-    //push constant 1
+TEST_P(NormalMemorySegmentTest, Pop) {
     vector<Token> tokens = {
         Token(Push), Token(ConstantMemorySegment), Token(Number, 1),
-        Token(Pop), Token(That), Token(Number, 1),
+        Token(Pop), Token(GetParam().first), Token(Number, 1),
         Token(Eof)
     };
     auto actual = Translator::translate(tokens, file_name);
@@ -270,12 +266,31 @@ TEST(TranslatorTest, PopThat) {
     // pop pointer 0/1		SP--; THIS/THAT=*SP
     // 0=this address
     // 1=that address
-    auto expected = R"(
-
-    )";
-
+    auto expected = format(R"(
+            @1
+            D=A
+            @0
+            A=M
+            M=D
+            @0
+            M=M+1
+            @{}
+            D=A
+            @1
+            D=D+A
+            @pop_mem_temp
+            M=D
+            @0
+            A=M
+            D=M
+            @0
+            M=M-1
+            @pop_mem_temp
+            M=D
+    )", GetParam().second);
     containsExpectedWithoutWhitespaces(t, expected);
 }
+
 
 //- pop static i
 //pop temp i      addr=5+i; SP--; *addr=*SP
