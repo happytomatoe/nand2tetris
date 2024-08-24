@@ -8,7 +8,8 @@
 #include "Lexer.h"
 #include "Validator.h"
 #include "Token.h"
-#include "MemorySegment.cpp"
+#include "MemorySegment.h"
+using namespace token;
 
 string Translator::translate(const string &file_path) {
     ifstream file(file_path);
@@ -36,21 +37,12 @@ inline map<memory::MemorySegmentPointer, int> initMemorySegments() {
     return pointerToAddress;
 }
 
-const map<TokenType, memory::MemorySegmentPointer> tokenTypeToMemorySegmentPointer = {
-    {Local, memory::Local},
-    {Argument, memory::Arg},
-    {This, memory::This},
-    {That, memory::That},
-    {Pointer, memory::Pointer},
-    {Temp, memory::Temp},
-};
-
 memory::MemorySegmentPointer getSegmentPointer(TokenType t) {
-    if (!tokenTypeToMemorySegmentPointer.contains(t)) {
+    if (!memory::tokenTypeToMemorySegmentPointer.contains(t)) {
         throw cpptrace::logic_error("No corresponding segment pointer for token type " +
-                                    toString(t));
+                                    token::toString(t));
     }
-    return tokenTypeToMemorySegmentPointer.at(t);
+    return memory::tokenTypeToMemorySegmentPointer.at(t);
 }
 
 string Translator::translate(const vector<Token> &tokens, const string &file_name) {

@@ -15,8 +15,8 @@ target_sources(translator
         src/translator/Translator.h
         src/translator/Lexer.h
         src/translator/Validator.h
+        src/translator/MemorySegment.h
         PRIVATE
-        src/translator/MemorySegment.cpp
         src/translator/Token.cpp
         src/translator/Translator.cpp
         src/translator/Lexer.cpp

@@ -8,6 +8,7 @@
 #include "Token.h"
 
 using namespace std;
+using namespace token;
 
 class Translator {
 public:

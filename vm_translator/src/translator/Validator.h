@@ -5,6 +5,7 @@
 #include "Token.h"
 
 using namespace std;
+using namespace token;
 
 class Validator {
 public:

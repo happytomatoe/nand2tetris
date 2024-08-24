@@ -1,5 +1,8 @@
+#pragma once
 #include <map>
 #include <cpptrace/cpptrace.hpp>
+
+#include "Token.h"
 using namespace std;
 
 //TODO: should this be a class?e
@@ -45,22 +48,31 @@ namespace memory {
         {That, 4},
     };
 
+    const map<token::TokenType, MemorySegmentPointer> tokenTypeToMemorySegmentPointer = {
+        {token::Local, Local},
+        {token::Argument, Arg},
+        {token::This, This},
+        {token::That, That},
+        {token::Pointer, Pointer},
+        {token::Temp, Temp},
+    };
 
-    Range getMemorySegmentMinMaxAdress(MemorySegmentPointer p) {
+
+    inline Range getMemorySegmentMinMaxAdress(MemorySegmentPointer p) {
         if (!memorySegmentMinMaxAdress.contains(p)) {
             throw cpptrace::invalid_argument("Invalid memory segment pointer");
         }
         return memorySegmentMinMaxAdress.at(p);
     }
 
-    int getSymbolAdress(MemorySegmentPointer p) {
+    inline int getSymbolAdress(MemorySegmentPointer p) {
         if (!symbolAdress.contains(p)) {
             throw cpptrace::invalid_argument("No symbol for memory segment pointer " + p);
         }
         return symbolAdress.at(p);
     }
-
-    string toString(MemorySegmentPointer p) {
+    //TODO: find better option than to inline
+    inline string toString(MemorySegmentPointer p) {
         switch (p) {
             case StackPointer:
                 return "SP";

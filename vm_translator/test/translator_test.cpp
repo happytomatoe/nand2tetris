@@ -1,9 +1,11 @@
+#include <list>
 #include <regex>
 #include <gtest/gtest.h>
 #include <gmock/gmock-matchers.h>
 
 #include "StringDiff.h"
 #include "Utils.h"
+#include "translator/MemorySegment.h"
 #include "translator/Translator.h"
 using namespace std;
 
@@ -54,6 +56,9 @@ TEST(TranslatorTest, MemoryInit) {
     containsExpectedWithoutWhitespaces(Translator::translate(tokens, file_name), memoryInitAsembly);
 }
 
+// ********** PUSH ****************
+
+
 TEST(TranslatorTest, PushConstant) {
     //push constant 1
     //TODO: use D=1
@@ -76,10 +81,15 @@ TEST(TranslatorTest, PushConstant) {
     containsExpectedWithoutWhitespaces(t, expected);
 }
 
-TEST(TranslatorTest, PushLocal) {
-    //push constant 1
+constexpr TokenType normalMemorySegments[] = {Local, Argument, This, That};
+
+class NormalMemorySegmentTest : public testing::TestWithParam<pair<TokenType, int> > {
+};
+
+TEST_P(NormalMemorySegmentTest, Test) {
+    //push mem segment 1
     vector<Token> tokens = {
-        Token(Push), Token(Local), Token(Number, 2),
+        Token(Push), Token(GetParam().first), Token(Number, 2),
         Token(Eof)
     };
     for (auto token: tokens) {
@@ -89,8 +99,8 @@ TEST(TranslatorTest, PushLocal) {
     auto t = Utils::preprocess(actual);
     ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
     //addr=symbolAddress+i; *SP=*addr; SP++;
-    auto expected = R"(
-        @1
+    auto expected = format(R"(
+        @{}
         D=M
         @2
         D=D+A
@@ -102,10 +112,21 @@ TEST(TranslatorTest, PushLocal) {
         @0
         M=M+1
 
-    )";
+    )", GetParam().second);
 
     containsExpectedWithoutWhitespaces(t, expected);
 }
+
+list<pair<TokenType, int> > memorySegmentToSymbolAddress() {
+    list<pair<TokenType, int> > result;
+    for (auto t: normalMemorySegments) {
+        result.emplace_back(t, memory::getSymbolAdress(memory::tokenTypeToMemorySegmentPointer.at(t)));
+    }
+
+    return result;
+}
+
+INSTANTIATE_TEST_SUITE_P(TranslatorTest, NormalMemorySegmentTest, testing::ValuesIn(memorySegmentToSymbolAddress()));
 
 TEST(TranslatorTest, PushTemp) {
     //push constant 1
@@ -231,3 +252,33 @@ TEST(TranslatorTest, PushPointerInvalid) {
     };
     EXPECT_THROW(Translator::translate(tokens, file_name), PointerOutOfRangeException);
 }
+
+
+// ****************** POP *************************
+// pop mem_segment1 i      addr=LCL+i; SP--; *addr=*SP
+TEST(TranslatorTest, PopThat) {
+    //push constant 1
+    vector<Token> tokens = {
+        Token(Push), Token(ConstantMemorySegment), Token(Number, 1),
+        Token(Pop), Token(That), Token(Number, 1),
+        Token(Eof)
+    };
+    auto actual = Translator::translate(tokens, file_name);
+    auto t = Utils::preprocess(actual);
+    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    // push pointer 0/1 *SP=THIS/THAT; SP++
+    // pop pointer 0/1		SP--; THIS/THAT=*SP
+    // 0=this address
+    // 1=that address
+    auto expected = R"(
+
+    )";
+
+    containsExpectedWithoutWhitespaces(t, expected);
+}
+
+//- pop static i
+//pop temp i      addr=5+i; SP--; *addr=*SP
+// pop pointer 0/1		SP--; THIS/THAT=*SP
+// 0=this address
+// 1=that address
