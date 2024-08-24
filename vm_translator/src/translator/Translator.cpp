@@ -51,7 +51,7 @@ string Translator::handle_push(const string &file_name,
             //push from memory segment onto stack
             auto memorySementTokenType = it->type;
             auto number = (++it)->number;
-            res += format("//push {} {} \n", toString(memorySementTokenType), number);
+            res += operationComment(operation, memorySementTokenType, number);
             auto memorySegmentPointer = memory::getSegmentPointer(memorySementTokenType);
             auto symbolAdress = memory::getSymbolAdress(memorySegmentPointer);
             if (number < 0) {
@@ -81,7 +81,7 @@ string Translator::handle_push(const string &file_name,
             auto memorySementTokenType = it->type;
             auto number = (++it)->number;
             check_overflow(number);
-            res += format("//push {} {} \n", toString(memorySementTokenType), number);
+            res += operationComment(operation, memorySementTokenType, number);
             res += format(R"(
                                                                 @{}
                                                                 D=A
@@ -155,7 +155,7 @@ string Translator::handle_push(const string &file_name,
             if (number != 0 && number != 1) {
                 throw PointerOutOfRangeException("Pointer number can be 0 or 1");
             }
-            auto symbolAdress = number == 1
+            auto symbolAdress = number == 0
                                     ? memory::getSymbolAdress(memory::getSegmentPointer(This))
                                     : memory::getSymbolAdress(memory::getSegmentPointer(That));
             res += format(R"(
