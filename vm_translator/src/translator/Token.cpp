@@ -11,7 +11,7 @@ namespace token {
             case Subtract:
             case Negate:
             case Equals:
-            case Greater:
+            case GreaterThan:
             case LessThan:
             case And:
             case Or:

@@ -5,6 +5,7 @@
 #include <memory>
 #include <regex>
 
+#include "assembly.h"
 #include "Lexer.h"
 #include "Validator.h"
 #include "Token.h"
@@ -28,6 +29,104 @@ string Translator::translate(const string &file_path) {
     return translate(tokens, base_filename);
 }
 
+
+string Translator::handle_arithmetic_logical_operation(map<memory::MemorySegmentPointer, int> &pointerToAddress,
+                                                       int line_number, vector<Token>::const_iterator it) {
+    string res;
+    switch (auto operation = it->type) {
+        case Add: {
+            res += operationComment(operation);
+            if (pointerToAddress.at(memory::StackPointer) <= memory::getMemorySegmentMinMaxAdress(
+                    memory::StackPointer).min + 1) {
+                throw InvalidOperation(format("Cant do {} operation if there is only one value on stack",
+                                              toString(operation)));
+            }
+            res += stackPopLastTwoInOrder();
+            res += R"(
+                M=D+M
+            )";
+            break;
+        }
+        case Subtract: {
+            res += operationComment(operation);
+            if (pointerToAddress.at(memory::StackPointer) <= memory::getMemorySegmentMinMaxAdress(
+                    memory::StackPointer).min + 1) {
+                throw InvalidOperation(format("Cant do {} operation if there is only one value on stack",
+                                              toString(operation)));
+            }
+            res += stackPopLastTwoInOrder();
+            res += R"(
+                M=D-M
+            )";
+            break;
+        }
+        case Negate: {
+            res += operationComment(operation);
+            if (pointerToAddress.at(memory::StackPointer) <= memory::getMemorySegmentMinMaxAdress(
+                    memory::StackPointer).min) {
+                throw InvalidOperation(format("Cant do {} operation if there is only one value on stack",
+                                              toString(operation)));
+            }
+            res += format(R"(
+                           @{}
+                           AM=M-1
+                           M=-M
+                        )", memory::getSymbolAdress(memory::StackPointer));
+            break;
+        }
+        case GreaterThan:
+        case LessThan:
+        case Equals: {
+            res += operationComment(operation);
+            if (pointerToAddress.at(memory::StackPointer) <= memory::getMemorySegmentMinMaxAdress(
+                    memory::StackPointer).min + 1) {
+                throw InvalidOperation(format("Cant do {} operation if there is only one value on stack",
+                                              toString(operation)));
+            }
+            res += logicalComparison(operation);
+            break;
+        }
+        case And: {
+            res += operationComment(operation);
+            //TODO: change condition because of stack pointer
+            if (pointerToAddress.at(memory::StackPointer) <= memory::getMemorySegmentMinMaxAdress(
+                    memory::StackPointer).min + 1) {
+                throw InvalidOperation(format("Cant do {} operation if there is only one value on stack",
+                                              toString(operation)));
+            }
+            res += stackPopLastTwoInOrder();
+            res += R"(
+                M=D&M
+            )";
+            break;
+        }
+        case Or: {
+            res += operationComment(operation);
+            if (pointerToAddress.at(memory::StackPointer) <= memory::getMemorySegmentMinMaxAdress(
+                    memory::StackPointer).min + 1) {
+                throw InvalidOperation(format("Cant do {} operation if there is only one value on stack",
+                                              toString(operation)));
+            }
+            res += stackPopLastTwoInOrder();
+            res += R"(
+                M=D|M
+            )";
+            break;
+        }
+        case Not: {
+            res += operationComment(operation);
+            res += format(R"(
+                            @{}
+                            A=M-1
+                            M=!M
+                        )", memory::getSymbolAdress(memory::StackPointer));
+            break;
+        }
+        default:
+            throw InvalidOperation("Invalid operaiton on line " + to_string(line_number));
+    }
+    return res;
+}
 
 string Translator::translate(const vector<Token> &tokens, const string &file_name) {
     string res;
@@ -66,47 +165,7 @@ string Translator::translate(const vector<Token> &tokens, const string &file_nam
                 break;
             }
             case ArithmeticOrLogicOperation: {
-                switch (it->type) {
-                    case Add:
-                        res += operationComment(it->type);
-                        if (pointerToAddress.at(memory::StackPointer) == memory::getMemorySegmentMinMaxAdress(
-                                memory::StackPointer).min) {
-                            throw InvalidOperation("Cant add if there is only one value on stack");
-                        }
-                        res += stackPop();
-                        res += R"(
-                            A=M
-                            M=D+M
-                        )";
-                        break;
-                    case Subtract:
-                        throw NotImplementedException();
-                        break;
-                    case Negate:
-                        throw NotImplementedException();
-                        break;
-                    case Equals:
-                        throw NotImplementedException();
-                        break;
-                    case Greater:
-                        throw NotImplementedException();
-
-                        break;
-                    case LessThan:
-                        throw NotImplementedException();
-                        break;
-                    case And:
-                        throw NotImplementedException();
-                        break;
-                    case Or:
-                        throw NotImplementedException();
-                        break;
-                    case Not:
-                        throw NotImplementedException();
-                        break;
-                    default:
-                        throw InvalidOperation("Invalid operaiton on line " + to_string(line_number));
-                }
+                res += handle_arithmetic_logical_operation(pointerToAddress, line_number, it);
                 break;
             }
             default:
@@ -116,6 +175,17 @@ string Translator::translate(const vector<Token> &tokens, const string &file_nam
 
     //TODO: find if it's possible to strip margin from raw string
     return res;
+}
+
+string Translator::stackPopLastTwoInOrder() {
+    auto spSymbolAdress = memory::getSymbolAdress(memory::StackPointer);
+    return format(R"(
+       @{}
+       AM=M-1
+       D=M
+       @{}
+       AM=M-1
+    )", spSymbolAdress, spSymbolAdress);
 }
 
 
@@ -408,6 +478,36 @@ string Translator::stackPop() {
                                 @{}
                                 M=M-1
                             )", spSymbolAdress, spSymbolAdress);
+}
+
+string Translator::logicalComparison(TokenType type) {
+    auto stackPointerSymbolAddress = getSymbolAdress(memory::StackPointer);
+    return format(R"(
+               @2
+               D=A
+               @{}
+               M=M-D
+               A=M
+               // get x
+               D=M
+               // get y
+               A=A+1
+               @IF_TRUE
+               //cmp
+               D-M; {}
+               // right result into x
+               (IF_TRUE)
+                    A=A-1
+                    M=-1
+                    @END_CHECK
+                    0;JMP
+               (IF_FALSE)
+                    A=A-1
+                    M=0
+               (END_CHECK)
+               @{}
+               M=M+1
+            )", stackPointerSymbolAddress, toString(assembly::tokenTypeToJumpType(type)), stackPointerSymbolAddress);;
 }
 
 

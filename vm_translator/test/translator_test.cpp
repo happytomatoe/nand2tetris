@@ -5,6 +5,7 @@
 
 #include "StringDiff.h"
 #include "Utils.h"
+#include "translator/assembly.h"
 #include "translator/MemorySegment.h"
 #include "translator/Translator.h"
 using namespace std;
@@ -412,44 +413,204 @@ TEST(TranslatorTest, PopPointerThat) {
 }
 
 // *********  Operations **************
-
+const string stackPop2 = R"(
+       @0
+       AM=M-1
+       D=M
+       @0
+       AM=M-1
+)";
 TEST(TranslatorTest, Add) {
-    auto number = 10;
     vector<Token> tokens = {
-        Token(Push), Token(Constant), Token(Number, number),
-        Token(Push), Token(Constant), Token(Number, number),
+        Token(Push), Token(Constant), Token(Number, 1),
+        Token(Push), Token(Constant), Token(Number, 1),
         Token(Add),
         Token(Eof)
     };
     auto actual = Translator::translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
     ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
-    /**
-    pop pointer 0/1		SP--; THIS/THAT=*SP
-    0=this address
-    1=that address    */
-    auto expected = format(R"(
-       @0
-       A=M
-       D=M
-       @0
-       M=M-1
-       A=M
+    auto expected = stackPop2 + R"(
        M=D+M
-    )", number);
+    )";
     containsExpectedWithoutWhitespaces(t, expected);
 }
 
 
 TEST(TranslatorTest, AddInvalid) {
-    auto number = 10;
     vector<Token> tokens = {
-        Token(Push), Token(Constant), Token(Number, number),
+        Token(Push), Token(Constant), Token(Number, 1),
         Token(Add),
         Token(Eof)
     };
     ASSERT_THROW(Translator::translate(tokens, file_name), InvalidOperation);
 }
+
+TEST(TranslatorTest, Subtract) {
+    vector<Token> tokens = {
+        Token(Push), Token(Constant), Token(Number, 1),
+        Token(Push), Token(Constant), Token(Number, 1),
+        Token(Subtract),
+        Token(Eof)
+    };
+    auto actual = Translator::translate(tokens, file_name);
+    auto t = Utils::preprocess(actual);
+    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    auto expected = stackPop2 + R"(
+       M=D-M
+    )";
+    containsExpectedWithoutWhitespaces(t, expected);
+}
+
+TEST(TranslatorTest, And) {
+    vector<Token> tokens = {
+        Token(Push), Token(Constant), Token(Number, 1),
+        Token(Push), Token(Constant), Token(Number, 1),
+        Token(And),
+        Token(Eof)
+    };
+    auto actual = Translator::translate(tokens, file_name);
+    auto t = Utils::preprocess(actual);
+    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    auto expected = stackPop2 + R"(
+       M=D&M
+    )";
+    containsExpectedWithoutWhitespaces(t, expected);
+}
+
+TEST(TranslatorTest, Or) {
+    vector<Token> tokens = {
+        Token(Push), Token(Constant), Token(Number, 1),
+        Token(Push), Token(Constant), Token(Number, 1),
+        Token(Or),
+        Token(Eof)
+    };
+    auto actual = Translator::translate(tokens, file_name);
+    auto t = Utils::preprocess(actual);
+    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    auto expected = stackPop2 + R"(
+       M=D|M
+    )";
+    containsExpectedWithoutWhitespaces(t, expected);
+}
+
+TEST(TranslatorTest, Negate) {
+    vector<Token> tokens = {
+        Token(Push), Token(Constant), Token(Number, 1),
+        Token(Negate),
+        Token(Eof)
+    };
+    auto actual = Translator::translate(tokens, file_name);
+    auto t = Utils::preprocess(actual);
+    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    auto expected = R"(
+       @0
+       AM=M-1
+       M=-M
+    )";
+    containsExpectedWithoutWhitespaces(t, expected);
+}
+
+TEST(TranslatorTest, NegateInvalid) {
+    auto number = 10;
+    vector<Token> tokens = {
+        Token(Negate),
+        Token(Eof)
+    };
+    ASSERT_THROW(Translator::translate(tokens, file_name), InvalidOperation);
+}
+
+string logicalComparison(assembly::Jump jump);
+
+TEST(TranslatorTest, Equals) {
+    vector<Token> tokens = {
+        Token(Push), Token(Constant), Token(Number, 1),
+        Token(Push), Token(Constant), Token(Number, 1),
+        Token(Equals),
+        Token(Eof)
+    };
+    auto actual = Translator::translate(tokens, file_name);
+    auto t = Utils::preprocess(actual);
+    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    auto expected = logicalComparison(assembly::JEQ);
+    containsExpectedWithoutWhitespaces(t, expected);
+}
+
+string logicalComparison(assembly::Jump jump) {
+    return format(R"(
+       // pop last 2
+       @2
+       D=A
+       @0
+       M=M-D
+       A=M
+       // get x
+       D=M
+       // get y
+       A=A+1
+       @IF_TRUE
+       //cmp
+       D-M;{}
+       // right result into x
+       (IF_TRUE)
+            A=A-1
+            M=-1
+            @END_CHECK
+            0;JMP
+       (IF_FALSE)
+            A=A-1
+            M=0
+       (END_CHECK)
+       @0
+       M=M+1
+    )", toString(jump));
+}
+
+TEST(TranslatorTest, GreaterThan) {
+    vector<Token> tokens = {
+        Token(Push), Token(Constant), Token(Number, 1),
+        Token(Push), Token(Constant), Token(Number, 1),
+        Token(GreaterThan),
+        Token(Eof)
+    };
+    auto actual = Translator::translate(tokens, file_name);
+    auto t = Utils::preprocess(actual);
+    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    auto expected = logicalComparison(assembly::Jump::JGT);
+    containsExpectedWithoutWhitespaces(t, expected);
+}
+
+TEST(TranslatorTest, LessThan) {
+    vector<Token> tokens = {
+        Token(Push), Token(Constant), Token(Number, 1),
+        Token(Push), Token(Constant), Token(Number, 11),
+        Token(LessThan),
+        Token(Eof)
+    };
+    auto actual = Translator::translate(tokens, file_name);
+    auto t = Utils::preprocess(actual);
+    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    auto expected = logicalComparison(assembly::Jump::JLT);
+    containsExpectedWithoutWhitespaces(t, expected);
+}
+TEST(TranslatorTest, Not) {
+    vector<Token> tokens = {
+        Token(Push), Token(Constant), Token(Number, 0),
+        Token(Not),
+        Token(Eof)
+    };
+    auto actual = Translator::translate(tokens, file_name);
+    auto t = Utils::preprocess(actual);
+    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    auto expected = R"(
+        @0
+        A=M-1
+        M=!M
+    )";
+    containsExpectedWithoutWhitespaces(t, expected);
+}
+
+
 
 void sigsegv_handler(int sig) {
     cpptrace::generate_trace().print();

@@ -8,7 +8,8 @@ set(CMAKE_CXX_STANDARD 20)
 
 #add_subdirectory(translator)
 
-add_library(translator)
+add_library(translator
+        src/translator/assembly.h)
 target_sources(translator
         PUBLIC
         src/translator/exception.h

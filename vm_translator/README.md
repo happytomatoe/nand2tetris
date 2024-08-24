@@ -32,17 +32,17 @@ pop local 0
 ``
 ## Arrithmetic-logical commands
 
-|cmd  |  op     | comment                               
-|-----|---------|---------------------------------------
-|add  | x + y   | integer addition (two's complement)
-|sub  | x - y   | integer subtraction (two's complement)
-|neg  | -y      | arithmetic negation (two's complement)
-|eq   | x == y  | equality
-|gt   | x > y   | greater than
-|lt   | x < y   | less than
-|and  | x And y | bit-wise And
-|or   | x Or y  | bit-wise Or
-|not  | Not y   | bit-wise Not
+|cmd  |  op     | comment                               | Possible values     |
+|-----|---------|---------------------------------------|---------------------|
+|add  | x + y   | integer addition (two's complement)   |                     |
+|sub  | x - y   | integer subtraction (two's complement)|                     |
+|neg  | -y      | arithmetic negation (two's complement)|                     |
+|eq   | x == y  | equality                              | -1 if true else 0   |
+|gt   | x > y   | greater than                          | -1 if true else 0   |
+|lt   | x < y   | less than                             | -1 if true else 0   |
+|and  | x And y | bit-wise And                          |                     |
+|or   | x Or y  | bit-wise Or                           |                     |
+|not  | Not y   | bit-wise Not                          |                     |
 
 ```text
 push constant 21
