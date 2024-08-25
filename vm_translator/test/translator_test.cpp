@@ -612,6 +612,7 @@ TEST(TranslatorTest, Not) {
 
 
 
+
 void sigsegv_handler(int sig) {
     cpptrace::generate_trace().print();
     exit(1);

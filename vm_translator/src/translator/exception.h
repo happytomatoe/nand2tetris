@@ -4,43 +4,59 @@
 #include <cpptrace/cpptrace.hpp>
 using namespace std;
 
-class InvalidOperation final : public cpptrace::exception_with_message {
+class BaseException : public cpptrace::exception_with_message {
 public:
-    explicit InvalidOperation(
+    int line_number;
+
+    explicit BaseException(
+        const int line_number,
         std::string &&message_arg,
         cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb()
     ) noexcept
-        : exception_with_message(std::move(message_arg), std::move(trace)) {
+        : exception_with_message(std::move(message_arg), std::move(trace)), line_number(line_number) {
     }
 };
 
-class UnexpectedToken final : public cpptrace::exception_with_message {
+class InvalidOperation final : public BaseException {
 public:
-    explicit UnexpectedToken(
-        std::string &&message_arg,
-        cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb()
-    ) noexcept
-        : exception_with_message(std::move(message_arg), std::move(trace)) {
+    InvalidOperation(int line_number, std::string &&message_arg = "Invalid operation",
+                     cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb()) noexcept
+        : BaseException(line_number, std::move(message_arg), std::move(trace)) {
     }
 };
 
-class NumberOverflowException final : public cpptrace::exception_with_message {
+class NumberOverflowException final : public BaseException {
 public:
-    explicit NumberOverflowException(
-        std::string &&message_arg,
-        cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb()
-    ) noexcept
-        : exception_with_message(std::move(message_arg), std::move(trace)) {
+    NumberOverflowException(int line_number, std::string &&message_arg,
+                            cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb()) noexcept
+        : BaseException(line_number, std::move(message_arg), std::move(trace)) {
     }
 };
 
-class PointerOutOfRangeException final : public cpptrace::exception_with_message {
+class UnexpectedToken final : public BaseException {
 public:
-    explicit PointerOutOfRangeException(
-        std::string &&message_arg,
-        cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb()
-    ) noexcept
-        : exception_with_message(std::move(message_arg), std::move(trace)) {
+    UnexpectedToken(int line_number, std::string &&message_arg,
+                    cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb()) noexcept
+        : BaseException(line_number, std::move(message_arg), std::move(trace)) {
+    }
+};
+
+
+class PointerOutOfRangeException final : public BaseException {
+public:
+    PointerOutOfRangeException(int line_number, std::string &&message_arg,
+                               cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb()) noexcept
+        : BaseException(line_number, std::move(message_arg), std::move(trace)) {
+    }
+};
+
+class StackPointerOutOfRangeException final : public BaseException {
+public:
+    explicit StackPointerOutOfRangeException(int line_number,
+                                             std::string &&message_arg = "Stack pointer is out of range",
+                                             cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb())
+        noexcept
+        : BaseException(line_number, std::move(message_arg), std::move(trace)) {
     }
 };
 

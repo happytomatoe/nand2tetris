@@ -22,9 +22,8 @@ public:
                     const auto memory_segment = eat(MemorySegmentCategory, it, end, line_number);
                     const auto number = eat(NumberCategory, it, end, line_number);
                     if (memory_segment.type != Constant && number.number <= 0) {
-                        throw InvalidOperation(
-                            "Expected a non negative number but got " + to_string(number.number) + " on line " +
-                            to_string(line_number));
+                        throw InvalidOperation(line_number,
+                                               "Expected a non negative number but got " + to_string(number.number));
                     }
                     break;
                 }
@@ -34,8 +33,8 @@ public:
                     break;
                 }
                 default:
-                    throw InvalidOperation("Invalid operaiton on line " + to_string(line_number));
-                //Do we need to check if there 2 elements on stack for operation?
+                    throw InvalidOperation(line_number);
+                //TODO: Do we need to check if there 2 elements on stack for operation?
             }
             if (it->category != Terminal) {
                 const string value = it->type == Number
@@ -43,7 +42,7 @@ public:
                                          : toString(it->type);
 
                 const string s = "Expected end of line or end of file but got ";
-                throw UnexpectedToken(s + value + " on line" + to_string(line_number));
+                throw UnexpectedToken(line_number, s + value );
             }
         }
     };
@@ -52,12 +51,12 @@ public:
                      const vector<Token>::const_iterator end, const int &line_number) {
         if (it == end) {
             const string s = "Unexpected end of input, expected ";
-            throw UnexpectedToken(s + toString(category) + "on line: " + to_string(line_number));
+            throw UnexpectedToken(line_number, s + toString(category));
         }
         if (it->category != category) {
             const string s = "expected ";
             throw UnexpectedToken(
-                s + toString(category) + " but got " + toString(it->type) + " on line: " + to_string(line_number));
+                line_number, s + toString(category) + " but got " + toString(it->type));
         }
 
         auto res = *it;

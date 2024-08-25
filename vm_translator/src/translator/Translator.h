@@ -49,7 +49,7 @@ private:
 
     static string stackPop();
 
-    static void check_overflow(int value);
+    static void check_overflow(int value, int line_number);
 };
 
 
