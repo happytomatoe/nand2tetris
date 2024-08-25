@@ -29,7 +29,7 @@ private:
 
     static string logicalComparison(TokenType type);
 
-    static string two_operand_operation(char operation);
+    static string two_operand_operation(string operation);
 
     static string handle_arithmetic_logical_operation(
         int &stackSize, int line_number, vector<Token>::const_iterator it);

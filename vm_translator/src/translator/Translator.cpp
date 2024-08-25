@@ -18,6 +18,7 @@ const string Translator::program_end = translator::stripMargin(R"(
         |    @END
         |    0;JMP
     )");
+
 string Translator::translate(const string &file_path) {
     ifstream file(file_path);
     if (!file.good()) {
@@ -101,7 +102,7 @@ string Translator::translate(const vector<Token> &tokens, const string &file_nam
         }
     }
     //program end
-    res +=program_end;
+    res += program_end;
     return translator::stripMargin(res);
 }
 
@@ -131,7 +132,7 @@ string Translator::handle_arithmetic_logical_operation(int &stackSize,
     switch (auto operation = it->type) {
         case Add: {
             res += operationComment(operation);
-            res += two_operand_operation('+');
+            res += two_operand_operation("M=D+M");
             if (stackSize < 2) {
                 throw InvalidOperation(line_number, format(
                                            "Not enough values to do operation {}",
@@ -148,7 +149,10 @@ string Translator::handle_arithmetic_logical_operation(int &stackSize,
                                            toString(operation)));
             }
             res += operationComment(operation);
-            res += two_operand_operation('-');
+            res += two_operand_operation(R"(
+                |D=D-M
+                |M=-D
+            )");
             stackSize--;
             break;
         }
@@ -188,7 +192,7 @@ string Translator::handle_arithmetic_logical_operation(int &stackSize,
                                            toString(operation)));
             }
             res += operationComment(operation);
-            res += two_operand_operation('&');
+            res += two_operand_operation("M=D&M");
             stackSize--;
             break;
         }
@@ -199,7 +203,7 @@ string Translator::handle_arithmetic_logical_operation(int &stackSize,
                                            "Not enough values to do operation {}",
                                            toString(operation)));
             }
-            res += two_operand_operation('|');
+            res += two_operand_operation("M=D|M");
             stackSize--;
             break;
         }
@@ -227,15 +231,15 @@ string Translator::handle_arithmetic_logical_operation(int &stackSize,
  *
  * @param operation - like +,-,&,|. Check assembly guide for details
  */
-string Translator::two_operand_operation(char operation) {
+string Translator::two_operand_operation(string operation) {
     auto spSymbolAdress = memory::getSymbolAdress(memory::Stack);
     return format(R"(
        |@{}
        |M=M-1
-       |A=M-1
+       |A=M
        |D=M
-       |A=A+1
-       |M=D{}M
+       |A=A-1
+       |{}
     )", spSymbolAdress, operation);
 }
 
@@ -342,7 +346,6 @@ string Translator::handle_push(const string &file_name,
                                     : memory::getSymbolAdress(memory::getMemorySegment(That));
             res += format(R"(
                                  |@{}
-                                 |A=M
                                  |D=M
                             )", symbolAdress);
             res += stackPush();
@@ -376,7 +379,7 @@ string Translator::handle_pop(const string &file_name,
             // pop mem_segment1 i      addr=LCL+i; SP--; *addr=*SP
             res += format(R"(
                 |@{}
-                |D=A
+                |D=M
                 |@{}
                 |D=D+A
                 |@pop_normal_segment_temp
@@ -427,6 +430,7 @@ string Translator::handle_pop(const string &file_name,
             break;
         }
         case Pointer: {
+            //TODO: add check if number is is memory range. Probably not the used one?
             auto memorySementTokenType = it->type;
             auto number = (++it)->number;
             res += operationComment(operation, memorySementTokenType, number);
@@ -532,11 +536,11 @@ void Translator::check_overflow(int value, int line_number) {
 
 
 string Translator::operationComment(TokenType operation, TokenType memorySementTokenType, int number) {
-    return format("|//{} {} {} \n", toString(operation), toString(memorySementTokenType), number);
+    return format("\n|//{} {} {} \n", toString(operation), toString(memorySementTokenType), number);
 }
 
 string Translator::operationComment(TokenType operation) {
-    return format("|//{} \n", toString(operation));
+    return format("\n|//{} \n", toString(operation));
 }
 
 

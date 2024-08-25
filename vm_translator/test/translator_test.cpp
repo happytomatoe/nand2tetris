@@ -224,7 +224,6 @@ TEST(TranslatorTest, PushPointerThis) {
     // 1=that address
     auto expected = R"(
         @3
-        A=M
         D=M
         @0
         A=M
@@ -252,7 +251,6 @@ TEST(TranslatorTest, PushPointerThat) {
     // 1=that address
     auto expected = R"(
         @4
-        A=M
         D=M
         @0
         A=M
@@ -287,7 +285,7 @@ TEST_P(NormalMemorySegmentTest, Pop) {
     ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
     auto expected = format(R"(
             @{}
-            D=A
+            D=M
             @1
             D=D+A
             @pop_normal_segment_temp
@@ -399,9 +397,9 @@ TEST(TranslatorTest, PopPointerThat) {
 const string stackPop2 = R"(
        @0
        M=M-1
-       A=M-1
+       A=M
        D=M
-       A=A+1
+       A=A-1
 )";
 TEST(TranslatorTest, Add) {
     vector<Token> tokens = {
@@ -440,7 +438,8 @@ TEST(TranslatorTest, Subtract) {
     auto t = Utils::preprocess(actual);
     ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
     auto expected = stackPop2 + R"(
-       M=D-M
+       D=D-M
+       M=-D
     )";
     containsExpectedWithoutWhitespaces(t, expected);
 }
