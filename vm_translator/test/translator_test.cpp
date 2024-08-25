@@ -7,10 +7,15 @@
 #include "Utils.h"
 #include "translator/assembly.h"
 #include "translator/MemorySegment.h"
+#include "translator/StringUtils.h"
 #include "translator/Translator.h"
 using namespace std;
 
-
+const string program_end = translator::stripMargin(R"(
+        |(END)
+        |    @END
+        |    0;JMP
+    )");
 string memoryInitAsembly = R"(
     //memory init
     @256
@@ -39,11 +44,17 @@ string memoryInitAsembly = R"(
     M=D
     //memory init end
 )";
+string stackPop = translator::stripMargin(R"(
+       |@0
+       |M=M-1
+       |A=M
+       |D=M
+)");
 string file_name = "test.vm";
 
 void containsExpectedWithoutWhitespaces(const string &actual, const string &expected) {
     auto trA = Utils::preprocess(actual);
-    auto trE = Utils::preprocess(expected);
+    auto trE = Utils::preprocess(expected + Translator::program_end);
     cout << "Actual" << endl << trA << endl << "Expected:" << endl << trE << endl;
     auto ind = trA.find(trE);
     if (ind == std::string::npos) {
@@ -63,7 +74,11 @@ TEST(TranslatorTest, MemoryInit) {
 TEST(TranslatorTest, PushConstant) {
     //push constant 1
     //TODO: use D=1
-    vector<Token> tokens = {Token(Push), Token(Constant), Token(Number, 1), Token(Eof)};
+    vector<Token> tokens = {
+
+        Token(Push), Token(Constant), Token(Number, 1),
+        Token(Eof)
+    };
     for (auto token: tokens) {
         cout << token << endl;
     }
@@ -118,7 +133,7 @@ TEST_P(NormalMemorySegmentTest, Push) {
 list<pair<TokenType, int> > memorySegmentToSymbolAddress() {
     list<pair<TokenType, int> > result;
     for (auto t: normalMemorySegments) {
-        result.emplace_back(t, memory::getSymbolAdress(memory::tokenTypeToMemorySegmentPointer.at(t)));
+        result.emplace_back(t, memory::getSymbolAdress(memory::tokenTypeToMemorySegment.at(t)));
     }
 
     return result;
@@ -161,7 +176,7 @@ TEST(TranslatorTest, PushTempInvalid) {
     for (auto token: tokens) {
         cout << token << endl;
     }
-    ASSERT_THROW(Translator::translate(tokens, file_name), InvalidOperation);
+    ASSERT_THROW(Translator::translate(tokens, file_name), AdressOutOfMemorySegmentRange);
 }
 
 
@@ -271,13 +286,6 @@ TEST_P(NormalMemorySegmentTest, Pop) {
     auto t = Utils::preprocess(actual);
     ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
     auto expected = format(R"(
-            @1
-            D=A
-            @0
-            A=M
-            M=D
-            @0
-            M=M+1
             @{}
             D=A
             @1
@@ -285,10 +293,9 @@ TEST_P(NormalMemorySegmentTest, Pop) {
             @pop_normal_segment_temp
             M=D
             @0
+            M=M-1
             A=M
             D=M
-            @0
-            M=M-1
             @pop_normal_segment_temp
             A=M
             M=D
@@ -318,12 +325,7 @@ TEST(TranslatorTest, PopStatic) {
     @<file-name>.i
     M=D
     */
-    auto expected = format(R"(
-       @0
-       A=M
-       D=M
-       @0
-       M=M-1
+    auto expected = stackPop + format(R"(
        @test.{}
        M=D
     )", number);
@@ -343,12 +345,7 @@ TEST(TranslatorTest, PopTemp) {
     /**
     pop temp i      addr=5+i; SP--; *addr=*SP
     */
-    auto expected = format(R"(
-        @0
-        A=M
-        D=M
-        @0
-        M=M-1
+    auto expected = stackPop + format(R"(
         @6
         M=D
     )", number);
@@ -370,15 +367,8 @@ TEST(TranslatorTest, PopPointerThis) {
     pop pointer 0/1		SP--; THIS/THAT=*SP
     0=this address
     1=that address    */
-    auto expected = format(R"(
-        @0
-        A=M
-        D=M
-        //SP--
-        @0
-        M=M-1
+    auto expected = stackPop + format(R"(
         @3
-        A=M
         M=D
     )", number);
     containsExpectedWithoutWhitespaces(t, expected);
@@ -398,15 +388,8 @@ TEST(TranslatorTest, PopPointerThat) {
     pop pointer 0/1		SP--; THIS/THAT=*SP
     0=this address
     1=that address    */
-    auto expected = format(R"(
-        @0
-        A=M
-        D=M
-        //SP--
-        @0
-        M=M-1
+    auto expected = stackPop + format(R"(
         @4
-        A=M
         M=D
     )", number);
     containsExpectedWithoutWhitespaces(t, expected);
@@ -415,10 +398,10 @@ TEST(TranslatorTest, PopPointerThat) {
 // *********  Operations **************
 const string stackPop2 = R"(
        @0
-       AM=M-1
+       M=M-1
+       A=M-1
        D=M
-       @0
-       AM=M-1
+       A=A+1
 )";
 TEST(TranslatorTest, Add) {
     vector<Token> tokens = {
@@ -593,6 +576,7 @@ TEST(TranslatorTest, LessThan) {
     auto expected = logicalComparison(assembly::Jump::JLT);
     containsExpectedWithoutWhitespaces(t, expected);
 }
+
 TEST(TranslatorTest, Not) {
     vector<Token> tokens = {
         Token(Push), Token(Constant), Token(Number, 0),
@@ -609,8 +593,6 @@ TEST(TranslatorTest, Not) {
     )";
     containsExpectedWithoutWhitespaces(t, expected);
 }
-
-
 
 
 void sigsegv_handler(int sig) {

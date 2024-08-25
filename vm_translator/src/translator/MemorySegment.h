@@ -5,17 +5,15 @@
 #include "Token.h"
 using namespace std;
 
-//TODO: should this be a class?e
-
 namespace memory {
-    enum MemorySegmentPointer {
-        StackPointer,
+    enum MemorySegment {
+        Stack,
         Local,
         Arg,
         This,
         That,
         Static,
-        Const,
+        Constant,
         Temp,
         Pointer,
     };
@@ -26,12 +24,12 @@ namespace memory {
     };
 
 
-    const map<MemorySegmentPointer, Range> memorySegmentMinMaxAdress = {
+    const map<MemorySegment, Range> memorySegmentMinMaxAdress = {
         {Pointer, {3, 4}},
         {Temp, {5, 12}},
 
         {Static, {16, 255}},
-        {StackPointer, {256, 2047}},
+        {Stack, {256, 2047}},
         //Dynamically allocated
         {Local, {2048, 2099}},
         {Arg, {3000, 3999}},
@@ -40,40 +38,42 @@ namespace memory {
         // we don't save const in memory. It is only used to get a value and push
         // it onto a stack
     };
-    const map<MemorySegmentPointer, int> symbolAdress = {
-        {StackPointer, 0},
+    const map<MemorySegment, int> symbolAdress = {
+        {Stack, 0},
         {Local, 1},
         {Arg, 2},
         {This, 3},
         {That, 4},
     };
 
-    const map<token::TokenType, MemorySegmentPointer> tokenTypeToMemorySegmentPointer = {
+    const map<token::TokenType, MemorySegment> tokenTypeToMemorySegment = {
         {token::Local, Local},
         {token::Argument, Arg},
         {token::This, This},
         {token::That, That},
         {token::Pointer, Pointer},
         {token::Temp, Temp},
+        {token::Static, Static},
+        {token::Constant, Stack},
     };
 
-    inline MemorySegmentPointer getSegmentPointer(token::TokenType t) {
-        if (!tokenTypeToMemorySegmentPointer.contains(t)) {
+    inline MemorySegment getMemorySegment(const token::TokenType &t) {
+        if (!tokenTypeToMemorySegment.contains(t)) {
             throw cpptrace::logic_error("No corresponding segment pointer for token type " +
                                         token::toString(t));
         }
-        return tokenTypeToMemorySegmentPointer.at(t);
+        return tokenTypeToMemorySegment.at(t);
     }
 
 
-    inline Range getMemorySegmentMinMaxAdress(MemorySegmentPointer p) {
+    inline Range getMemorySegmentMinMaxAdress(const MemorySegment &p) {
         if (!memorySegmentMinMaxAdress.contains(p)) {
             throw cpptrace::invalid_argument("Invalid memory segment pointer");
         }
         return memorySegmentMinMaxAdress.at(p);
     }
 
-    inline int getSymbolAdress(MemorySegmentPointer p) {
+    inline int getSymbolAdress(const MemorySegment &p) {
         if (!symbolAdress.contains(p)) {
             throw cpptrace::invalid_argument("No symbol for memory segment pointer " + p);
         }
@@ -81,9 +81,9 @@ namespace memory {
     }
 
     //TODO: find better option than to inline
-    inline string toString(MemorySegmentPointer p) {
+    inline string toString(const MemorySegment p) {
         switch (p) {
-            case StackPointer:
+            case Stack:
                 return "SP";
             case Local:
                 return "LCL";
@@ -95,7 +95,7 @@ namespace memory {
                 return "THAT";
             case Static:
                 return "Static";
-            case Const:
+            case Constant:
                 return "Const";
             case Temp:
                 return "Temp";

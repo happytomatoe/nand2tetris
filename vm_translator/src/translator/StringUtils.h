@@ -1,16 +1,17 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <sstream>
 using namespace std;
 
 namespace translator {
     static vector<string> split(const std::string &str, char delimeter) {
         auto result = vector<std::string>{};
-        auto ss = std::stringstream{str};
-
-        for (std::string line; std::getline(ss, line, delimeter);)
+        std::stringstream ss(str);
+        std::string line;
+        while (std::getline(ss, line, delimeter)) {
             result.push_back(line);
-
+        }
         return result;
     }
 

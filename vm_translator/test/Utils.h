@@ -30,7 +30,6 @@ public:
             if (str[i] == '/') {
                 if (i + 1 < str.length() && str[i + 1] == '/') {
                     while (i < str.length() && str[i] != '\n') {
-                        // res += str[i];
                         i++;
                     }
                 }

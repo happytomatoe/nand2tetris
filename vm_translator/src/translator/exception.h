@@ -70,10 +70,20 @@ public:
 };
 
 class NumberOutOfRangeException final : public BaseException {
-    public:
+public:
     explicit NumberOutOfRangeException(int line_number,
-                                             std::string &&message_arg = "Stack pointer is out of range",
-                                             cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb())
+                                       std::string &&message_arg = "Stack pointer is out of range",
+                                       cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb())
+        noexcept
+        : BaseException(line_number, std::move(message_arg), std::move(trace)) {
+    }
+};
+
+class AdressOutOfMemorySegmentRange final : public BaseException {
+public:
+    explicit AdressOutOfMemorySegmentRange(int line_number,
+                                           std::string &&message_arg = "Number is out of range of memory segment",
+                                           cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb())
         noexcept
         : BaseException(line_number, std::move(message_arg), std::move(trace)) {
     }

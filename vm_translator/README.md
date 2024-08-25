@@ -23,13 +23,13 @@ Solution for https://www.nand2tetris.org/project07.
 
 ## Semantics
 `push` segment index: Pushes the value of segment[index] onto the stack, where segment is argument, local, static, this, that, pointer, or temp and index is a nonnegative integer.
-``
+```
 push local 0
-``
+```
 `pop` segment index: Pops the top stack value and stores it in segment[index], where segment is argument, local, static, this, that, pointer, or temp and index is a nonnegative integer.
-``
+```
 pop local 0
-``
+```
 ## Arrithmetic-logical commands
 
 |cmd  |  op     | comment                               | Possible values     |
@@ -86,3 +86,9 @@ pop pointer 0/1		SP--; THIS/THAT=*SP
 ```
 
 
+TODO:
+- [x] Simple add test
+- [ ] Pointer add test
+- [ ] Stack test
+- [ ] Static test
+- [ ] Basic test
