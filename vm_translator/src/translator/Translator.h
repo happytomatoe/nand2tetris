@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "assembly.h"
+#include "exception.h"
 #include "MemorySegment.h"
 #include "Token.h"
 
@@ -14,12 +15,12 @@ using namespace token;
 
 class Translator {
 public:
+
     static string translate(const string &file_path);
-
-
     static string translate(const vector<Token> &tokens, const string &file_name);
 
 private:
+    static string getLine(const string & text, int line_number);
     static string logicalComparison(TokenType type);
 
     static string stackPopLastTwoInOrder();

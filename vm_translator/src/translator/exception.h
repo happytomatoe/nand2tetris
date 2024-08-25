@@ -17,6 +17,15 @@ public:
     }
 };
 
+class InvalidToken final : public BaseException {
+public:
+    InvalidToken(int line_number, std::string &&message_arg,
+                 cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb()) noexcept
+        : BaseException(line_number, std::move(message_arg), std::move(trace)) {
+    }
+};
+
+
 class InvalidOperation final : public BaseException {
 public:
     InvalidOperation(int line_number, std::string &&message_arg = "Invalid operation",
@@ -53,6 +62,16 @@ public:
 class StackPointerOutOfRangeException final : public BaseException {
 public:
     explicit StackPointerOutOfRangeException(int line_number,
+                                             std::string &&message_arg = "Stack pointer is out of range",
+                                             cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb())
+        noexcept
+        : BaseException(line_number, std::move(message_arg), std::move(trace)) {
+    }
+};
+
+class NumberOutOfRangeException final : public BaseException {
+    public:
+    explicit NumberOutOfRangeException(int line_number,
                                              std::string &&message_arg = "Stack pointer is out of range",
                                              cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb())
         noexcept

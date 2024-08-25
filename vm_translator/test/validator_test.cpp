@@ -44,5 +44,5 @@ TEST(ValidatorTest, NegativeNumberWithMoveOperation) {
     vector<Token> tokens = {
         Token(Push), Token(Local), Token(Number, -21) , Token(EOL),
     };
-    EXPECT_THROW({ Validator::checkOrder(tokens); }, InvalidOperation);
+    EXPECT_THROW({ Validator::checkOrder(tokens); }, NumberOutOfRangeException);
 }
