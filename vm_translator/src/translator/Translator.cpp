@@ -496,30 +496,33 @@ string Translator::logicalComparison(TokenType type) {
     static thread_local std::mt19937 generator;
     std::uniform_int_distribution<int> distribution(0, imax);
     int randNumber = distribution(generator);
-    auto stackPointerSymbolAddress = getSymbolAdress(memory::Stack);
+    auto spSymbolAdress = getSymbolAdress(memory::Stack);
+    auto jumpType = assembly::tokenTypeToJumpType(type);
+    auto cmpEq = format("D;{}", toString(jumpType));
+    auto cmpOther = format(R"(-D;{})", toString(jumpType));
+    string operation = jumpType == assembly::Jump::JEQ ? cmpEq : cmpOther;
+    //TODO: find or implement templatign
     return format(R"(
-               |@2
-               |D=A
-               |@{}
-               |M=M-D
+               |@{0}
+               |M=M-1
                |A=M
                |D=M
-               |A=A+1
-               |@IF_TRUE_{}
-               |D-M;{}
-               |(IF_FALSE_{})
-               |     A=A-1
+               |A=A-1
+               |D=D-M
+               |@IF_TRUE_{1}
+               |{2}
+               |(IF_FALSE_{1})
+               |     @{0}
+               |     A=M-1
                |     M=0
-               |     @END_CHECK_{}
+               |     @END_CHECK_{1}
                |     0;JMP
-               |(IF_TRUE_{})
-               |    A=A-1
-               |    M=-1
-               |(END_CHECK_{})
-               |@{}
-               |M=M+1
-            )", stackPointerSymbolAddress, randNumber, toString(assembly::tokenTypeToJumpType(type)), randNumber,
-                  randNumber, randNumber, randNumber, stackPointerSymbolAddress);;
+               |(IF_TRUE_{1})
+               |     @{0}
+               |     A=M-1
+               |     M=-1
+               |(END_CHECK_{1})
+            )", spSymbolAdress, randNumber, operation);
 }
 
 
