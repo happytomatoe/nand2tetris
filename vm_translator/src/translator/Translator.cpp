@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <random>
 #include <regex>
 
 #include "assembly.h"
@@ -483,7 +484,18 @@ string Translator::stackPop() {
                             )", spSymbolAdress, spSymbolAdress, spSymbolAdress);
 }
 
+inline int Translator::intRand(const int &min, const int &max) {
+    static thread_local std::mt19937 generator;
+    std::uniform_int_distribution<int> distribution(min, max);
+    return distribution(generator);
+}
+
 string Translator::logicalComparison(TokenType type) {
+    int imax = std::numeric_limits<int>::max();
+    // int randNumber = intRand(imin, imax);
+    static thread_local std::mt19937 generator;
+    std::uniform_int_distribution<int> distribution(0, imax);
+    int randNumber = distribution(generator);
     auto stackPointerSymbolAddress = getSymbolAdress(memory::Stack);
     return format(R"(
                |@2
@@ -493,20 +505,21 @@ string Translator::logicalComparison(TokenType type) {
                |A=M
                |D=M
                |A=A+1
-               |@IF_TRUE
-               |D-M; {}
-               |(IF_TRUE)
-               |    A=A-1
-               |     M=-1
-               |     @END_CHECK
-               |     0;JMP
-               |(IF_FALSE)
+               |@IF_TRUE_{}
+               |D-M;{}
+               |(IF_FALSE_{})
                |     A=A-1
                |     M=0
-               |(END_CHECK)
+               |     @END_CHECK_{}
+               |     0;JMP
+               |(IF_TRUE_{})
+               |    A=A-1
+               |    M=-1
+               |(END_CHECK_{})
                |@{}
                |M=M+1
-            )", stackPointerSymbolAddress, toString(assembly::tokenTypeToJumpType(type)), stackPointerSymbolAddress);;
+            )", stackPointerSymbolAddress, randNumber, toString(assembly::tokenTypeToJumpType(type)), randNumber,
+                  randNumber, randNumber, randNumber, stackPointerSymbolAddress);;
 }
 
 

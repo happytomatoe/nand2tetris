@@ -53,6 +53,8 @@ private:
 
     static string stackPop();
 
+    int intRand(const int &min, const int &max);
+
     static void checkAdressOutOfRange(const int &value, const memory::MemorySegment &p, const int &line_number);
 
     static void check_overflow(int value, int line_number);
