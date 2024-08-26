@@ -167,7 +167,7 @@ string Translator::handle_arithmetic_logical_operation(int &stackSize,
             res += operationComment(operation);
             res += format(R"(
                            |@{}
-                           |AM=M-1
+                           |A=M-1
                            |M=-M
                         )", memory::getSymbolAdress(memory::Stack));
             break;
@@ -186,7 +186,6 @@ string Translator::handle_arithmetic_logical_operation(int &stackSize,
             break;
         }
         case And: {
-            res += operationComment(operation);
             if (stackSize < 2) {
                 throw InvalidOperation(line_number, format(
                                            "Not enough values to do operation {}",

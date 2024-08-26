@@ -89,6 +89,6 @@ pop pointer 0/1		SP--; THIS/THAT=*SP
 TODO:
 - [x] Simple add test
 - [x] Pointer add test
-- [ ] Stack test
+- [X] Stack test
 - [ ] Static test
 - [ ] Basic test

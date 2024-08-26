@@ -487,7 +487,7 @@ TEST(TranslatorTest, Negate) {
     ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
     auto expected = R"(
        @0
-       AM=M-1
+       A=M-1
        M=-M
     )";
     containsExpectedWithoutWhitespaces(t, expected);
@@ -504,6 +504,14 @@ TEST(TranslatorTest, NegateInvalid) {
 
 string logicalComparison(assembly::Jump jump);
 
+string remove_branch_rand_number(string t) {
+    for (string s: {"IF_TRUE", "END_CHECK", "IF_FALSE"}) {
+        regex reg(format("({})_[\\d]+", s));
+        t = regex_replace(t, reg, "$1");
+    }
+    return t;
+}
+
 TEST(TranslatorTest, Equals) {
     vector<Token> tokens = {
         Token(Push), Token(Constant), Token(Number, 1),
@@ -514,38 +522,38 @@ TEST(TranslatorTest, Equals) {
     auto actual = Translator::translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
     ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    t = remove_branch_rand_number(t);
     auto expected = logicalComparison(assembly::JEQ);
     containsExpectedWithoutWhitespaces(t, expected);
 }
 
 string logicalComparison(assembly::Jump jump) {
+    string operation = jump == assembly::JEQ ? "D" : "-D";
     return format(R"(
        // pop last 2
-       @2
-       D=A
        @0
-       M=M-D
+       M=M-1
        A=M
        // get x
        D=M
        // get y
-       A=A+1
+       A=A-1
+       D=D-M
        @IF_TRUE
-       //cmp
-       D-M;{}
+       {};{}
        // right result into x
-       (IF_TRUE)
-            A=A-1
-            M=-1
+       (IF_FALSE)
+            @0
+            A=M-1
+            M=0
             @END_CHECK
             0;JMP
-       (IF_FALSE)
-            A=A-1
-            M=0
+       (IF_TRUE)
+            @0
+            A=M-1
+            M=-1
        (END_CHECK)
-       @0
-       M=M+1
-    )", toString(jump));
+    )", operation, toString(jump));
 }
 
 TEST(TranslatorTest, GreaterThan) {
@@ -558,6 +566,7 @@ TEST(TranslatorTest, GreaterThan) {
     auto actual = Translator::translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
     ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    t = remove_branch_rand_number(t);
     auto expected = logicalComparison(assembly::Jump::JGT);
     containsExpectedWithoutWhitespaces(t, expected);
 }
@@ -572,6 +581,7 @@ TEST(TranslatorTest, LessThan) {
     auto actual = Translator::translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
     ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    t = remove_branch_rand_number(t);
     auto expected = logicalComparison(assembly::Jump::JLT);
     containsExpectedWithoutWhitespaces(t, expected);
 }
