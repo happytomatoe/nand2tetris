@@ -84,11 +84,3 @@ pop pointer 0/1		SP--; THIS/THAT=*SP
 0=this address
 1=that address
 ```
-
-
-TODO:
-- [x] Simple add test
-- [x] Pointer add test
-- [X] Stack test
-- [ ] Static test
-- [ ] Basic test

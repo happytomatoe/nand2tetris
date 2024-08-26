@@ -20,7 +20,7 @@ const string Translator::program_end = translator::stripMargin(R"(
         |    0;JMP
     )");
 
-string Translator::translate(const string &file_path) {
+string Translator::translate(const string &file_path, const map<memory::MemorySegment, memory::Range>& memorySegmentsMinMax) {
     ifstream file(file_path);
     if (!file.good()) {
         throw runtime_error("Failed to open file: " + file_path);
@@ -38,14 +38,15 @@ string Translator::translate(const string &file_path) {
         auto tokens = Lexer::lex(text);
         Validator::checkOrder(tokens);
         string base_filename = file_path.substr(file_path.find_last_of("/\\") + 1);
-        return translate(tokens, base_filename);
+        return translate(tokens, base_filename, memorySegmentsMinMax);
     } catch (BaseException &e) {
         cout << "Exception on line " << e.line_number + 1 << endl << getLine(text, e.line_number) << endl;
         throw;
     }
 }
 
-string Translator::initializeMemorySegments() {
+
+string Translator::initializeMemorySegments(const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMaxAdress) {
     string res;
     res += "//memory init\n";
     for (auto [p,address]: memory::symbolAdress) {
@@ -54,17 +55,18 @@ string Translator::initializeMemorySegments() {
             |D=A
             |@{}
             |M=D
-        )", memory::memorySegmentMinMaxAdress.at(p).min, address);
+        )", memorySegmentsMinMaxAdress.at(p).min, address);
     }
     res += "|//memory init end\n";
     return res;
 }
 
-string Translator::translate(const vector<Token> &tokens, const string &file_name) {
+string Translator::translate(const vector<Token> &tokens, const string &file_name,
+                             const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMax) {
     string res;
     //init memory segments
     int stackSize = 0;
-    res += initializeMemorySegments();
+    res += initializeMemorySegments(memorySegmentsMinMax);
     int line_number = 0;
     const auto end = tokens.end();
     for (auto it = tokens.begin(); it != end; ++it, line_number++) {
@@ -77,15 +79,16 @@ string Translator::translate(const vector<Token> &tokens, const string &file_nam
             case MoveOperation: {
                 auto operation = it->type;
                 if (operation == Push) {
-                    res += handle_push(file_name, stackSize, line_number, it);
-                    int maxStackSize = memory::getMemorySegmentMinMaxAdress(memory::Stack).max -
-                                       memory::getMemorySegmentMinMaxAdress(memory::Stack).min + 1;
+                    res += handle_push(file_name, stackSize, line_number, it,
+                                       memorySegmentsMinMax);
+                    int maxStackSize = get(memorySegmentsMinMax, memory::Stack).max -
+                                       get(memorySegmentsMinMax, memory::Stack).min + 1;
                     if (stackSize > maxStackSize) {
                         throw StackPointerOutOfRangeException(line_number);
                     }
                     break;
                 } else if (operation == Pop) {
-                    res += handle_pop(file_name, stackSize, line_number, it);
+                    res += handle_pop(file_name, stackSize, line_number, it, memorySegmentsMinMax);
                     if (stackSize < 0) {
                         throw StackPointerOutOfRangeException(line_number);
                     }
@@ -95,7 +98,7 @@ string Translator::translate(const vector<Token> &tokens, const string &file_nam
                 }
             }
             case ArithmeticOrLogicOperation: {
-                res += handle_arithmetic_logical_operation(stackSize, line_number, it);
+                res += handle_arithmetic_logical_operation(stackSize, line_number, it, memorySegmentsMinMax);
                 break;
             }
             default:
@@ -107,6 +110,13 @@ string Translator::translate(const vector<Token> &tokens, const string &file_nam
     return translator::stripMargin(res);
 }
 
+inline memory::Range Translator::get(
+    const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMaxAddress, const memory::MemorySegment &p) {
+    if (!memorySegmentsMinMaxAddress.contains(p)) {
+        throw cpptrace::invalid_argument("Invalid memory segment pointer");
+    }
+    return memorySegmentsMinMaxAddress.at(p);
+}
 
 string Translator::getLine(const string &text, int line_number) {
     for (int i = 0, l = 0; i < text.length(); ++i) {
@@ -128,7 +138,9 @@ string Translator::getLine(const string &text, int line_number) {
 }
 
 string Translator::handle_arithmetic_logical_operation(int &stackSize,
-                                                       int line_number, vector<Token>::const_iterator it) {
+                                                       int line_number, vector<Token>::const_iterator it,
+                                                       const map<memory::MemorySegment, memory::Range> &
+                                                       memorySegmentsMinMaxAddress) {
     string res;
     switch (auto operation = it->type) {
         case Add: {
@@ -250,7 +262,9 @@ string Translator::file_name_without_extension(const string &file_name) {
 
 string Translator::handle_push(const string &file_name,
                                int &stackSize, const int line_number,
-                               vector<Token>::const_iterator &it) {
+                               vector<Token>::const_iterator &it,
+                               const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMaxAddress
+) {
     string res;
     constexpr TokenType operation = Push;
     switch ((++it)->type) {
@@ -264,7 +278,7 @@ string Translator::handle_push(const string &file_name,
             res += operationComment(operation, memorySementTokenType, number);
             auto memorySegmentPointer = memory::getMemorySegment(memorySementTokenType);
             auto symbolAdress = memory::getSymbolAdress(memorySegmentPointer);
-            checkAdressOutOfRange(number, memory::getMemorySegment(memorySementTokenType), line_number);
+            checkAdressOutOfRange(number, memorySegmentsMinMaxAddress, memory::getMemorySegment(memorySementTokenType), line_number);
 
             //addr=symbolAddress+i; *SP=*addr; SP++;
             res += format(R"(
@@ -296,7 +310,7 @@ string Translator::handle_push(const string &file_name,
         case Static: {
             auto memorySementTokenType = it->type;
             auto number = (++it)->number;
-            checkAdressOutOfRange(number, memory::getMemorySegment(memorySementTokenType), line_number);
+            checkAdressOutOfRange(number, memorySegmentsMinMaxAddress, memory::getMemorySegment(memorySementTokenType), line_number);
 
             res += operationComment(operation, memorySementTokenType, number);
             // @<file-name>.i
@@ -317,8 +331,8 @@ string Translator::handle_push(const string &file_name,
 
             res += operationComment(operation, memorySementTokenType, number);
             auto memorySegmentPointer = memory::getMemorySegment(memorySementTokenType);
-            auto memSegmentRange = getMemorySegmentMinMaxAdress(memorySegmentPointer);
-            checkAdressOutOfRange(number, memorySegmentPointer, line_number);
+            auto memSegmentRange = get(memorySegmentsMinMaxAddress, memorySegmentPointer);
+            checkAdressOutOfRange(number, memorySegmentsMinMaxAddress, memorySegmentPointer, line_number);
             //addr=symbolAddress+i; *SP=*addr; SP++;
             res += format(R"(
                                 |@{}
@@ -361,7 +375,8 @@ string Translator::handle_push(const string &file_name,
 string Translator::handle_pop(const string &file_name,
                               int &stackSize,
                               const int line_number,
-                              vector<Token>::const_iterator &it) {
+                              vector<Token>::const_iterator &it,
+                              const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMaxAddress) {
     string res;
     constexpr TokenType operation = Pop;
     switch ((++it)->type) {
@@ -373,7 +388,7 @@ string Translator::handle_pop(const string &file_name,
             auto number = (++it)->number;
             auto memorySegmentPointer = memory::getMemorySegment(memorySementTokenType);
             auto symbolAdress = memory::getSymbolAdress(memorySegmentPointer);
-            checkAdressOutOfRange(number, memorySegmentPointer, line_number);
+            checkAdressOutOfRange(number, memorySegmentsMinMaxAddress, memorySegmentPointer, line_number);
             res += operationComment(operation, memorySementTokenType, number);
 
             // pop mem_segment1 i      addr=LCL+i; SP--; *addr=*SP
@@ -397,7 +412,7 @@ string Translator::handle_pop(const string &file_name,
         case Static: {
             auto memorySementTokenType = it->type;
             auto number = (++it)->number;
-            checkAdressOutOfRange(number, memory::getMemorySegment(memorySementTokenType), line_number);
+            checkAdressOutOfRange(number, memorySegmentsMinMaxAddress, memory::getMemorySegment(memorySementTokenType), line_number);
             /**
             *- pop static i
             D=stack.pop
@@ -417,8 +432,8 @@ string Translator::handle_pop(const string &file_name,
             auto memorySementTokenType = it->type;
             auto number = (++it)->number;
             auto memorySegmentPointer = memory::getMemorySegment(memorySementTokenType);
-            auto memSegmentRange = getMemorySegmentMinMaxAdress(memorySegmentPointer);
-            checkAdressOutOfRange(number, memory::getMemorySegment(memorySementTokenType), line_number);
+            auto memSegmentRange = get(memorySegmentsMinMaxAddress, memorySegmentPointer);
+            checkAdressOutOfRange(number, memorySegmentsMinMaxAddress, memory::getMemorySegment(memorySementTokenType), line_number);
             res += operationComment(operation, memorySementTokenType, number);
             //pop temp i      addr=5+i; SP--; *addr=*SP
             res += stackPop();
@@ -525,12 +540,14 @@ string Translator::logicalComparison(TokenType type) {
 }
 
 
-void Translator::checkAdressOutOfRange(const int &value, const memory::MemorySegment &p, const int &line_number) {
+void Translator::checkAdressOutOfRange(const int &value,
+                                       const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMax,
+                                       const memory::MemorySegment &p, const int &line_number) {
     if (value < 0) {
         throw AdressOutOfMemorySegmentRange(line_number);
     }
-    auto memorySegmentMaxStackSize = memory::getMemorySegmentMinMaxAdress(p).max -
-                                     memory::getMemorySegmentMinMaxAdress(p).min;
+    auto memorySegmentMaxStackSize = get(memorySegmentsMinMax, p).max -
+                                     get(memorySegmentsMinMax, p).min;
     if (value > memorySegmentMaxStackSize) {
         throw AdressOutOfMemorySegmentRange(line_number);
     }
@@ -556,13 +573,4 @@ string Translator::operationComment(TokenType operation, TokenType memorySementT
 
 string Translator::operationComment(TokenType operation) {
     return format("\n|//{} \n", toString(operation));
-}
-
-
-inline map<memory::MemorySegment, int> Translator::initMemorySegments() {
-    map<memory::MemorySegment, int> pointerToAddress;
-    for (auto [k,v]: memory::memorySegmentMinMaxAdress) {
-        pointerToAddress[k] = v.min;
-    }
-    return pointerToAddress;
 }

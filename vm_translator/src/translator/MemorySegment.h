@@ -24,17 +24,17 @@ namespace memory {
     };
 
 
-    const map<MemorySegment, Range> memorySegmentMinMaxAdress = {
+    const map<MemorySegment, Range> defaultMemorySegmentMinMaxAdress = {
         {Pointer, {3, 4}},
         {Temp, {5, 12}},
 
         {Static, {16, 255}},
-        {Stack, {256, 2047}},
+        {Stack, {256, 299}},
         //Dynamically allocated
-        {Local, {2048, 2099}},
-        {Arg, {3000, 3999}},
-        {This, {4000, 4999}},
-        {That, {5000, 5999}},
+        {Local, {300, 399}},
+        {Arg, {400, 499}},
+        {This, {3000, 3009}},
+        {That, {3010, 4000}},
         // we don't save const in memory. It is only used to get a value and push
         // it onto a stack
     };
@@ -66,12 +66,7 @@ namespace memory {
     }
 
 
-    inline Range getMemorySegmentMinMaxAdress(const MemorySegment &p) {
-        if (!memorySegmentMinMaxAdress.contains(p)) {
-            throw cpptrace::invalid_argument("Invalid memory segment pointer");
-        }
-        return memorySegmentMinMaxAdress.at(p);
-    }
+
 
     inline int getSymbolAdress(const MemorySegment &p) {
         if (!symbolAdress.contains(p)) {
