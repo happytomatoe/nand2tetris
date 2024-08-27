@@ -1,20 +1,20 @@
 
 # VM translator 
 VM translator that translates jack into hack assembly. 
-Solution for https://www.nand2tetris.org/project07. 
+Solution for https://www.nand2tetris.org/project07 and https://www.nand2tetris.org/project08
 
 # Specification
 ## Memory segments
 
-| Segment | Role | Memory Range            | Description                                       | 
-|----------|----------|-------------------------|---------------------------------------------------|
-| Local | Function's local variables | Dynamically allocated   | Stores the function's local variables             |
-| Argument | Function's arguments | Dynamically allocated   | Stores the function's arguments                   |
-| This | Caller's 'this' | Dynamically allocated   | Stores the 'this' of the caller                   |
-| That | Caller's 'that' | Dynamically allocated   | Stores the 'that' of the caller                   |
-| Static | Static variables | RAM[16-255]             | Stores the static variables                       |
-| Constant | Constant values | Is not stored in memory | Stores the constant values [-32768,32767]         |
-| Temp | Temporary storage | RAM[5-12]               | Mapped directly to RAM locations 5-12, 8 slots    |
+| Segment | Role | Memory Range            | Description                          |  
+|----------|----------|-------------------------|--------------------------------------|
+| Local | Function's local variables | Dynamically allocated   | Stores the function's local variables|
+| Argument | Function's arguments | Dynamically allocated   | Stores the function's arguments      |
+| This | Caller's 'this' | Dynamically allocated   | Stores the 'this' of the caller      |
+| That | Caller's 'that' | Dynamically allocated   | Stores the 'that' of the caller      |
+| Static | Static variables | RAM[16-255]             | Stores the static variables          |
+| Constant | Constant values | Is not stored in memory | Stores the constant values [-32768,32767] |
+| Temp | Temporary storage | RAM[5-12]               | Mapped directly to RAM locations 5-12, 8 slots |
 | Pointer | Manipulate this & that | RAM[3-4]                | Used to manipulate the 'this' and 'that' pointers |
  
 ![alt text](doc/memory_seg.png)
@@ -84,3 +84,11 @@ pop pointer 0/1		SP--; THIS/THAT=*SP
 0=this address
 1=that address
 ```
+
+TODO
+- [x] Basic Loop test
+- [ ] Fibonacci element
+- [ ] Fibonacci series
+- [ ] Nested call
+- [ ] Simple function
+- [ ] Statics test

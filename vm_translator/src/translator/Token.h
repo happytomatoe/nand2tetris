@@ -30,17 +30,23 @@ namespace token {
         Static,
         //
         Number,
+        // Branching
+        Label,
+        IfGoto,
+        Goto,
         // Terminal
         Eof,
         EOL,
     };
 
-
     enum Category {
-        MemorySegmentCategory,
+        MemorySegment,
         MoveOperation,
         ArithmeticOrLogicOperation,
         NumberCategory,
+        IfGoToCategory,
+        GoToCategory,
+        LabelCategory,
         Terminal
     };
 
@@ -54,14 +60,15 @@ namespace token {
         TokenType type;
         Category category;
         int number;
+        string label;
 
-        explicit Token(TokenType type)
+        explicit Token(const TokenType type)
             : type(type),
               category(getCategory(type)),
               number(0) {
         }
 
-        Token(TokenType type, int number)
+        Token(TokenType type, const int number)
             : type(type),
               category(getCategory(type)),
               number(number) {
@@ -107,5 +114,8 @@ namespace token {
         {"static", Static},
         {"temp", Temp},
         {"pointer", Pointer},
+        {"label", Label},
+        {"goto", Goto},
+        {"if-goto", IfGoto},
     };
 }

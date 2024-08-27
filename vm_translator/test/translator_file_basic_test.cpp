@@ -8,7 +8,7 @@
 using namespace std;
 
 
-void test(string base_file_name) {
+void test_simple(string base_file_name, const string &base_dir = "../../data/simple/") {
     string dir_path = "out";
     if (!std::filesystem::is_directory(dir_path)) {
         if (filesystem::create_directory(dir_path))
@@ -16,7 +16,7 @@ void test(string base_file_name) {
         else
             throw cpptrace::exception_with_message("Failed to create a directory");
     }
-    string file_name = format("../../data/{}/{}.vm", base_file_name, base_file_name);
+    string file_name = format("{}{}/{}.vm", base_dir, base_file_name, base_file_name);
     auto res = Translator::translate(file_name);
     string output_file = "out/" + base_file_name + ".asm";
     if (output_file.empty()) {
@@ -27,22 +27,24 @@ void test(string base_file_name) {
     }
 }
 
-vector<string> files = {"BasicTest", "PointerTest", "SimpleAdd", "StackTest", "StaticTest"};
+vector<string> files_simple = {"BasicTest", "PointerTest", "SimpleAdd", "StackTest", "StaticTest"};
 
 TEST(FileTest, BasicFileTest) {
-    test(files[0]);
+    test_simple(files_simple[0]);
+}
 
-}
 TEST(FileTest, PointerTest) {
-    test(files[1]);
+    test_simple(files_simple[1]);
 }
+
 TEST(FileTest, SimpleAdd) {
-    test(files[2]);
+    test_simple(files_simple[2]);
 }
+
 TEST(FileTest, StackTest) {
-    test(files[3]);
+    test_simple(files_simple[3]);
 }
 
 TEST(FileTest, StaticTest) {
-    test(files[4]);
+    test_simple(files_simple[4]);
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include <set>
 #include <vector>
 
 #include "exception.h"
@@ -9,8 +10,29 @@ using namespace token;
 
 class Validator {
 public:
+    static set<string> scanLabels(const std::vector<token::Token> &tokens) {
+        set<string> labels;
+        auto line_number = 0;
+        for (int i = 0; i < tokens.size(); ++i, line_number++) {
+            if (tokens[i].category == LabelCategory) {
+                const auto label = tokens[i].label;
+                if(label.empty()) {
+                   throw EmptyLabelException(line_number);
+                }
+                if (labels.contains(label)) {
+                    throw DuplicateIdentifierException(line_number, label);
+                } else {
+                    labels.insert(label);
+                }
+            }
+        }
+
+        return labels;
+    }
+
     static void checkOrder(const vector<Token> &tokens) {
-        //check of order of tokens
+        set<string> labels = scanLabels(tokens);
+
         auto line_number = 0;
         auto size = tokens.size();
         for (int i = 0; i < size; ++i, line_number++) {
@@ -20,18 +42,41 @@ public:
                 // 2 types of operations
                 //move operation+memory segment+ number
                 case MoveOperation: {
-                    const auto memory_segment = next(MemorySegmentCategory, tokens, i, line_number);
+                    const auto memory_segment = next(MemorySegment, tokens, i, line_number);
                     i++;
                     const auto number = next(NumberCategory, tokens, i, line_number);
                     i++;
                     if (memory_segment.type != Constant && number.number < 0) {
                         throw NumberOutOfRangeException(line_number,
-                                               "Expected a non negative number but got " + to_string(number.number));
+                                                        "Expected a non negative number but got " + to_string(
+                                                            number.number));
                     }
                     break;
                 }
+                //already handled
+                case LabelCategory:
                 // AL operation
                 case ArithmeticOrLogicOperation: {
+                    break;
+                }
+                case GoToCategory: {
+                    const auto label = tokens[i].label;
+                    if(label.empty()) {
+                        throw EmptyLabelException(line_number);
+                    }
+                    if (!labels.contains(label)) {
+                        throw GoToUndeclaredLabel(line_number, label);
+                    }
+                    break;
+                }
+                case IfGoToCategory: {
+                    const auto label = tokens[i].label;
+                    if(label.empty()) {
+                        throw EmptyLabelException(line_number);
+                    }
+                    if (!labels.contains(label)) {
+                        throw IfGoToUndeclaredLabel(line_number, label);
+                    }
                     break;
                 }
                 default:
@@ -55,7 +100,7 @@ public:
             const string s = "Unexpected end of input, expected ";
             throw UnexpectedToken(line_number, s + toString(category));
         }
-        const auto token = tokens[i];
+        const auto &token = tokens[i];
         if (token.category != category) {
             const string s = "Expected ";
             throw UnexpectedToken(

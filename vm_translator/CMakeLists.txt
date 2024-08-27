@@ -38,7 +38,8 @@ find_package(GTest)
 add_executable(tests test/lexer_test.cpp
         test/validator_test.cpp
         test/translator_test.cpp
-        test/translator_file_test.cpp)
+        test/translator_file_basic_test.cpp
+        test/translator_file_advanced_test.cpp)
 target_link_libraries(tests PUBLIC gtest::gtest translator)
 
 enable_testing()

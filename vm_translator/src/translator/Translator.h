@@ -40,7 +40,7 @@ private:
     static string two_operand_operation(string operation);
 
     static string handle_arithmetic_logical_operation(
-        int &stackSize, int line_number, vector<Token>::const_iterator it, const map<memory::MemorySegment, memory::Range> &
+        int &stackSize, int line_number, Token token, const map<memory::MemorySegment, memory::Range> &
         memorySegmentsMinMaxAddress);
 
     static string operationComment(TokenType operation, TokenType memorySementTokenType, int number);
@@ -50,12 +50,12 @@ private:
     static string file_name_without_extension(const string &file_name);
 
     static string handle_push(const string &file_name,
-                              int &stackSize, const int line_number, vector<Token>::const_iterator &it, const map<memory::MemorySegment, memory::
-                              Range> &memorySegmentsMinMaxAddress);
+                              int &stackSize, const int line_number, TokenType memorySementTokenType, int number, const map<memory::MemorySegment,
+                              memory::Range> &memorySegmentsMinMaxAddress);
 
     static string handle_pop(const string &file_name,
-                             int &stackSize, const int line_number, vector<Token>::const_iterator &it, const map<memory::MemorySegment, memory::
-                             Range> &memorySegmentsMinMaxAddress);
+                             int &stackSize, const int line_number, TokenType memorySementTokenType, int number, const map<memory::MemorySegment,
+                             memory::Range> &memorySegmentsMinMaxAddress);
 
     static string stackPush();
 

@@ -28,14 +28,20 @@ namespace token {
             case Static:
             case Temp:
             case Pointer:
-                return MemorySegmentCategory;
+                return MemorySegment;
             case Number:
                 return NumberCategory;
             case Eof:
             case EOL:
                 return Terminal;
+            case Label:
+                return LabelCategory;
+            case Goto:
+                return GoToCategory;
+            case IfGoto:
+                return IfGoToCategory;
             default:
-                throw cpptrace::logic_error("Unknown token type: " + std::to_string(type));
+                throw cpptrace::logic_error("Cant find category for token type " + toString(type));
         }
     }
 
@@ -46,14 +52,20 @@ namespace token {
                 return "ArithmeticOperation";
             case MoveOperation:
                 return "MoveOperation";
-            case MemorySegmentCategory:
+            case MemorySegment:
                 return "MemorySegment";
-            case NumberCategory:
+            case Number:
                 return "NumberCategory";
             case Terminal:
                 return "Terminal";
+            case IfGoToCategory:
+                return "Jumps";
+            case LabelCategory:
+                return "Label";
+            case GoToCategory:
+                return "Goto";
             default:
-                throw cpptrace::logic_error("Unknown category: " + std::to_string((int) category));
+                throw cpptrace::logic_error("Unknown category");
         }
     }
 
@@ -76,10 +88,12 @@ namespace token {
                 return "Eof";
             case EOL:
                 return "EOL";
-            case Number:
+            case NumberCategory:
                 return "Number";
+            case Label:
+                return "Identifier";
             default:
-                throw cpptrace::logic_error("Unknown token type: " + std::to_string(t));
+                throw cpptrace::logic_error("Unknown token type");
         }
     }
 }

@@ -94,7 +94,7 @@ TEST(TranslatorTest, PushConstant) {
         Token(Push), Token(Constant), Token(Number, 1),
         Token(Eof)
     };
-    for (auto token: tokens) {
+    for (const auto& token: tokens) {
         cout << token << endl;
     }
     auto actual = Translator::translate(tokens, file_name, memorySegmentMinMaxAdress);
