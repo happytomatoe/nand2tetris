@@ -21,15 +21,14 @@ public:
                                     memory::defaultMemorySegmentMinMaxAdress);
 
     static string translate(const vector<Token> &tokens, const string &file_name,
-                            const map<memory::MemorySegment, memory::Range> &
-                                    memorySegmentsMinMax = memory::defaultMemorySegmentMinMaxAdress);
+                            const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMax = memory::defaultMemorySegmentMinMaxAdress);
 
 
     const static string program_end;
 
 private:
     static memory::Range get(const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMaxAddress,
-                                               const memory::MemorySegment &p);
+                             const memory::MemorySegment &p);
 
     static string initializeMemorySegments(const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMaxAdress);
 
@@ -40,8 +39,7 @@ private:
     static string two_operand_operation(string operation);
 
     static string handle_arithmetic_logical_operation(
-        int &stackSize, int line_number, Token token, const map<memory::MemorySegment, memory::Range> &
-        memorySegmentsMinMaxAddress);
+        int &stackSize, int line_number, const Token &token);
 
     static string operationComment(TokenType operation, TokenType memorySementTokenType, int number);
 

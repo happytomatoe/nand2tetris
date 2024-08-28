@@ -102,17 +102,18 @@ public:
 class GoToUndeclaredLabel final : public BaseException {
 public:
     explicit GoToUndeclaredLabel(int line_number,
-                                          const string &identifier,
-                                          cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb())
+                                 const string &identifier,
+                                 cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb())
         noexcept
         : BaseException(line_number, move("Undeclared goto label: " + identifier), move(trace)) {
     }
 };
+
 class IfGoToUndeclaredLabel final : public BaseException {
 public:
     explicit IfGoToUndeclaredLabel(int line_number,
-                                          const string &identifier,
-                                          cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb())
+                                   const string &identifier,
+                                   cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb())
         noexcept
         : BaseException(line_number, move("Undeclared if-goto label: " + identifier), move(trace)) {
     }
@@ -121,9 +122,29 @@ public:
 class EmptyLabelException final : public BaseException {
 public:
     explicit EmptyLabelException(int line_number,
-                                          cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb())
+                                 cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb())
         noexcept
         : BaseException(line_number, "Cant find label", move(trace)) {
+    }
+};
+
+class EmptyFunctionNameException final : public BaseException {
+public:
+    explicit EmptyFunctionNameException(int line_number,
+                                        cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb())
+        noexcept
+        : BaseException(line_number, "Expected function name", move(trace)) {
+    }
+};
+
+class NoFunctionArgCountException final : public BaseException {
+public:
+    explicit NoFunctionArgCountException(int line_number,
+                                         const string &functionName,
+                                         cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb())
+        noexcept
+        : BaseException(line_number, "Expected function argument count when declaring function " + functionName,
+                        move(trace)) {
     }
 };
 

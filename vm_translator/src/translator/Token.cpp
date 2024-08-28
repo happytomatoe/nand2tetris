@@ -40,6 +40,10 @@ namespace token {
                 return GoToCategory;
             case IfGoto:
                 return IfGoToCategory;
+            case Return:
+            case Call:
+            case Function:
+                return FunctionCategory;
             default:
                 throw cpptrace::logic_error("Cant find category for token type " + toString(type));
         }
@@ -54,7 +58,7 @@ namespace token {
                 return "MoveOperation";
             case MemorySegment:
                 return "MemorySegment";
-            case Number:
+            case NumberCategory:
                 return "NumberCategory";
             case Terminal:
                 return "Terminal";
@@ -69,8 +73,8 @@ namespace token {
         }
     }
 
-    inline map<TokenType, string> invertMap(const map<string, TokenType> &tokenTypeByString) {
-        map<TokenType, string> res;
+    inline unordered_map<TokenType, string> invertMap(const unordered_map<string, TokenType> &tokenTypeByString) {
+        unordered_map<TokenType, string> res;
         for (const auto &[key, value]: tokenTypeByString) {
             res[value] = key;
         }
@@ -88,7 +92,7 @@ namespace token {
                 return "Eof";
             case EOL:
                 return "EOL";
-            case NumberCategory:
+            case Number:
                 return "Number";
             case Label:
                 return "Identifier";

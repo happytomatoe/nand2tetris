@@ -12,12 +12,13 @@ class Validator {
 public:
     static set<string> scanLabels(const std::vector<token::Token> &tokens) {
         set<string> labels;
+        set<string> functions;
         auto line_number = 0;
         for (int i = 0; i < tokens.size(); ++i, line_number++) {
-            if (tokens[i].category == LabelCategory) {
+            if (tokens[i].type == Label) {
                 const auto label = tokens[i].label;
-                if(label.empty()) {
-                   throw EmptyLabelException(line_number);
+                if (label.empty()) {
+                    throw EmptyLabelException(line_number);
                 }
                 if (labels.contains(label)) {
                     throw DuplicateIdentifierException(line_number, label);
@@ -30,8 +31,30 @@ public:
         return labels;
     }
 
+    //TODO: should this be in upper function?
+    static unordered_map<string, int> scanFunctions(const std::vector<token::Token> &tokens) {
+        unordered_map<string, int> functionNameToArgCount;
+        auto line_number = 0;
+        for (int i = 0; i < tokens.size(); ++i, line_number++) {
+            if (tokens[i].type == Function) {
+                const auto functionName = tokens[i].functionName;
+                const auto functionArgumentCount = tokens[i].functionArgumentCount;
+                if (functionName.empty()) {
+                    throw EmptyFunctionNameException(line_number);
+                }
+                if (functionArgumentCount == -1) {
+                    throw NoFunctionArgCountException(line_number, functionName);
+                }
+                functionNameToArgCount[functionName] = functionArgumentCount;
+            }
+        }
+
+        return functionNameToArgCount;
+    }
+
     static void checkOrder(const vector<Token> &tokens) {
         set<string> labels = scanLabels(tokens);
+        unordered_map<string, int> functionNameToArgCount = scanFunctions(tokens);
 
         auto line_number = 0;
         auto size = tokens.size();
@@ -61,7 +84,7 @@ public:
                 }
                 case GoToCategory: {
                     const auto label = tokens[i].label;
-                    if(label.empty()) {
+                    if (label.empty()) {
                         throw EmptyLabelException(line_number);
                     }
                     if (!labels.contains(label)) {
@@ -71,11 +94,22 @@ public:
                 }
                 case IfGoToCategory: {
                     const auto label = tokens[i].label;
-                    if(label.empty()) {
+                    if (label.empty()) {
                         throw EmptyLabelException(line_number);
                     }
                     if (!labels.contains(label)) {
                         throw IfGoToUndeclaredLabel(line_number, label);
+                    }
+                    break;
+                }
+                case FunctionCategory: {
+                    const auto token = tokens[i];
+
+                    if (token.type == Function) {
+                        if (token.functionName.empty()) {
+                            throw EmptyFunctionNameException(line_number);
+                        }
+                    } else if (token.type == Return) {
                     }
                     break;
                 }

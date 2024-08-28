@@ -1,7 +1,9 @@
 #pragma once
 #include <map>
 #include <ostream>
+#include <unordered_map>
 #include <cpptrace/cpptrace.hpp>
+#include <utility>
 using namespace std;
 
 namespace token {
@@ -34,6 +36,10 @@ namespace token {
         Label,
         IfGoto,
         Goto,
+        //Functions
+        Function,
+        Return,
+        Call,
         // Terminal
         Eof,
         EOL,
@@ -45,6 +51,7 @@ namespace token {
         ArithmeticOrLogicOperation,
         NumberCategory,
         IfGoToCategory,
+        FunctionCategory,
         GoToCategory,
         LabelCategory,
         Terminal
@@ -59,13 +66,12 @@ namespace token {
     struct Token {
         TokenType type;
         Category category;
-        int number;
-        string label;
+        int number = 0, functionArgumentCount = -1;
+        string label, functionName;
 
         explicit Token(const TokenType type)
             : type(type),
-              category(getCategory(type)),
-              number(0) {
+              category(getCategory(type)) {
         }
 
         Token(TokenType type, const int number)
@@ -94,7 +100,7 @@ namespace token {
 
     Category getCategory(TokenType type);
 
-    const map<string, TokenType> tokenTypeMap = {
+    const unordered_map<string, TokenType> tokenTypeMap = {
         {"add", Add},
         {"sub", Subtract},
         {"neg", Negate},
@@ -117,5 +123,8 @@ namespace token {
         {"label", Label},
         {"goto", Goto},
         {"if-goto", IfGoto},
+        {"function", Function},
+        {"return", Return},
+        {"call", Call},
     };
 }

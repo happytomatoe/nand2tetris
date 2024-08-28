@@ -59,8 +59,10 @@ vector<Token> Lexer::lex(const string &text) {
                 auto last = &res.back();
                 if (last->type == Label || last->type == IfGoto || last->type == Goto) {
                     last->label = s;
+                } else if (last->type == Function || last->type == Call) {
+                    last->functionName = s;
                 } else {
-                    throw InvalidToken(line_number, format("Expected label but got: '{}'", s));
+                    throw InvalidToken(line_number, format("Unexpected token: '{}'", s));
                 }
             }
         } else if (isdigit(c)) {
@@ -69,7 +71,13 @@ vector<Token> Lexer::lex(const string &text) {
                 s += text[i + 1];
                 i++;
             }
-            res.emplace_back(Number, stoi(s));
+            int number = stoi(s);
+            const auto last = &res.back();
+            if (last->type == Function) {
+                last->functionArgumentCount = number;
+            } else {
+                res.emplace_back(Number, number);
+            }
         } else if (!empty_space_chars.contains(c)) {
             throw InvalidToken(line_number, format("Unknown character: '{}'", c));
         }

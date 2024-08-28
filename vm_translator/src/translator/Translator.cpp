@@ -66,11 +66,9 @@ string Translator::initializeMemorySegments(
 string Translator::translate(const vector<Token> &tokens, const string &file_name,
                              const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMax) {
     string res;
-    //init memory segments
     int stackSize = 0;
     res += initializeMemorySegments(memorySegmentsMinMax);
     int line_number = 0;
-    const auto end = tokens.end();
     for (int i = 0; i < tokens.size(); ++i, line_number++) {
         res += "|//line number " + to_string(line_number) + "\n";
         switch (tokens[i].category) {
@@ -103,7 +101,7 @@ string Translator::translate(const vector<Token> &tokens, const string &file_nam
                 }
             }
             case ArithmeticOrLogicOperation: {
-                res += handle_arithmetic_logical_operation(stackSize, line_number, tokens[i], memorySegmentsMinMax);
+                res += handle_arithmetic_logical_operation(stackSize, line_number, tokens[i]);
                 break;
             }
             case LabelCategory: {
@@ -166,9 +164,7 @@ string Translator::getLine(const string &text, int line_number) {
 }
 
 string Translator::handle_arithmetic_logical_operation(int &stackSize,
-                                                       int line_number, Token token,
-                                                       const map<memory::MemorySegment, memory::Range> &
-                                                       memorySegmentsMinMaxAddress) {
+                                                       const int line_number, const Token &token) {
     string res;
     switch (auto operation = token.type) {
         case Add: {

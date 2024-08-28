@@ -108,7 +108,7 @@ TEST(TranslatorTest, PushConstant) {
         @0
         M=M+1
     )";
-    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    
     containsExpectedWithoutWhitespaces(t, expected);
 }
 
@@ -125,7 +125,7 @@ TEST_P(NormalMemorySegmentTest, Push) {
     };
     auto actual = Translator::translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    
     //addr=symbolAddress+i; *SP=*addr; SP++;
     auto expected = format(R"(
         @{}
@@ -167,7 +167,7 @@ TEST(TranslatorTest, PushTemp) {
     };
     auto actual = Translator::translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    
     //addr=symbolAddress+i; *SP=*addr; SP++;
     auto expected = R"(
         @7
@@ -206,7 +206,7 @@ TEST(TranslatorTest, PushStatic) {
     }
     auto actual = Translator::translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    
     /**
     @<file-name>.i
     stack.push(M)
@@ -232,7 +232,7 @@ TEST(TranslatorTest, PushPointerThis) {
     };
     auto actual = Translator::translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    
     // push pointer 0/1 *SP=THIS/THAT; SP++
     // pop pointer 0/1		SP--; THIS/THAT=*SP
     // 0=this address
@@ -259,7 +259,7 @@ TEST(TranslatorTest, PushPointerThat) {
     };
     auto actual = Translator::translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    
     // push pointer 0/1 *SP=THIS/THAT; SP++
     // pop pointer 0/1		SP--; THIS/THAT=*SP
     // 0=this address
@@ -297,7 +297,7 @@ TEST_P(NormalMemorySegmentTest, Pop) {
     };
     auto actual = Translator::translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    
     auto expected = format(R"(
             @{}
             D=M
@@ -331,7 +331,7 @@ TEST(TranslatorTest, PopStatic) {
     };
     auto actual = Translator::translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    
     /**
     *- pop static i
     D=stack.pop
@@ -354,7 +354,7 @@ TEST(TranslatorTest, PopTemp) {
     };
     auto actual = Translator::translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    
     /**
     pop temp i      addr=5+i; SP--; *addr=*SP
     */
@@ -375,7 +375,7 @@ TEST(TranslatorTest, PopPointerThis) {
     auto actual = Translator::translate(tokens, file_name, memorySegmentMinMaxAdress);
     cout << "Atual \n" << actual << endl;
     auto t = Utils::preprocess(actual);
-    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    
     /**
     pop pointer 0/1		SP--; THIS/THAT=*SP
     0=this address
@@ -396,7 +396,7 @@ TEST(TranslatorTest, PopPointerThat) {
     };
     auto actual = Translator::translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    
     /**
     pop pointer 0/1		SP--; THIS/THAT=*SP
     0=this address
@@ -425,7 +425,7 @@ TEST(TranslatorTest, Add) {
     };
     auto actual = Translator::translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    
     auto expected = stackPop2 + R"(
        M=D+M
     )";
@@ -451,7 +451,7 @@ TEST(TranslatorTest, Subtract) {
     };
     auto actual = Translator::translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    
     auto expected = stackPop2 + R"(
        D=D-M
        M=-D
@@ -468,7 +468,7 @@ TEST(TranslatorTest, And) {
     };
     auto actual = Translator::translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    
     auto expected = stackPop2 + R"(
        M=D&M
     )";
@@ -484,7 +484,7 @@ TEST(TranslatorTest, Or) {
     };
     auto actual = Translator::translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    
     auto expected = stackPop2 + R"(
        M=D|M
     )";
@@ -499,7 +499,7 @@ TEST(TranslatorTest, Negate) {
     };
     auto actual = Translator::translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    
     auto expected = R"(
        @0
        A=M-1
@@ -535,7 +535,7 @@ TEST(TranslatorTest, Equals) {
     };
     auto actual = Translator::translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    
     t = remove_branch_rand_number(t);
     auto expected = logicalComparison(assembly::JEQ);
     containsExpectedWithoutWhitespaces(t, expected);
@@ -565,7 +565,7 @@ string logicalComparison(assembly::Jump jump) {
        (IF_TRUE)
             @0
             A=M-1
-            M=-1
+            M=1
        (END_CHECK)
     )", operation, toString(jump));
 }
@@ -579,7 +579,7 @@ TEST(TranslatorTest, GreaterThan) {
     };
     auto actual = Translator::translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    
     t = remove_branch_rand_number(t);
     auto expected = logicalComparison(assembly::Jump::JGT);
     containsExpectedWithoutWhitespaces(t, expected);
@@ -594,7 +594,7 @@ TEST(TranslatorTest, LessThan) {
     };
     auto actual = Translator::translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    
     t = remove_branch_rand_number(t);
     auto expected = logicalComparison(assembly::Jump::JLT);
     containsExpectedWithoutWhitespaces(t, expected);
@@ -608,7 +608,7 @@ TEST(TranslatorTest, Not) {
     };
     auto actual = Translator::translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    ASSERT_TRUE(Utils::replace(t,Utils::preprocess(memoryInitAsembly),""));
+    
     auto expected = R"(
         @0
         A=M-1

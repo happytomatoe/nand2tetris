@@ -1,5 +1,6 @@
 #pragma once
 #include <map>
+#include <ostream>
 #include <cpptrace/cpptrace.hpp>
 
 #include "Token.h"
@@ -21,6 +22,12 @@ namespace memory {
     //both min and max is inclusive
     struct Range {
         int min, max;
+
+        friend std::ostream & operator<<(std::ostream &os, const Range &obj) {
+            return os
+                   << "min: " << obj.min
+                   << " max: " << obj.max;
+        }
     };
 
 
@@ -46,7 +53,7 @@ namespace memory {
         {That, 4},
     };
 
-    const map<token::TokenType, MemorySegment> tokenTypeToMemorySegment = {
+    const unordered_map<token::TokenType, MemorySegment> tokenTypeToMemorySegment = {
         {token::Local, Local},
         {token::Argument, Arg},
         {token::This, This},
