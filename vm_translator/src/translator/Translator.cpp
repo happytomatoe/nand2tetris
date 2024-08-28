@@ -127,6 +127,65 @@ string Translator::translate(const vector<Token> &tokens, const string &file_nam
                 )", tokens[i].label);
                 break;
             }
+            case FunctionCategory: {
+                auto token = tokens[i];
+                if (token.type == Function) {
+                    res += format(R"(
+                    |({})
+                )", token.functionName);
+                } else if (token.type == Call) {
+                    //set arg
+                    // auto arg = sp-nargs
+                    //TODO: add return address
+                    res += format(R"(
+                            |// save {} segment
+                            |@{}
+                            |D=A
+                            |@{}
+                            |D=D-M
+                            |D=!D
+                            @temp_new_arg
+                            M=D
+                        )", token.functionArgumentCount, memory::getSymbolAdress(memory::Stack));
+                    auto returnAddress = line_number + 1;
+
+                    for (auto memorySegment: {
+                             memory::MemorySegment::Local, memory::MemorySegment::Arg,
+                             memory::MemorySegment::This, memory::MemorySegment::That
+                         }) {
+                        res += format(R"(
+                            // save {} segment
+                            |@{}
+                            |D=M
+                        )", toString(memorySegment), memory::getSymbolAdress(memorySegment));
+                        res += stackPush();
+                    }
+                    res += format(R"(
+                        |//set new ARG
+                        |@temp_new_arg
+                        |D=M
+                        |{0}
+                        |M=D
+                        |@{1}
+                        |D=M
+                        |@{2}
+                        |M=D
+                    )", memory::getSymbolAdress(memory::MemorySegment::Arg),
+                                  memory::getSymbolAdress(memory::MemorySegment::Stack),
+                                  memory::getSymbolAdress(memory::MemorySegment::Local));
+                    if (token.functionArgumentCount > 0) {
+                        res += "|D=0\n";
+                        for (int i = 0; i < token.functionArgumentCount; ++i) {
+                            res += stackPush();
+                        }
+                    }
+                } else if (token.type == Return) {
+                    throw NotImplementedException();
+                } else {
+                    throw InvalidToken(line_number, "Unknown operation");
+                }
+                break;
+            }
             default:
                 throw InvalidOperation(line_number);
         }
@@ -301,7 +360,8 @@ string Translator::handle_push(const string &file_name,
             res += operationComment(operation, memorySementTokenType, number);
             auto memorySegmentPointer = memory::getMemorySegment(memorySementTokenType);
             auto symbolAdress = memory::getSymbolAdress(memorySegmentPointer);
-            checkAdressOutOfRange(number, memorySegmentsMinMaxAddress, memory::getMemorySegment(memorySementTokenType),
+            checkAdressOutOfRange(number, memorySegmentsMinMaxAddress,
+                                  memory::getMemorySegment(memorySementTokenType),
                                   line_number);
 
             //addr=symbolAddress+i; *SP=*addr; SP++;
@@ -330,7 +390,8 @@ string Translator::handle_push(const string &file_name,
             break;
         }
         case Static: {
-            checkAdressOutOfRange(number, memorySegmentsMinMaxAddress, memory::getMemorySegment(memorySementTokenType),
+            checkAdressOutOfRange(number, memorySegmentsMinMaxAddress,
+                                  memory::getMemorySegment(memorySementTokenType),
                                   line_number);
 
             res += operationComment(operation, memorySementTokenType, number);
@@ -423,7 +484,8 @@ string Translator::handle_pop(const string &file_name,
             break;
         }
         case Static: {
-            checkAdressOutOfRange(number, memorySegmentsMinMaxAddress, memory::getMemorySegment(memorySementTokenType),
+            checkAdressOutOfRange(number, memorySegmentsMinMaxAddress,
+                                  memory::getMemorySegment(memorySementTokenType),
                                   line_number);
             /**
             *- pop static i
@@ -443,7 +505,8 @@ string Translator::handle_pop(const string &file_name,
         case Temp: {
             auto memorySegmentPointer = memory::getMemorySegment(memorySementTokenType);
             auto memSegmentRange = get(memorySegmentsMinMaxAddress, memorySegmentPointer);
-            checkAdressOutOfRange(number, memorySegmentsMinMaxAddress, memory::getMemorySegment(memorySementTokenType),
+            checkAdressOutOfRange(number, memorySegmentsMinMaxAddress,
+                                  memory::getMemorySegment(memorySementTokenType),
                                   line_number);
             res += operationComment(operation, memorySementTokenType, number);
             //pop temp i      addr=5+i; SP--; *addr=*SP
