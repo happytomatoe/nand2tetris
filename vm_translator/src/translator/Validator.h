@@ -58,6 +58,7 @@ public:
 
         auto line_number = 0;
         auto size = tokens.size();
+        bool functionDeclared = false;
         for (int i = 0; i < size; ++i, line_number++) {
             switch (tokens[i].category) {
                 case Terminal:
@@ -103,13 +104,27 @@ public:
                     break;
                 }
                 case FunctionCategory: {
-                    const auto token = tokens[i];
+                    const auto& token = tokens[i];
 
                     if (token.type == Function) {
-                        if (token.functionName.empty()) {
+                        functionDeclared = true;
+                        //already handled by scan function
+                    } else if (token.type == Return) {
+                        //can return only in function
+                        if (!functionDeclared) {
+                            throw ReturnOutsideFunctionException(line_number);
+                        }
+                    } else if (token.type == Call) {
+                        const auto functionName = tokens[i].functionName;
+                        const auto functionArgumentCount = tokens[i].functionArgumentCount;
+                        if (functionName.empty()) {
                             throw EmptyFunctionNameException(line_number);
                         }
-                    } else if (token.type == Return) {
+                        if (functionArgumentCount == -1) {
+                            throw FunctionCallMissingArgCountException(line_number, functionName);
+                        }
+                    } else {
+                        throw NotImplementedException();
                     }
                     break;
                 }

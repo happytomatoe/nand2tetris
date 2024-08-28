@@ -4,6 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <translator/Token.h>
 
 #include "Utils.h"
 #include "translator/exception.h"
@@ -11,10 +12,53 @@
 #define RED "\033[40;31m"
 #define GRN "\033[40;32m"
 #define END "\033[0m"
+
+namespace token {
+    struct Token;
+}
+
 using namespace std;
 
 class StringDiff {
 public:
+    static tuple<string, string> diff(vector<token::Token> actual, vector<token::Token> expected) {
+        ostringstream actualRes, expectedRes;
+        if (actual.size() >= expected.size()) {
+            for (auto i = 0; i < actual.size(); ++i) {
+                if (i > 0) {
+                    actualRes << ", ";
+                    if (i < expected.size()) {
+                        expectedRes << ", ";
+                    }
+                }
+                auto actualToken = actual[i];
+                if (i < expected.size()) {
+                    auto expectedToken = expected[i];
+                    compare(actualToken, expectedToken, actualRes, expectedRes);
+                } else {
+                    compare(actualToken, nullopt, actualRes, expectedRes);
+                }
+            }
+        } else if (actual.size() < expected.size()) {
+            for (auto i = 0; i < expected.size(); ++i) {
+                if (i > 0) {
+                    expectedRes << ", ";
+                    if (i < actual.size()) {
+                        actualRes << ", ";
+                    }
+                }
+                auto expectedToken = expected[i];
+                if (i < actual.size()) {
+                    auto actualToken = actual[i];
+                    compare(actualToken, expectedToken, actualRes, expectedRes);
+                } else {
+                    compare(nullopt, expectedToken, actualRes, expectedRes);
+                }
+            }
+        }
+        return {actualRes.str(), expectedRes.str()};
+    }
+
     static std::tuple<std::string, std::string> get_diff_single_line_strings(
         std::string const &actual, std::string const &expected) {
         string actualRes, expectedRes;
@@ -124,7 +168,9 @@ public:
             s.end(),
             std::back_inserter(res),
             [](const string &s) {
-                return count_if(s.begin(), s.end(), [](char c) { return !isspace(c) || c == '\n' || c == '\t'; }) == 0;
+                return count_if(s.begin(), s.end(), [](char c) {
+                    return !isspace(c) || c == '\n' || c == '\t';
+                }) == 0;
             });
         return res;
     }
@@ -150,7 +196,8 @@ public:
             auto actualLine = actualLines[i];
             auto expectedLine = expectedLines[i];
             if (actualLine != expectedLine) {
-                auto [actualLineColored, expectedLineColored] = get_diff_single_line_strings(actualLine, expectedLine);
+                auto [actualLineColored, expectedLineColored] = get_diff_single_line_strings(
+                    actualLine, expectedLine);
 
                 if (!expectedLine.empty()) {
                     res.insert(0, expectedLineColored);
@@ -165,5 +212,90 @@ public:
             }
         }
         return res;
+    }
+
+private:
+    static void compare(const optional<token::Token> &maybeActualToken,
+                        const optional<token::Token> &maybeExpectedToken,
+                        ostringstream &actualRes,
+                        ostringstream &expectedRes) {
+        if (!maybeActualToken.has_value() && !maybeExpectedToken.has_value()) {
+            throw cpptrace::logic_error("Both tokens are empty");
+        }
+
+        if (maybeActualToken.has_value() && !maybeExpectedToken.has_value()) {
+            actualRes << RED << maybeActualToken.value() << END;
+            return;
+        } else if (maybeExpectedToken.has_value() && !maybeActualToken.has_value()) {
+            expectedRes << GRN << maybeExpectedToken.value() << END;
+            return;
+        }
+        auto actualToken = maybeActualToken.value();
+        auto expectedToken = maybeExpectedToken.value();
+        if (actualToken != expectedToken) {
+            actualRes << "Token(type: ";
+            expectedRes << "Token(type: ";
+            if (actualToken.type != expectedToken.type) {
+                actualRes << RED << toString(actualToken.type) << END;
+                expectedRes << GRN << toString(expectedToken.type) << END;
+            } else {
+                actualRes << toString(actualToken.type) << END;
+                expectedRes << toString(expectedToken.type) << END;
+            }
+
+            actualRes << ", category: ";
+            expectedRes << ", category: ";
+            if (actualToken.category != expectedToken.category) {
+                actualRes << RED << toString(actualToken.category) << END;
+                expectedRes << GRN << toString(expectedToken.category) << END;
+            } else {
+                actualRes << toString(actualToken.category) << END;
+                expectedRes << toString(expectedToken.category) << END;
+            }
+            actualRes << ", number: ";
+            expectedRes << ", number: ";
+            if (actualToken.number != expectedToken.number) {
+                actualRes << RED << actualToken.number << END;
+                expectedRes << GRN << expectedToken.number << END;
+            } else {
+                actualRes << actualToken.number << END;
+                expectedRes << expectedToken.number << END;
+            }
+
+            actualRes << ", functionArgumentCount: ";
+            expectedRes << ", functionArgumentCount: ";
+            if (actualToken.functionArgumentCount != expectedToken.functionArgumentCount) {
+                actualRes << RED << actualToken.functionArgumentCount << END;
+                expectedRes << GRN << expectedToken.functionArgumentCount << END;
+            } else {
+                actualRes << actualToken.functionArgumentCount << END;
+                expectedRes << expectedToken.functionArgumentCount << END;
+            }
+
+            actualRes << ", label: ";
+            expectedRes << ", label: ";
+            if (actualToken.label != expectedToken.label) {
+                actualRes << RED << actualToken.label << END;
+                expectedRes << GRN << expectedToken.label << END;
+            } else {
+                actualRes << actualToken.label << END;
+                expectedRes << expectedToken.label << END;
+            }
+
+            actualRes << ", functionName: ";
+            expectedRes << ", functionName: ";
+            if (actualToken.functionName != expectedToken.functionName) {
+                actualRes << RED << actualToken.functionName << END;
+                expectedRes << GRN << expectedToken.functionName << END;
+            } else {
+                actualRes << actualToken.functionName << END;
+                expectedRes << expectedToken.functionName << END;
+            }
+            actualRes << ")";
+            expectedRes << ")";
+        } else {
+            actualRes << actualToken;
+            expectedRes << expectedToken;
+        }
     }
 };

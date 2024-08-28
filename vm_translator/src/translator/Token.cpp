@@ -68,6 +68,8 @@ namespace token {
                 return "Label";
             case GoToCategory:
                 return "Goto";
+            case FunctionCategory:
+                return "Function";
             default:
                 throw cpptrace::logic_error("Unknown category");
         }

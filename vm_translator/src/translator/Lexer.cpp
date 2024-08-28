@@ -73,7 +73,7 @@ vector<Token> Lexer::lex(const string &text) {
             }
             int number = stoi(s);
             const auto last = &res.back();
-            if (last->type == Function) {
+            if (last->type == Function || last->type == Call) {
                 last->functionArgumentCount = number;
             } else {
                 res.emplace_back(Number, number);

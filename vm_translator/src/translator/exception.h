@@ -148,6 +148,30 @@ public:
     }
 };
 
+class FunctionCallMissingArgCountException final : public BaseException {
+public:
+    explicit FunctionCallMissingArgCountException(int line_number,
+                                                  const string &functionName,
+                                                  cpptrace::raw_trace &&trace =
+                                                          cpptrace::detail::get_raw_trace_and_absorb())
+        noexcept
+        : BaseException(line_number, "Expected function argument count when calling " + functionName + " function",
+                        move(trace)) {
+    }
+};
+
+
+class ReturnOutsideFunctionException final : public BaseException {
+public:
+    explicit ReturnOutsideFunctionException(int line_number,
+                                            cpptrace::raw_trace &&trace =
+                                                    cpptrace::detail::get_raw_trace_and_absorb())
+        noexcept
+        : BaseException(line_number, "Expected function declaration before a return statement",
+                        move(trace)) {
+    }
+};
+
 
 class NotImplementedException final : public cpptrace::exception_with_message {
 public:
