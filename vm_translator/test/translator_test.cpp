@@ -68,7 +68,7 @@ string file_name = "test.vm";
 
 void containsExpectedWithoutWhitespaces(const string &actual, const string &expected) {
     auto trA = Utils::preprocess(actual);
-    auto trE = Utils::preprocess(expected + Translator::program_end);
+    auto trE = Utils::preprocess(expected);
     cout << "Actual" << endl << trA << endl << "Expected:" << endl << trE << endl;
     auto ind = trA.find(trE);
     if (ind == std::string::npos) {

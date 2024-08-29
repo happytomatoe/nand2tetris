@@ -59,3 +59,6 @@ TEST(FileTest, LoopTestExtended) {
 TEST(FileTest, FibonacciElement) {
     test_advanced(files_advanced[2]);
 }
+TEST(FileTest, FibonacciSeries) {
+    test_advanced(files_advanced[3]);
+}
