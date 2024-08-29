@@ -17,7 +17,7 @@ void test_simple(string base_file_name, const string &base_dir = "../../data/sim
             throw cpptrace::exception_with_message("Failed to create a directory");
     }
     string file_name = format("{}{}/{}.vm", base_dir, base_file_name, base_file_name);
-    auto res = Translator::translate(file_name);
+    auto res = Translator().translate(file_name);
     string output_file = "out/" + base_file_name + ".asm";
     if (output_file.empty()) {
         cout << res;

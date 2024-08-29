@@ -16,17 +16,21 @@ using namespace token;
 
 class Translator {
 public:
-    static string translate(const string &file_path,
-                            const map<memory::MemorySegment, memory::Range>& memorySegmentsMinMaxAdress =
+    string translate(const string &file_path,
+                            const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMaxAdress =
                                     memory::defaultMemorySegmentMinMaxAdress);
 
-    static string translate(const vector<Token> &tokens, const string &file_name,
-                            const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMax = memory::defaultMemorySegmentMinMaxAdress);
+    string translate(const vector<Token> &tokens, const string &file_name,
+                            const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMax =
+                                    memory::defaultMemorySegmentMinMaxAdress);
 
 
     const static string program_end;
 
 private:
+    int stackSize = 0;
+    int line_number = 0;
+
     static memory::Range get(const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMaxAddress,
                              const memory::MemorySegment &p);
 
@@ -34,12 +38,12 @@ private:
 
     static string getLine(const string &text, int line_number);
 
-    static string logicalComparison(TokenType type);
+    string logicalComparison(TokenType type);
 
-    static string two_operand_operation(string operation);
+    string two_operand_operation(string operation);
 
-    static string handle_arithmetic_logical_operation(
-        int &stackSize, int line_number, const Token &token);
+    string handle_arithmetic_logical_operation(
+        const int line_number, const Token &token);
 
     static string operationComment(TokenType operation, TokenType memorySementTokenType, int number);
 
@@ -47,21 +51,23 @@ private:
 
     static string file_name_without_extension(const string &file_name);
 
-    static string handle_push(const string &file_name,
-                              int &stackSize, const int line_number, TokenType memorySementTokenType, int number, const map<memory::MemorySegment,
-                              memory::Range> &memorySegmentsMinMaxAddress);
+    string handle_push(const string &file_name,
+                       const int line_number, TokenType memorySementTokenType, int number,
+                       const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMaxAddress);
 
-    static string handle_pop(const string &file_name,
-                             int &stackSize, const int line_number, TokenType memorySementTokenType, int number, const map<memory::MemorySegment,
-                             memory::Range> &memorySegmentsMinMaxAddress);
+    string handle_pop(const string &file_name,
+                      const int line_number, TokenType memorySementTokenType, int number,
+                      const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMaxAddress);
 
-    static string stackPush();
+    string stackPush();
 
-    static string stackPop();
+    string stackPop();
 
     int intRand(const int &min, const int &max);
 
-    static void checkAdressOutOfRange(const int &value, const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMax, const memory::MemorySegment &p, const
+    static void checkAdressOutOfRange(const int &value,
+                                      const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMax,
+                                      const memory::MemorySegment &p, const
                                       int &line_number);
 
     static void check_overflow(int value, int line_number);

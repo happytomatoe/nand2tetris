@@ -17,7 +17,7 @@ void test_advanced(string base_file_name, const string &base_dir = "../../data/a
             throw cpptrace::exception_with_message("Failed to create a directory");
     }
     string file_name = base_dir + format("{}.vm", base_file_name);
-    auto res = Translator::translate(file_name);
+    auto res = Translator().translate(file_name);
     string output_file = "out/" + base_file_name + ".asm";
     auto output_dir = output_file.substr(0, output_file.find_last_of('/'));
     if (!std::filesystem::is_directory(output_dir)) {

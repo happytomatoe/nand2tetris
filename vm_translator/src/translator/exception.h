@@ -172,6 +172,16 @@ public:
     }
 };
 
+class StackPopOnEmptyStack final : public BaseException {
+public:
+    explicit StackPopOnEmptyStack(int line_number,
+                                  cpptrace::raw_trace &&trace =
+                                          cpptrace::detail::get_raw_trace_and_absorb())
+        noexcept
+        : BaseException(line_number, "Cannot do stack pop on empty stack", move(trace)) {
+    }
+};
+
 
 class NotImplementedException final : public cpptrace::exception_with_message {
 public:
