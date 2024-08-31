@@ -87,8 +87,8 @@ pop pointer 0/1		SP--; THIS/THAT=*SP
 
 TODO
 - [x] Basic Loop test
-- [ ] Fibonacci element
+- [X] Fibonacci element
 - [X] Fibonacci series
-- [ ] Nested call
-- [ ] Simple function
-- [ ] Statics test
+- [X] Nested call 
+- [X] Simple function
+- [X] Statics test

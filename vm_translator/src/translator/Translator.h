@@ -18,11 +18,11 @@ class Translator {
 public:
     string translate(const string &file_path,
                      const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMaxAdress =
-                             memory::defaultMemorySegmentMinMaxAdress);
+                             memory::defaultMemorySegmentMinMaxAdress, bool memory_init = true);
 
     string translate(const vector<Token> &tokens, const string &file_name,
                      const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMax =
-                             memory::defaultMemorySegmentMinMaxAdress);
+                             memory::defaultMemorySegmentMinMaxAdress, bool memory_init = true);
 
 
     const static string program_end;
@@ -30,7 +30,6 @@ public:
 private:
     int stack_size = 0;
     int line_number = 0;
-    int id = 0;
     const vector<memory::MemorySegment> memory_segments_to_save_on_function_call = {
         memory::MemorySegment::Local, memory::MemorySegment::Arg,
         memory::MemorySegment::This, memory::MemorySegment::That
@@ -50,11 +49,17 @@ private:
 
     static string initializeMemorySegments(const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMaxAdress);
 
+    string handle_function_call(const Token &token);
+
+    string handle_function_return();
+
+    string handle_function_declaration(const Token &token);
+
     static string getLine(const string &text, int line_number);
 
     string logicalComparison(TokenType type);
 
-    string two_operand_operation(string operation);
+    static string two_operand_operation(const string &operation);
 
     string handle_arithmetic_logical_operation(
         const int line_number, const Token &token);
