@@ -10,7 +10,6 @@ using namespace token;
 
 class Validator {
 public:
-    //TODO: add check if call arg count corresponds to function arg count
     static set<string> scanLabels(const std::vector<token::Token> &tokens) {
         set<string> labels;
         set<string> functions;
@@ -32,7 +31,6 @@ public:
         return labels;
     }
 
-    //TODO: should this be in upper function?
     static unordered_map<string, int> scanFunctions(const std::vector<token::Token> &tokens) {
         unordered_map<string, int> functionNameToArgCount;
         auto line_number = 0;

@@ -82,7 +82,6 @@ namespace memory {
         return symbolAdress.at(p);
     }
 
-    //TODO: find better option than to inline
     inline string toString(const MemorySegment p) {
         switch (p) {
             case Stack:
