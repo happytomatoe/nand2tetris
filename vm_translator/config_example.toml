@@ -1,7 +1,10 @@
 [memory]
-initialize = true
+# initialize memory segments
+initialize = false
+# clear stack after pop or other similar operations
 stack.clear = true
 [memory.segment-addresses]
+#Set min max for each memory segment
 stack = { min = 256, max = 299 }
 local = { min = 256, max = 399 }
 arg = { min = 256, max = 499 }

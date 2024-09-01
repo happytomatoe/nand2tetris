@@ -4,7 +4,13 @@
 #include <toml.hpp>
 
 Config ConfigParser::parse_file(const string &file_location) {
-    return parse(toml::parse(file_location));
+    try {
+        auto config = toml::parse(file_location);
+        return parse(config);
+    } catch (exception &e) {
+        cerr << "Exception when trying to parse config file " << file_location << endl;
+        throw;
+    }
 }
 
 const map<string, memory::MemorySegment> segmentsTypes = {
@@ -14,20 +20,22 @@ const map<string, memory::MemorySegment> segmentsTypes = {
 };
 
 Config ConfigParser::parse_text(const string &config) {
+    if (std::ifstream file(config); file.peek() == std::ifstream::traits_type::eof()) {
+        throw std::runtime_error("Config file is empty");
+    }
     return parse(toml::parse_str(config));
 }
 
 Config ConfigParser::parse(const toml::basic_value<toml::type_config> &config) {
     //TODO: add validation
-    const auto memory = config.at("memory");
-    const bool clear_stack = toml::find_or<bool>(memory, "stack", "clear", true);
-    const bool memory_init = toml::find_or<bool>(memory, "stack", "initialize", true);
+    const bool clear_stack = toml::find_or<bool>(config, "memory", "stack", "clear", true);
+    const bool memory_init = toml::find_or<bool>(config, "memory", "initialize", true);
     map<memory::MemorySegment, memory::Range> memory_segment_min_max_adress =
             memory::default_memory_segment_min_max_adress;
     for (const auto &[segment_string, segment_type]: segmentsTypes) {
-        auto min = toml::find<int>(config, "memory", "segment-addresses", segment_string, "min");
-        auto max = toml::find<int>(config, "memory", "segment-addresses", segment_string, "min");
-        memory_segment_min_max_adress.emplace(segment_type, memory::Range{min, max});
+        const auto min = toml::find<int>(config, "memory", "segment-addresses", segment_string, "min");
+        const auto max = toml::find<int>(config, "memory", "segment-addresses", segment_string, "max");
+        memory_segment_min_max_adress[segment_type] = memory::Range{min, max};
     }
     return Config{memory_segment_min_max_adress, clear_stack, memory_init};
 }

@@ -106,7 +106,10 @@ int main(int argc, char *argv[]) {
     //check if there are .vm files inside input directory
     const filesystem::path path(input_file_or_dir);
     error_code ec; // For using the non-throwing overloads of functions below.
-    auto config = config_file.has_value() ? ConfigParser::parse_file(config_file.value()) : Translator::default_config;
+    if (config_file.has_value()) {
+        cout << "Parsing config file " << config_file.value() << endl;
+    }
+    const auto config = config_file.has_value() ? ConfigParser::parse_file(config_file.value()) : Translator::default_config;
     if (is_directory(path, ec)) {
         handle_dir(path, config);
     }
