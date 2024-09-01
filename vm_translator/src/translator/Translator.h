@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "ConfigParser.h"
 #include "MemorySegment.h"
 #include "Token.h"
 
@@ -14,22 +15,17 @@ using namespace token;
 
 class Translator {
 public:
-    string translate(const string &file_path,
-                     const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMaxAdress =
-                             memory::defaultMemorySegmentMinMaxAdress, bool memory_init = true,
-                     bool clear_stack = true);
+    const static Config default_config;
 
+    string translate(const string &file_path, const Config &config = default_config);
 
-    string translate(const vector<Token> &tokens, const string &file_name,
-                     const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMax =
-                             memory::defaultMemorySegmentMinMaxAdress, bool memory_init = true,
-                     bool clear_stack = true);
-
+    string translate(const vector<Token> &tokens, const string &file_name, const Config &config = default_config);
 
     const static string program_end;
 
 private:
-    static bool has_no_goto_or_if_goto(const vector<Token> & tokens);
+    static bool has_no_goto_or_if_goto(const vector<Token> &tokens);
+
     bool stack_size_counting_enabled = true;
     int stack_size = 0;
     int line_number = 0;
@@ -62,7 +58,7 @@ private:
 
     string logicalComparison(const TokenType &type, bool clear_stack);
 
-    string two_operand_operation(const TokenType &operation, const string &operation_instructions, const bool clear_stack);
+    string two_operand_operation(const TokenType &operation, const string &operation_instructions, bool clear_stack);
 
     string handle_arithmetic_logical_operation(
         int line_number, const Token &token, bool clear_stack);

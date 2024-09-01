@@ -6,7 +6,9 @@
 #include <fstream>
 
 using namespace std;
-
+const auto defaul_config = Config{
+    memory::default_memory_segment_min_max_adress, true, true
+};
 
 void test_simple(string base_file_name, const string &base_dir = "../../data/simple/") {
     string dir_path = "out";

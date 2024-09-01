@@ -31,7 +31,7 @@ namespace memory {
     };
 
 
-    const map<MemorySegment, Range> defaultMemorySegmentMinMaxAdress = {
+    const map<MemorySegment, Range> default_memory_segment_min_max_adress = {
         {Pointer, {3, 4}},
         {Temp, {5, 12}},
 
@@ -45,7 +45,7 @@ namespace memory {
         // we don't save const in memory. It is only used to get a value and push
         // it onto a stack
     };
-    const map<MemorySegment, int> symbolAdress = {
+    const map<MemorySegment, int> symbol_adress = {
         {Stack, 0},
         {Local, 1},
         {Arg, 2},
@@ -53,7 +53,7 @@ namespace memory {
         {That, 4},
     };
 
-    const unordered_map<token::TokenType, MemorySegment> tokenTypeToMemorySegment = {
+    const unordered_map<token::TokenType, MemorySegment> token_type_to_memory_segment = {
         {token::Local, Local},
         {token::Argument, Arg},
         {token::This, This},
@@ -65,21 +65,21 @@ namespace memory {
     };
 
     inline MemorySegment getMemorySegment(const token::TokenType &t) {
-        if (!tokenTypeToMemorySegment.contains(t)) {
+        if (!token_type_to_memory_segment.contains(t)) {
             throw cpptrace::logic_error("No corresponding segment pointer for token type " +
                                         token::toString(t));
         }
-        return tokenTypeToMemorySegment.at(t);
+        return token_type_to_memory_segment.at(t);
     }
 
 
 
 
     inline int getSymbolAdress(const MemorySegment &p) {
-        if (!symbolAdress.contains(p)) {
+        if (!symbol_adress.contains(p)) {
             throw cpptrace::invalid_argument("No symbol for memory segment pointer " + p);
         }
-        return symbolAdress.at(p);
+        return symbol_adress.at(p);
     }
 
     inline string toString(const MemorySegment p) {

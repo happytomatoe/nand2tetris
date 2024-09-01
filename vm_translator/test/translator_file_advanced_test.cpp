@@ -22,7 +22,7 @@ void test_advanced(string base_file_name, const bool memory_init = true,
     string dir_path = "out";
     create_dir_if_not_exists(dir_path);
     string file_name = base_dir + format("{}.vm", base_file_name);
-    auto res = Translator().translate(file_name, memory::defaultMemorySegmentMinMaxAdress, memory_init);
+    auto res = Translator().translate(file_name);
     string output_file = "out/" + base_file_name + ".asm";
     auto output_dir = output_file.substr(0, output_file.find_last_of('/'));
     if (!std::filesystem::is_directory(output_dir)) {

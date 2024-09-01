@@ -5,6 +5,7 @@
 
 #include "Translator.h"
 #include "assembly.h"
+#include "ConfigParser.h"
 #include "Lexer.h"
 #include "Validator.h"
 #include "Token.h"
@@ -12,9 +13,11 @@
 #include "StringUtils.h"
 using namespace token;
 
-string Translator::translate(const string &file_path,
-                             const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMaxAdress,
-                             const bool memory_init, bool clear_stack) {
+const Config Translator::default_config = Config{
+    memory::default_memory_segment_min_max_adress, true, true
+};
+
+string Translator::translate(const string &file_path, const Config &config) {
     ifstream file(file_path);
     if (!file.good()) {
         throw runtime_error("Failed to open file: " + file_path);
@@ -32,7 +35,7 @@ string Translator::translate(const string &file_path,
         auto tokens = Lexer::lex(text);
         Validator::checkOrder(tokens);
         string base_filename = file_path.substr(file_path.find_last_of("/\\") + 1);
-        auto s = translate(tokens, base_filename, memorySegmentsMinMaxAdress, memory_init, clear_stack);
+        auto s = translate(tokens, base_filename, config);
         return s;
     } catch (BaseException &e) {
         cout << "Exception on line " << e.line_number + 1 << endl << getLine(text, e.line_number) << endl;
@@ -41,9 +44,8 @@ string Translator::translate(const string &file_path,
 }
 
 
-string Translator::translate(const vector<Token> &tokens, const string &file_name,
-                             const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMax,
-                             const bool memory_init, const bool clear_stack) {
+string Translator::translate(const vector<Token> &tokens, const string &file_name, const Config &config) {
+    const auto &[memorySegmentsMinMax,clear_stack,memory_init] = config;
     stack_size_counting_enabled = has_no_goto_or_if_goto(tokens);
     string res;
     if (memory_init) {
@@ -136,7 +138,7 @@ string Translator::initializeMemorySegments(
     const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMaxAdress) {
     string res;
     res += "//memory init\n";
-    for (auto [p,address]: memory::symbolAdress) {
+    for (auto [p,address]: memory::symbol_adress) {
         res += format(R"(
             |//memory segment {}
             |@{}
@@ -435,7 +437,7 @@ string Translator::two_operand_operation(const TokenType &operation, const strin
        |D=M{}
        |A=A-1
        |{}
-    )", getSymbolAdress(memory::Stack), clear_stack ? "" : "M=0", operation_instructions);
+    )", getSymbolAdress(memory::Stack), clear_stack ? "\nM=0" : "", operation_instructions);
 }
 
 
