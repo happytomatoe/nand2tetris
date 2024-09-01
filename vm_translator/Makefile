@@ -10,8 +10,8 @@ build-debug: FORCE
 	cd build/Debug
 	cmake ../.. -DCMAKE_TOOLCHAIN_FILE=generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug -G Ninja
 	cmake --build .
-run:
-	 ./build/Debug/assembler  ./data/MaxL.asm
+run: build-debug
+	 ./build/Debug/vm_translator ./data/advanced/StaticsTest
 
 clean:
 	rm -rf build

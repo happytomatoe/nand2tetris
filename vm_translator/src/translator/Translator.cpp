@@ -20,7 +20,7 @@ const Config Translator::default_config = Config{
 string Translator::translate(const string &file_path, const Config &config) {
     ifstream file(file_path);
     if (!file.good()) {
-        throw runtime_error("Failed to open file: " + file_path);
+        throw cpptrace::runtime_error("Failed to open file: " + file_path);
     }
     string line, text;
 
@@ -29,7 +29,7 @@ string Translator::translate(const string &file_path, const Config &config) {
     }
     file.close();
     if (text.empty()) {
-        throw runtime_error("Empty file: " + file_path);
+        throw cpptrace::runtime_error("Empty file: " + file_path);
     }
     try {
         auto tokens = Lexer::lex(text);

@@ -1,6 +1,6 @@
 [memory]
-stack.clear = true
 initialize = true
+stack.clear = true
 [memory.segment-addresses]
 stack = { min = 256, max = 299 }
 local = { min = 256, max = 399 }
