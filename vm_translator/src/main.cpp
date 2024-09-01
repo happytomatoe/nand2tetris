@@ -10,6 +10,7 @@ using namespace std;
 
 const auto assembler_extension = ".asm";
 const string vm_file_extension = ".vm";
+string lined_file_name = "Linked";
 
 void process_file(const string &input_file_or_dir, const string &output_file, const Config &config) {
     const string res = Translator().translate(input_file_or_dir, config);
@@ -62,8 +63,8 @@ void handle_dir(const filesystem::path &input_dir, const Config &config) {
         }
     }
     auto linked_file = input_files[0];
-    string s = "Linked";
-    linked_file.replace_filename(s + assembler_extension);
+
+    linked_file.replace_filename(lined_file_name + assembler_extension);
 
     cout << "Linking files into " << linked_file << endl;
 
