@@ -8,9 +8,10 @@
 #include "CLI/CLI.hpp"
 using namespace std;
 
-const auto assembler_extension = ".asm";
-const string vm_file_extension = ".vm";
-string lined_file_name = "Linked";
+constexpr auto assembler_extension = ".asm";
+constexpr string vm_file_extension = ".vm";
+constexpr string lined_file_name = "Linked";
+constexpr auto sys_vm_file_name = "Sys.vm";
 
 void process_file(const string &input_file_or_dir, const string &output_file, const Config &config) {
     const string res = Translator().translate(input_file_or_dir, config);
@@ -24,44 +25,8 @@ void process_file(const string &input_file_or_dir, const string &output_file, co
 }
 
 
-void handle_dir(const filesystem::path &input_dir, const Config &config) {
-    vector<filesystem::path> input_files = {};
-
-    for (const auto &entry: filesystem::directory_iterator(input_dir)) {
-        if (is_regular_file(entry) && entry.path().extension() == vm_file_extension) {
-            input_files.push_back(entry.path());
-        }
-    }
-    if (input_files.empty()) {
-        throw std::runtime_error(format("No {} files found in the input directory", vm_file_extension));
-    }
-    bool has_sys_vm = false;
-    for (int i = 0; i < input_files.size(); ++i) {
-        if (input_files[i].filename().string() == "Sys.vm") {
-            has_sys_vm = true;
-            std::swap(input_files[i], input_files.front());
-            break;
-        }
-    }
-    if (has_sys_vm) {
-        cout << "Input dir has Sys.vm file" << endl;
-    }
-    for (auto &input_file: input_files) {
-        auto output_file = input_file;
-        output_file.replace_extension(assembler_extension);
-        cout << "Processing " << input_file << endl << "into " << output_file << endl;
-        if (has_sys_vm) {
-            if (input_file.filename().string() == "Sys.vm") {
-                process_file(input_file.string(), output_file, config);
-            } else {
-                auto config_dup = config;
-                config_dup.memory_init = false;
-                process_file(input_file.string(), output_file, config_dup);
-            }
-        } else {
-            process_file(input_file.string(), output_file, config);
-        }
-    }
+void link_files(vector<filesystem::path> input_files) {
+    assert(!input_files.empty(), "Input files can't be empty when linking them");
     auto linked_file = input_files[0];
 
     linked_file.replace_filename(lined_file_name + assembler_extension);
@@ -85,6 +50,47 @@ void handle_dir(const filesystem::path &input_dir, const Config &config) {
         src.close();
     }
     dst.close();
+}
+
+void handle_dir(const filesystem::path &input_dir, const Config &config) {
+    vector<filesystem::path> input_files = {};
+
+    for (const auto &entry: filesystem::directory_iterator(input_dir)) {
+        if (is_regular_file(entry) && entry.path().extension() == vm_file_extension) {
+            input_files.push_back(entry.path());
+        }
+    }
+    if (input_files.empty()) {
+        throw std::runtime_error(format("No {} files found in the input directory", vm_file_extension));
+    }
+    bool has_sys_vm = false;
+    for (int i = 0; i < input_files.size(); ++i) {
+        if (input_files[i].filename().string() == sys_vm_file_name) {
+            has_sys_vm = true;
+            std::swap(input_files[i], input_files.front());
+            break;
+        }
+    }
+    if (has_sys_vm) {
+        cout << "Input dir has Sys.vm file" << endl;
+    }
+    for (auto &input_file: input_files) {
+        auto output_file = input_file;
+        output_file.replace_extension(assembler_extension);
+        cout << "Processing " << input_file << endl << "into " << output_file << endl;
+        if (has_sys_vm) {
+            if (input_file.filename().string() == sys_vm_file_name) {
+                process_file(input_file.string(), output_file, config);
+            } else {
+                auto config_dup = config;
+                config_dup.memory_init = false;
+                process_file(input_file.string(), output_file, config_dup);
+            }
+        } else {
+            process_file(input_file.string(), output_file, config);
+        }
+    }
+    link_files(input_files);
 }
 
 int main(int argc, char *argv[]) {
