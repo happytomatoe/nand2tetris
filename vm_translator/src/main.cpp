@@ -94,22 +94,28 @@ void handle_dir(const filesystem::path &input_dir, const Config &config) {
 }
 
 int main(int argc, char *argv[]) {
-    cpptrace::register_terminate_handler();
     CLI::App app{"Hack vm translator"};
     argv = app.ensure_utf8(argv);
     string input_file_or_dir;
     optional<string> config_file;
+    bool debug;
     app.add_option("input", input_file_or_dir, "input file directory path")
             ->check(CLI::ExistingPath)->required();
     app.add_option("-c,--config-file-location", config_file, "Config file location");
+    app.add_flag("-d,--debug", debug, "Debug mode");
     CLI11_PARSE(app, argc, argv);
+    if (debug) {
+        cpptrace::register_terminate_handler();
+    }
     //check if there are .vm files inside input directory
     const filesystem::path path(input_file_or_dir);
     error_code ec; // For using the non-throwing overloads of functions below.
     if (config_file.has_value()) {
         cout << "Parsing config file " << config_file.value() << endl;
     }
-    const auto config = config_file.has_value() ? ConfigParser::parse_file(config_file.value()) : Translator::default_config;
+    const auto config = config_file.has_value()
+                            ? ConfigParser::parse_file(config_file.value())
+                            : Translator::default_config;
     if (is_directory(path, ec)) {
         handle_dir(path, config);
     }

@@ -4,6 +4,9 @@
 #include <toml.hpp>
 
 Config ConfigParser::parse_file(const string &file_location) {
+    if (std::ifstream file(file_location); file.peek() == std::ifstream::traits_type::eof()) {
+        throw std::runtime_error("Config file is empty");
+    }
     try {
         auto config = toml::parse(file_location);
         return parse(config);
@@ -20,9 +23,6 @@ const map<string, memory::MemorySegment> segmentsTypes = {
 };
 
 Config ConfigParser::parse_text(const string &config) {
-    if (std::ifstream file(config); file.peek() == std::ifstream::traits_type::eof()) {
-        throw std::runtime_error("Config file is empty");
-    }
     return parse(toml::parse_str(config));
 }
 

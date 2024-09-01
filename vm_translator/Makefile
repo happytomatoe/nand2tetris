@@ -11,7 +11,7 @@ build-debug: FORCE
 	cmake ../.. -DCMAKE_TOOLCHAIN_FILE=generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug -G Ninja
 	cmake --build .
 run: build-debug
-	 ./build/Debug/vm_translator ./data/advanced/StaticsTest -c config_example.toml
+	 ./build/Debug/vm_translator ./data/advanced/StaticsTest -c config_example.toml --debug
 
 clean:
 	rm -rf build
