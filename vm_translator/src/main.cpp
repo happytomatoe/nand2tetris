@@ -34,21 +34,23 @@ void handle_dir(const filesystem::path &input_dir, const Config &config) {
     if (input_files.empty()) {
         throw std::runtime_error(format("No {} files found in the input directory", vm_file_extension));
     }
-    bool has_sys_vm = ranges::find_if(input_files, [](const filesystem::path &p) {
-        return p.filename() == "Sys.vm";
-    }) != input_files.end();
+    bool has_sys_vm = false;
+    for (int i = 0; i < input_files.size(); ++i) {
+        if (input_files[i].filename().string() == "Sys.vm") {
+            has_sys_vm = true;
+            std::swap(input_files[i], input_files.front());
+            break;
+        }
+    }
     if (has_sys_vm) {
         cout << "Input dir has Sys.vm file" << endl;
     }
     for (auto &input_file: input_files) {
         auto output_file = input_file;
         output_file.replace_extension(assembler_extension);
-        cout << "Input file " << input_file << endl;
-        cout << "Output file " << output_file << endl;
+        cout << "Processing " << input_file << endl << "into " << output_file << endl;
         if (has_sys_vm) {
-            auto filename = input_file.filename().string();
-            cout << "Filename " << filename << endl;
-            if (filename == "Sys.vm") {
+            if (input_file.filename().string() == "Sys.vm") {
                 process_file(input_file.string(), output_file, config);
             } else {
                 auto config_dup = config;
@@ -59,6 +61,29 @@ void handle_dir(const filesystem::path &input_dir, const Config &config) {
             process_file(input_file.string(), output_file, config);
         }
     }
+    auto linked_file = input_files[0];
+    string s = "Linked";
+    linked_file.replace_filename(s + assembler_extension);
+
+    cout << "Linking files into " << linked_file << endl;
+
+    std::filesystem::remove(linked_file);
+    std::ofstream dst(linked_file, std::ios::binary);
+    for (int i = 0; i < input_files.size(); ++i) {
+        auto input_file = input_files[i];
+        auto output_file = input_file;
+        output_file.replace_extension(assembler_extension);
+
+        if (i > 0) {
+            dst << "\n\n\n";
+        }
+        //TODO: add check if unknown function is called
+        dst << "// File " << input_file.filename().string() << "\n";
+        std::ifstream src(output_file, std::ios::binary);
+        dst << src.rdbuf();
+        src.close();
+    }
+    dst.close();
 }
 
 int main(int argc, char *argv[]) {
