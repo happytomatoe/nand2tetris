@@ -26,7 +26,7 @@ void process_file(const string &input_file_or_dir, const string &output_file, co
 
 
 void link_files(vector<filesystem::path> input_files) {
-    assert(!input_files.empty(), "Input files can't be empty when linking them");
+    assert(!input_files.empty() && "Input files can't be empty when linking them");
     auto linked_file = input_files[0];
 
     linked_file.replace_filename(lined_file_name + assembler_extension);
