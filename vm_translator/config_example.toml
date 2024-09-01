@@ -1,6 +1,6 @@
 [memory]
 # initialize memory segments
-initialize = false
+initialize = true
 # clear stack after pop or other similar operations
 stack.clear = true
 [memory.segment-addresses]
