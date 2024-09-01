@@ -656,8 +656,8 @@ string Translator::stack_pop_into_d_register(const bool clear_stack) {
                                 |//stack pop;
                                 |@{0}
                                 |M=M-1
-                                |A=M{1}
-                                |D=M
+                                |A=M
+                                |D=M{1}
                             )", getSymbolAdress(memory::Stack), clear_stack ? "\nM=0" : "");
 }
 
