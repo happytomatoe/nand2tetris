@@ -40,3 +40,4 @@ cmake*/
 _build/
 CMakeFiles/
 .cmake/
+*.asm
