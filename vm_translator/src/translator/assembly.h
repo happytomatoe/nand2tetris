@@ -15,7 +15,7 @@ namespace assembly {
         JMP,
     };
 
-    static constexpr string toString(Jump jump) {
+    static constexpr string toString(const Jump jump) {
         switch (jump) {
             case JGT:
                 return "JGT";
@@ -36,7 +36,7 @@ namespace assembly {
         }
     };
 
-    static Jump tokenTypeToJumpType(token::TokenType t) {
+    static Jump tokenTypeToJumpType(const token::TokenType t) {
         switch (t) {
             case token::GreaterThan:
                 return JGT;

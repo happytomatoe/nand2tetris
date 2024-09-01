@@ -90,11 +90,10 @@ TEST(TranslatorTest, PushConstant) {
     //push constant 1
     //TODO: use D=1
     vector<Token> tokens = {
-
         Token(Push), Token(Constant), Token(Number, 1),
         Token(Eof)
     };
-    for (const auto& token: tokens) {
+    for (const auto &token: tokens) {
         cout << token << endl;
     }
     auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress);
@@ -108,7 +107,7 @@ TEST(TranslatorTest, PushConstant) {
         @0
         M=M+1
     )";
-    
+
     containsExpectedWithoutWhitespaces(t, expected);
 }
 
@@ -125,7 +124,7 @@ TEST_P(NormalMemorySegmentTest, Push) {
     };
     auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    
+
     //addr=symbolAddress+i; *SP=*addr; SP++;
     auto expected = format(R"(
         @{}
@@ -167,7 +166,7 @@ TEST(TranslatorTest, PushTemp) {
     };
     auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    
+
     //addr=symbolAddress+i; *SP=*addr; SP++;
     auto expected = R"(
         @7
@@ -206,7 +205,7 @@ TEST(TranslatorTest, PushStatic) {
     }
     auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    
+
     /**
     @<file-name>.i
     stack.push(M)
@@ -232,7 +231,7 @@ TEST(TranslatorTest, PushPointerThis) {
     };
     auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    
+
     // push pointer 0/1 *SP=THIS/THAT; SP++
     // pop pointer 0/1		SP--; THIS/THAT=*SP
     // 0=this address
@@ -259,7 +258,7 @@ TEST(TranslatorTest, PushPointerThat) {
     };
     auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    
+
     // push pointer 0/1 *SP=THIS/THAT; SP++
     // pop pointer 0/1		SP--; THIS/THAT=*SP
     // 0=this address
@@ -295,9 +294,9 @@ TEST_P(NormalMemorySegmentTest, Pop) {
         Token(Pop), Token(GetParam().first), Token(Number, 1),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress);
+    auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress, false, false);
     auto t = Utils::preprocess(actual);
-    
+
     auto expected = format(R"(
             @{}
             D=M
@@ -329,9 +328,9 @@ TEST(TranslatorTest, PopStatic) {
         Token(Pop), Token(Static), Token(Number, 1),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress);
+    auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress, false, false);
     auto t = Utils::preprocess(actual);
-    
+
     /**
     *- pop static i
     D=stack.pop
@@ -352,9 +351,9 @@ TEST(TranslatorTest, PopTemp) {
         Token(Pop), Token(Temp), Token(Number, 1),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress);
+    auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress, false, false);
     auto t = Utils::preprocess(actual);
-    
+
     /**
     pop temp i      addr=5+i; SP--; *addr=*SP
     */
@@ -372,10 +371,10 @@ TEST(TranslatorTest, PopPointerThis) {
         Token(Pop), Token(Pointer), Token(Number, 0),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress);
+    auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress, false, false);
     cout << "Atual \n" << actual << endl;
     auto t = Utils::preprocess(actual);
-    
+
     /**
     pop pointer 0/1		SP--; THIS/THAT=*SP
     0=this address
@@ -394,9 +393,9 @@ TEST(TranslatorTest, PopPointerThat) {
         Token(Pop), Token(Pointer), Token(Number, 1),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress);
+    auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress, false, false);
     auto t = Utils::preprocess(actual);
-    
+
     /**
     pop pointer 0/1		SP--; THIS/THAT=*SP
     0=this address
@@ -425,7 +424,7 @@ TEST(TranslatorTest, Add) {
     };
     auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    
+
     auto expected = stackPop2 + R"(
        M=D+M
     )";
@@ -451,7 +450,7 @@ TEST(TranslatorTest, Subtract) {
     };
     auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    
+
     auto expected = stackPop2 + R"(
        D=D-M
        M=-D
@@ -468,7 +467,7 @@ TEST(TranslatorTest, And) {
     };
     auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    
+
     auto expected = stackPop2 + R"(
        M=D&M
     )";
@@ -484,7 +483,7 @@ TEST(TranslatorTest, Or) {
     };
     auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    
+
     auto expected = stackPop2 + R"(
        M=D|M
     )";
@@ -499,7 +498,7 @@ TEST(TranslatorTest, Negate) {
     };
     auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    
+
     auto expected = R"(
        @0
        A=M-1
@@ -533,9 +532,9 @@ TEST(TranslatorTest, Equals) {
         Token(Equals),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress);
+    auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress, false, false);
     auto t = Utils::preprocess(actual);
-    
+
     t = remove_branch_rand_number(t);
     auto expected = logicalComparison(assembly::JEQ);
     containsExpectedWithoutWhitespaces(t, expected);
@@ -577,9 +576,9 @@ TEST(TranslatorTest, GreaterThan) {
         Token(GreaterThan),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress);
+    auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress,false, false);
     auto t = Utils::preprocess(actual);
-    
+
     t = remove_branch_rand_number(t);
     auto expected = logicalComparison(assembly::Jump::JGT);
     containsExpectedWithoutWhitespaces(t, expected);
@@ -592,9 +591,9 @@ TEST(TranslatorTest, LessThan) {
         Token(LessThan),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress);
+    auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress,false, false);
     auto t = Utils::preprocess(actual);
-    
+
     t = remove_branch_rand_number(t);
     auto expected = logicalComparison(assembly::Jump::JLT);
     containsExpectedWithoutWhitespaces(t, expected);
@@ -608,7 +607,7 @@ TEST(TranslatorTest, Not) {
     };
     auto actual = Translator().translate(tokens, file_name, memorySegmentMinMaxAdress);
     auto t = Utils::preprocess(actual);
-    
+
     auto expected = R"(
         @0
         A=M-1

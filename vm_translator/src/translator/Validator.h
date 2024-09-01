@@ -10,7 +10,7 @@ using namespace token;
 
 class Validator {
 public:
-    static set<string> scanLabels(const std::vector<token::Token> &tokens) {
+    static set<string> scanLabels(const std::vector<Token> &tokens) {
         set<string> labels;
         set<string> functions;
         auto line_number = 0;
@@ -31,7 +31,7 @@ public:
         return labels;
     }
 
-    static unordered_map<string, int> scanFunctions(const std::vector<token::Token> &tokens) {
+    static unordered_map<string, int> scanFunctions(const std::vector<Token> &tokens) {
         unordered_map<string, int> functionNameToArgCount;
         auto line_number = 0;
         for (int i = 0; i < tokens.size(); ++i, line_number++) {
@@ -104,7 +104,6 @@ public:
                 }
                 case FunctionCategory: {
                     const auto& token = tokens[i];
-
                     if (token.type == Function) {
                         functionDeclared = true;
                         //already handled by scan function

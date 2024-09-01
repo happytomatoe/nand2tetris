@@ -1,6 +1,4 @@
 #include "Token.h"
-
-#include <map>
 #include <cpptrace/cpptrace.hpp>
 using namespace std;
 

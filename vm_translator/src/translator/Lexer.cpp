@@ -1,11 +1,9 @@
 #include "Lexer.h"
-
-#include <list>
 #include <set>
 #include <cpptrace/cpptrace.hpp>
 
 #include "exception.h"
-set<char> empty_space_chars = {' ', '\t', '\r'};
+set empty_space_chars = {' ', '\t', '\r'};
 
 inline bool isKeywordOrIdentifierStart(const char &c) {
     return isalpha(c) || c == '-';
@@ -23,22 +21,22 @@ inline bool isKeywordOrIdentifier(const char &c) {
     return isalpha(c) || c == '_' || c == '-' || c == '.' || c == '$' || c == ':' || isdigit(c);
 }
 
-vector<Token> Lexer::lex(const string &text) {
+vector<Token> Lexer::lex(const string &inputFile) {
     auto res = std::vector<Token>();
-    auto len = text.length();
+    const auto len = inputFile.length();
     for (int i = 0, line_number = 0; i < len; i++) {
-        auto c = text[i];
+        auto c = inputFile[i];
         if (c == '\n') {
             res.emplace_back(EOL);
             line_number++;
         } else if (c == '/') {
-            if (i + 1 < text.length() && text[i + 1] == '/') {
+            if (i + 1 < inputFile.length() && inputFile[i + 1] == '/') {
                 i++;
-                while (i + 1 < text.length() && text[i + 1] != '\n') {
+                while (i + 1 < inputFile.length() && inputFile[i + 1] != '\n') {
                     i++;
                 }
             } else {
-                throw InvalidToken(line_number, "Should this be a comment: " + text);
+                throw InvalidToken(line_number, "Should this be a comment: " + inputFile);
             }
         } else if (isKeywordOrIdentifierStart(c)) {
             /**
@@ -49,14 +47,14 @@ vector<Token> Lexer::lex(const string &text) {
                *
                */
             string s{c};
-            while (i + 1 < text.length() && isKeywordOrIdentifier(text[i + 1])) {
-                s += text[i + 1];
+            while (i + 1 < inputFile.length() && isKeywordOrIdentifier(inputFile[i + 1])) {
+                s += inputFile[i + 1];
                 i++;
             }
             if (tokenTypeMap.contains(s)) {
                 res.emplace_back(tokenTypeMap.at(s));
             } else {
-                auto last = &res.back();
+                const auto last = &res.back();
                 if (last->type == Label || last->type == IfGoto || last->type == Goto) {
                     last->label = s;
                 } else if (last->type == Function || last->type == Call) {
@@ -67,8 +65,8 @@ vector<Token> Lexer::lex(const string &text) {
             }
         } else if (isdigit(c)) {
             string s{c};
-            while (i + 1 < text.length() && isdigit(text[i + 1])) {
-                s += text[i + 1];
+            while (i + 1 < inputFile.length() && isdigit(inputFile[i + 1])) {
+                s += inputFile[i + 1];
                 i++;
             }
             int number = stoi(s);

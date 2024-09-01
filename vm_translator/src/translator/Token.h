@@ -74,21 +74,21 @@ namespace token {
               category(getCategory(type)) {
         }
 
-        Token(TokenType type, const int number)
+        Token(const TokenType type, const int number)
             : type(type),
               category(getCategory(type)),
               number(number) {
         }
 
-        Token(TokenType type, const char *functionName, int functionArgsCount): type(type),
+        Token(const TokenType type, const char *functionName, const int functionArgsCount): type(type),
             category(getCategory(type)),
             functionName(functionName),
             functionArgumentCount(functionArgsCount) {
         }
 
-        Token(TokenType type, const string &label): type(type),
-            category(getCategory(type)),
-            label(label) {
+        Token(const TokenType type, string label): type(type),
+                                                   category(getCategory(type)),
+                                                   label(std::move(label)) {
         }
 
         friend bool operator==(const Token &lhs, const Token &rhs) {
@@ -101,7 +101,7 @@ namespace token {
             return !(lhs == rhs);
         }
 
-        friend std::ostream & operator<<(std::ostream &os, const Token &obj) {
+        friend std::ostream &operator<<(std::ostream &os, const Token &obj) {
             return os
                    << "Token(type: " << toString(obj.type)
                    << ", category: " << toString(obj.category)

@@ -16,7 +16,7 @@ namespace translator {
     }
 
     static std::string stripMargin(const string &s) {
-        auto lines = split(s, '\n');
+        const auto lines = split(s, '\n');
         string res;
         for (auto &line: lines) {
             int delimiterPos = 0;

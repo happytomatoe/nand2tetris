@@ -19,7 +19,7 @@ public:
 
 class InvalidToken final : public BaseException {
 public:
-    InvalidToken(int line_number, string &&message_arg,
+    InvalidToken(const int line_number, string &&message_arg,
                  cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb()) noexcept
         : BaseException(line_number, move(message_arg), move(trace)) {
     }
@@ -28,15 +28,15 @@ public:
 
 class InvalidOperation final : public BaseException {
 public:
-    InvalidOperation(int line_number, string &&message_arg = "Invalid operation",
-                     cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb()) noexcept
+    explicit InvalidOperation(const int line_number, string &&message_arg = "Invalid operation",
+                              cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb()) noexcept
         : BaseException(line_number, move(message_arg), move(trace)) {
     }
 };
 
 class NumberOverflowException final : public BaseException {
 public:
-    NumberOverflowException(int line_number, string &&message_arg,
+    NumberOverflowException(const int line_number, string &&message_arg,
                             cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb()) noexcept
         : BaseException(line_number, move(message_arg), move(trace)) {
     }
@@ -44,7 +44,7 @@ public:
 
 class UnexpectedToken final : public BaseException {
 public:
-    UnexpectedToken(int line_number, string &&message_arg,
+    UnexpectedToken(const int line_number, string &&message_arg,
                     cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb()) noexcept
         : BaseException(line_number, move(message_arg), move(trace)) {
     }
@@ -53,7 +53,7 @@ public:
 
 class PointerOutOfRangeException final : public BaseException {
 public:
-    PointerOutOfRangeException(int line_number, string &&message_arg,
+    PointerOutOfRangeException(const int line_number, string &&message_arg,
                                cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb()) noexcept
         : BaseException(line_number, move(message_arg), move(trace)) {
     }
@@ -71,7 +71,7 @@ public:
 
 class NumberOutOfRangeException final : public BaseException {
 public:
-    explicit NumberOutOfRangeException(int line_number,
+    explicit NumberOutOfRangeException(const int line_number,
                                        string &&message_arg = "Stack pointer is out of range",
                                        cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb())
         noexcept

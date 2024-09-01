@@ -1,14 +1,12 @@
-#ifndef TRANSLATOR_H
-#define TRANSLATOR_H
-#include <functional>
+#pragma once
+#include <chrono>
+#include <climits>
 #include <map>
+#include <random>
 #include <string>
 #include <vector>
 
-#include "assembly.h"
-#include "exception.h"
 #include "MemorySegment.h"
-#include "StringUtils.h"
 #include "Token.h"
 
 using namespace std;
@@ -18,16 +16,21 @@ class Translator {
 public:
     string translate(const string &file_path,
                      const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMaxAdress =
-                             memory::defaultMemorySegmentMinMaxAdress, bool memory_init = true);
+                             memory::defaultMemorySegmentMinMaxAdress, bool memory_init = true,
+                     bool clear_stack = true);
+
 
     string translate(const vector<Token> &tokens, const string &file_name,
                      const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMax =
-                             memory::defaultMemorySegmentMinMaxAdress, bool memory_init = true);
+                             memory::defaultMemorySegmentMinMaxAdress, bool memory_init = true,
+                     bool clear_stack = true);
 
 
     const static string program_end;
 
 private:
+    static bool has_no_goto_or_if_goto(const vector<Token> & tokens);
+    bool stack_size_counting_enabled = true;
     int stack_size = 0;
     int line_number = 0;
     const vector<memory::MemorySegment> memory_segments_to_save_on_function_call = {
@@ -49,20 +52,20 @@ private:
 
     static string initializeMemorySegments(const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMaxAdress);
 
-    string handle_function_call(const Token &token);
+    [[nodiscard]] string handle_function_call(const Token &token);
 
-    string handle_function_return();
+    string handle_function_return(bool clear_stack);
 
     string handle_function_declaration(const Token &token);
 
     static string getLine(const string &text, int line_number);
 
-    string logicalComparison(TokenType type);
+    string logicalComparison(const TokenType &type, bool clear_stack);
 
-    static string two_operand_operation(const string &operation);
+    string two_operand_operation(const TokenType &operation, const string &operation_instructions, const bool clear_stack);
 
     string handle_arithmetic_logical_operation(
-        const int line_number, const Token &token);
+        int line_number, const Token &token, bool clear_stack);
 
     static string operationComment(TokenType operation, TokenType memorySementTokenType, int number);
 
@@ -70,26 +73,29 @@ private:
 
     static string file_name_without_extension(const string &file_name);
 
-    string handle_push(const string &file_name,
-                       TokenType memorySementTokenType, int number,
-                       const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMaxAddress);
+    [[nodiscard]] string handle_push(const string &file_name,
+                                     TokenType memorySementTokenType, int number,
+                                     const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMaxAddress);
 
-    string handle_pop(const string &file_name,
-                      TokenType memorySementTokenType, int number,
-                      const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMaxAddress);
+    [[nodiscard]] string handle_pop(const string &file_name,
+                                    TokenType memorySementTokenType, int number,
+                                    const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMaxAddress,
+                                    bool clear_stack);
 
-    string stackPush();
+    string push_d_register_onto_stack();
 
-    string stackPop();
+    string stack_pop_into_d_register(bool clear_stack);
 
-    int intRand(const int &min, const int &max);
+    static int random_int() {
+        std::mt19937 generator(
+            std::chrono::high_resolution_clock::now().time_since_epoch().count());;
+        std::uniform_int_distribution<int> distribution(0,INT_MAX);
+        return distribution(generator);
+    };
 
     void checkAdressOutOfRange(const int &value,
                                const map<memory::MemorySegment, memory::Range> &memorySegmentsMinMax,
                                const memory::MemorySegment &p) const;
 
-    void check_overflow(int value) const;
+    void check_overflow(int number) const;
 };
-
-
-#endif //TRANSLATOR_H
