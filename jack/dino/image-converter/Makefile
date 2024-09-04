@@ -8,7 +8,7 @@ build: FORCE
 build-debug: FORCE
 	conan install . --build=missing --settings=build_type=Debug
 	cd build/Debug
-	cmake ../.. -DCMAKE_TOOLCHAIN_FILE=generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug -G Ninja
+	cmake ../.. -DCMAKE_TOOLCHAIN_FILE=generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug -G Ninja -Dtools.system.package_manager:mode=install
 	cmake --build .
 run: build-debug
 	 ./build/Debug/image_converter
@@ -20,7 +20,8 @@ test: build FORCE
 test-debug: build FORCE
 	cd  ./build/Debug && ctest
 
-
+install: build FORCE
+	cmake --install ./build/Release --config Release
 test-prog: build FORCE
 	./build/Release/test_prog
 FORCE: ;

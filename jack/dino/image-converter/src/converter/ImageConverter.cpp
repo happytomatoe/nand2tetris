@@ -3,60 +3,74 @@
 #include <ranges>
 #include "StringUtils.cpp"
 
-// Image ImageConverter::read(const string &text) {
-//     int height, width;
-//
-//     RE2 height_re("\\[([\\d]+)\\]\\[(([\\d]+))\\]");
-//     assert(height_re.ok());
-//     assert(RE2::PartialMatch(text, height_re, &width, &height) && "Cannot find height and width");
-//
-//     cout << "Width " << width << endl;
-//     string array_search_res;
-//     RE2 re("(?m){([\n\t0-9xa-fA-F,\\s]+)}");
-//     assert(re.ok());
-//
-//     assert(RE2::PartialMatch(text, re, &array_search_res));
-//
-//     auto pixels = array_search_res
-//                   | views::split(',')
-//                   | views::transform([](auto &&str) {
-//                       const auto s = string_view(&*str.begin(), ranges::distance(str));
-//                       string n;
-//                       if (!RE2::PartialMatch(s, "([0-9xa-fA-F]+)", &n)) {
-//                           throw runtime_error("Array should only contain numbers but got '" + string(s) + "'");
-//                       }
-//                       std::stringstream ss;
-//                       ss << std::hex << n;
-//                       int numb;
-//                       ss >> numb;
-//                       return numb;
-//                   })
-//                   | ranges::to<vector<int> >();
-//     return Image{height, width, pixels};
-// }
+Image ImageConverter::read(const string &text) {
+    int height, width;
 
-string ImageConverter::convert(Image img) {
+    RE2 height_re("HEIGHT ([\\d]+)");
+    RE2 width_re("WIDTH ([\\d]+)");
+    assert(height_re.ok());
+    assert(RE2::PartialMatch(text, height_re, &height) && "Cannot find height");
+    assert(RE2::PartialMatch(text, width_re, &width) && "Cannot find width");
+
+    string array_search_res;
+    RE2 re("(?m){([\n\t0-9xa-fA-F,\\s]+)}");
+    assert(re.ok());
+
+    if (!RE2::PartialMatch(text, re, &array_search_res)) {
+        throw runtime_error("Cannot find array with hexadecimal numbers");
+    }
+    vector<uint16_t> pixels = array_search_res
+                              | views::split(',')
+                              | views::transform([](auto &&str) {
+                                  const auto s = string_view(&*str.begin(), ranges::distance(str));
+                                  string n;
+                                  if (!RE2::PartialMatch(s, "(0[xX][0-9a-fA-F]+)", &n)) {
+                                      throw runtime_error(
+                                          "Array should only contain numbers in hex but got '" + string(s) + "'");
+                                  }
+                                  std::stringstream ss;
+                                  ss << std::hex << n;
+                                  uint16_t numb;
+                                  ss >> numb;
+                                  return numb;
+                              })
+                              | ranges::to<vector<uint16_t> >();
+    string filename;
+    RE2 filename_re("([a-z_]+)\\[\\]");
+    assert(re.ok());
+
+    if (!RE2::PartialMatch(text, filename_re, &filename)) {
+        throw runtime_error("Cannot find array with hexadecimal numbers");
+    }
+    return Image{height, width, pixels, filename};
+}
+
+string ImageConverter::convert(const Image &img, const bool comments) {
     /**
     * Mapping
     The (row, col) pixel in the physical screen is represented by
     the (col % 16)th bit in RAM address SCREEN + 32* row + col /16
     */
-    std::string header = "function void draw(int location) {\n";
-    header += "   //img height: " + std::to_string(img.rows) + " width: " + std::to_string(img.cols) + "\n";
+    std::string header = "function void draw" + StringUtils::snake_case_to_camel_case(img.file_name) + "(int location) {\n";
+    if (comments)
+        header += "   //img height: " + std::to_string(img.rows) + " width: " + std::to_string(img.cols) + "\n";
     header += "   var int memAddress;\n";
     header += "   let memAddress=16384 + location;\n";
     string res = header;
     for (int i = 0; i < img.rows; ++i) {
-        res += "|   //row: " + to_string(i) + "\n";
+        if (comments)
+            res += "|   //row: " + to_string(i) + "\n";
         for (int j = 0; j < img.cols; ++j) {
             std::bitset<16> b3(img.pixels[i][j]);
-            short number = static_cast<short>(b3.to_ullong() & 0xFFFF);
+            auto number = static_cast<short>(b3.to_ullong() & 0xFFFF);
             if (number != 0) {
-                if (j > 0) {
-                    res += format("|   //cols: {}-{} bits {}\n", to_string(j * 16), to_string((j + 1) * 16),
-                                  b3.to_string());
-                } else {
-                    res += format("|   //cols: 0-16 bits {}\n", b3.to_string());
+                if (comments) {
+                    if (j > 0) {
+                        res += format("|   //cols: {}-{} bits {}\n", to_string(j * 16), to_string((j + 1) * 16),
+                                      b3.to_string());
+                    } else {
+                        res += format("|   //cols: 0-16 bits {}\n", b3.to_string());
+                    }
                 }
                 int memAddress = 32 * i + j;
                 string addr = memAddress == 0 ? "" : "+" + to_string(memAddress);
