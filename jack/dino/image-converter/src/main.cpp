@@ -26,7 +26,7 @@ bool yes_or_no_prompt(const string &prompt) {
 int main(int argc, char *argv[]) {
     string str;
     string text;
-    CLI::App app{"Hack vm translator"};
+    CLI::App app{"Convert binary image to Jack code"};
     argv = app.ensure_utf8(argv);
     string input_file_or_dir;
     optional<string> config_file;
@@ -39,18 +39,11 @@ int main(int argc, char *argv[]) {
 
     // Prompt user to enter multiple lines of text
     cout << "Enter multiple lines of text and press enter couple of times: " << endl;
-    bool first_empty_line = false;
     // Read input lines until an empty line is encountered
     while (getline(cin, str)) {
         if (str.empty()) {
-            if (first_empty_line) {
-                break;
-            }
-            first_empty_line = true;
-        } else {
-            first_empty_line = false;
+            break;
         }
-
         text += str + "\n";
     }
     bool comments = yes_or_no_prompt("Do you want me to add comments?(y/n)");
