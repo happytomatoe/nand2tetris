@@ -1,8 +1,11 @@
 #include <iostream>
+
+#include "converter/StringUtils.h"
 using namespace std;
 #include "converter/ImageConverter.hpp"
 #include <cpptrace/cpptrace.hpp>
 #include "clip.h"
+#include <CLI/CLI.hpp>
 
 bool yes_or_no_prompt(const string &prompt) {
     cout << prompt << endl;
@@ -19,10 +22,20 @@ bool yes_or_no_prompt(const string &prompt) {
     }
 }
 
-int main() {
-    cpptrace::register_terminate_handler();
+
+int main(int argc, char *argv[]) {
     string str;
     string text;
+    CLI::App app{"Hack vm translator"};
+    argv = app.ensure_utf8(argv);
+    string input_file_or_dir;
+    optional<string> config_file;
+    bool debug;
+    app.add_flag("-d,--debug", debug, "Debug mode");
+    CLI11_PARSE(app, argc, argv);
+    if (debug) {
+        cpptrace::register_terminate_handler();
+    }
 
     // Prompt user to enter multiple lines of text
     cout << "Enter multiple lines of text and press enter couple of times: " << endl;
@@ -41,8 +54,16 @@ int main() {
         text += str + "\n";
     }
     bool comments = yes_or_no_prompt("Do you want me to add comments?(y/n)");
-    auto image = ImageConverter::read(text).normalize();
-    auto res = ImageConverter::convert(image, comments);
+    auto image = ImageConverter::read(text);
+    if (debug) {
+        StringUtils::print(image);
+    }
+    auto normalized = ImageConverter::normalize(image);
+    if (debug) {
+        cout << "Normalized" << endl;
+        StringUtils::print(normalized);
+    }
+    auto res = ImageConverter::convert(normalized, comments);
     if (yes_or_no_prompt("Copy to clipboard?(y/n)")) {
         clip::set_text(res);
     } else {

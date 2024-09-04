@@ -1,3 +1,4 @@
+#pragma once
 #include <sstream>
 #include <string>
 #include <vector>
@@ -60,4 +61,23 @@ public:
         // return the result
         return result;
     }
+
+    static void print(const vector<string> &pixels) {
+        for (const auto &pixel: pixels) {
+            for (const auto &j: pixel) {
+                cout << j;
+                cout << " ";
+            }
+            cout << endl;
+        }
+    };
+
+    static void print(const vector<vector<string> > &pixels) {
+        for (const auto &pixel: pixels) {
+            for (const auto &j: pixel) {
+                cout << j;
+            }
+            cout << endl;
+        }
+    };
 };

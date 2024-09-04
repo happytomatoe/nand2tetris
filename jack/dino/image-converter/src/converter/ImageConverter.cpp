@@ -1,67 +1,39 @@
 #include "ImageConverter.hpp"
-#include <iostream>
 #include <ranges>
-#include "StringUtils.cpp"
+#include "StringUtils.h"
 
-Image ImageConverter::read(const string &text) {
-    int height, width;
-
-    RE2 height_re("HEIGHT ([\\d]+)");
-    RE2 width_re("WIDTH ([\\d]+)");
-    assert(height_re.ok());
-    assert(RE2::PartialMatch(text, height_re, &height) && "Cannot find height");
-    assert(RE2::PartialMatch(text, width_re, &width) && "Cannot find width");
-
+vector<string> ImageConverter::read(const string &text) {
     string array_search_res;
-    RE2 re("(?m){([\n\t0-9xa-fA-F,\\s]+)}");
-    assert(re.ok());
-
-    if (!RE2::PartialMatch(text, re, &array_search_res)) {
-        throw runtime_error("Cannot find array with hexadecimal numbers");
+    vector<string> res;
+    string row;
+    for (auto c: text) {
+        if (c == '\n' && !row.empty()) {
+            res.push_back(row);
+            row = "";
+        } else if (c == '1' || c == '0') {
+            row += c;
+        }
     }
-    vector<uint16_t> pixels = array_search_res
-                              | views::split(',')
-                              | views::transform([](auto &&str) {
-                                  const auto s = string_view(&*str.begin(), ranges::distance(str));
-                                  string n;
-                                  if (!RE2::PartialMatch(s, "(0[xX][0-9a-fA-F]+)", &n)) {
-                                      throw runtime_error(
-                                          "Array should only contain numbers in hex but got '" + string(s) + "'");
-                                  }
-                                  std::stringstream ss;
-                                  ss << std::hex << n;
-                                  uint16_t numb;
-                                  ss >> numb;
-                                  return numb;
-                              })
-                              | ranges::to<vector<uint16_t> >();
-    string filename;
-    RE2 filename_re("([a-z_]+)\\[\\]");
-    assert(re.ok());
-
-    if (!RE2::PartialMatch(text, filename_re, &filename)) {
-        throw runtime_error("Cannot find array with hexadecimal numbers");
-    }
-    return Image{height, width, pixels, filename};
+    return res;
 }
 
-string ImageConverter::convert(const Image &img, const bool comments) {
+string ImageConverter::convert(const vector<vector<string> > &img, const bool comments) {
     /**
     * Mapping
     The (row, col) pixel in the physical screen is represented by
     the (col % 16)th bit in RAM address SCREEN + 32* row + col /16
     */
-    std::string header = "function void draw" + StringUtils::snake_case_to_camel_case(img.file_name) + "(int location) {\n";
+    std::string header = "function void draw(int location) {\n";
     if (comments)
-        header += "   //img height: " + std::to_string(img.rows) + " width: " + std::to_string(img.cols) + "\n";
+        header += "   //img height: " + std::to_string(img.size()) + " width: " + std::to_string(img[0].size()) + "\n";
     header += "   var int memAddress;\n";
     header += "   let memAddress=16384 + location;\n";
     string res = header;
-    for (int i = 0; i < img.rows; ++i) {
+    for (int i = 0; i < img.size(); ++i) {
         if (comments)
             res += "|   //row: " + to_string(i) + "\n";
-        for (int j = 0; j < img.cols; ++j) {
-            std::bitset<16> b3(img.pixels[i][j]);
+        for (int j = 0; j < img[i].size(); ++j) {
+            std::bitset<16> b3(img[i][j]);
             auto number = static_cast<short>(b3.to_ullong() & 0xFFFF);
             if (number != 0) {
                 if (comments) {
@@ -81,6 +53,17 @@ string ImageConverter::convert(const Image &img, const bool comments) {
     string footer = R"(|   return;
          |})";
     return StringUtils::stripMargin(res + footer);
+}
+
+int ImageConverter::count_rows(const string &string) {
+    std::string regexPunc = "(0x[\\da-zA-z]+,*\n)"; // matches any punctuations;
+    re2::RE2 re2Punc(regexPunc);
+    re2::StringPiece input(string);
+    int numberOfMatches = 0;
+    while (re2::RE2::FindAndConsume(&input, re2Punc)) {
+        ++numberOfMatches;
+    }
+    return numberOfMatches;
 }
 
 
