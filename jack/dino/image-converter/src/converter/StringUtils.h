@@ -1,22 +1,23 @@
 #pragma once
 #include <sstream>
+#include <iostream>
 #include <string>
 #include <vector>
 using namespace std;
 
 class StringUtils {
 public:
-    static vector<string> split(const std::string &str, char delimeter) {
-        auto result = vector<std::string>{};
-        std::stringstream ss(str);
-        std::string line;
-        while (std::getline(ss, line, delimeter)) {
+    static vector<string> split(const string &str, char delimeter) {
+        auto result = vector<string>{};
+        stringstream ss(str);
+        string line;
+        while (getline(ss, line, delimeter)) {
             result.push_back(line);
         }
         return result;
     }
 
-    static std::string stripMargin(const string &s) {
+    static string stripMargin(const string &s) {
         const auto lines = split(s, '\n');
         string res;
         for (auto &line: lines) {

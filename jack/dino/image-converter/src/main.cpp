@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Prompt user to enter multiple lines of text
-    cout << "Enter multiple lines of text and press enter couple of times: " << endl;
+    cout << "Copy paste binary image and press enter: " << endl;
     // Read input lines until an empty line is encountered
     while (getline(cin, str)) {
         if (str.empty()) {

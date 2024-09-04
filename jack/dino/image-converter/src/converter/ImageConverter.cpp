@@ -46,6 +46,9 @@ string ImageConverter::convert(const vector<vector<string> > &img, const bool co
                 }
                 int memAddress = 32 * i + j;
                 string addr = memAddress == 0 ? "" : "+" + to_string(memAddress);
+                if (number < -32768 || number > 32767) {
+                    throw cpptrace::domain_error("Unexpected number: " + to_string(number) + ". Bits " + b3.to_string());
+                }
                 res += format("|   do Memory.poke(memAddress{}, {});\n", addr, number);
             }
         }
