@@ -1,0 +1,26 @@
+class Main {
+  function void main() {
+  
+    var char k;
+    var boolean keyPressed;
+    var char key;
+    var Dino dino;
+    var Cloud cloud;
+    var Cactus cactus;
+    let dino = Dino.new(32*150+2);
+    let cloud = Cloud.new(32*50);
+    let cactus = Cactus.new(32*151-2);
+
+
+    while (true) {
+      do Screen.clearScreen();
+      do dino.update();
+      do cloud.update();
+      do cactus.update();
+      do Sys.wait(50);
+    }
+    return;
+  }
+
+
+}

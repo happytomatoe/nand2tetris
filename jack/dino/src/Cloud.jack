@@ -1,0 +1,62 @@
+class Cloud {
+  field int location,i,counter, speed;
+  constructor Cactus new(int location1) {
+   let location=location1;
+   let i=0;
+   return this;
+}
+method void dispose() {
+  do Memory.deAlloc(this);
+  return;
+}
+method void update(){
+      var boolean inc ;
+      var int j;
+      
+      let j=counter; 
+      while(j>0){
+        let j = j-3;
+      }
+      let inc = i<31 & j=0;
+      
+     if(inc){
+      let i=i+1;
+     }
+     if(i>30){
+      let i=0;
+     }
+     do draw();
+     let counter=counter+1;
+     return;
+}
+
+method void draw() {
+   var int memAddress;
+   let memAddress=16384 + location-i;
+   do Memory.poke(memAddress+1, 448);
+   do Memory.poke(memAddress+33, 1854);
+   do Memory.poke(memAddress+65, 3075);
+   do Memory.poke(memAddress+96, -32767);
+   do Memory.poke(memAddress+97, 2049);
+   do Memory.poke(memAddress+128, -32767);
+   do Memory.poke(memAddress+129, 30720);
+   do Memory.poke(memAddress+160, -4096);
+   do Memory.poke(memAddress+161, -14336);
+   do Memory.poke(memAddress+162, 7);
+   do Memory.poke(memAddress+192, 6144);
+   do Memory.poke(memAddress+194, 4);
+   do Memory.poke(memAddress+224, 4064);
+   do Memory.poke(memAddress+226, 28);
+   do Memory.poke(memAddress+256, 48);
+   do Memory.poke(memAddress+258, 96);
+   do Memory.poke(memAddress+288, 16);
+   do Memory.poke(memAddress+290, 64);
+   do Memory.poke(memAddress+320, 272);
+   do Memory.poke(memAddress+322, 128);
+   do Memory.poke(memAddress+352, -512);
+   do Memory.poke(memAddress+353, -1);
+   do Memory.poke(memAddress+354, 255);
+   return;
+}
+
+}
