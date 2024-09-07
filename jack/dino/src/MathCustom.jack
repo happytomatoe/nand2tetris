@@ -1,0 +1,11 @@
+class MathCustom{
+	function int  modulo(int n, int div){
+		while(true){
+			if(n-div<0){
+				return n;
+			}
+			let n=n-div;
+		}
+		return -1;
+	}
+}

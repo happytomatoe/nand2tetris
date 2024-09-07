@@ -1,0 +1,15 @@
+class ScreenCustom {
+	field int screenW,screenH;
+	constructor ScreenCustom new(int screenW_,int screenH_) {
+		let screenW=screenW_;
+		let screenH=screenH_;
+		return this;
+	}
+
+	method void drawVisiblePixel(int x, int y){
+		if(x>-1&x<screenW&y>-1&y<screenH){
+			do Screen.drawPixel(x,y);
+		}
+		return;
+	}
+}
