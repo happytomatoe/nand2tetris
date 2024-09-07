@@ -45,7 +45,7 @@ TEST(ConverterTest, BasicTest) {
            return;
         }
         )";
-    auto res = ImageConverter::convert("data/test3.png", true, true, "Screen.drawPixel");
+    auto res = ImageConverter::convert("data/test3.png", true, true, "Screen.drawPixel", false);
     auto n1 = normalize(res);
     auto n2 = normalize(expected);
     cout << "Actual: " << endl << n1 << endl << "Expected: " << endl << n2 << endl;
