@@ -4,7 +4,8 @@
 #include <lodepng.h>
 #include "StringUtils.h"
 
-string ImageConverter::convert(const string &filepath, const bool ignore_checksums, const bool debug) {
+string ImageConverter::convert(const string &filepath, const bool ignore_checksums, const bool debug,
+                               const string &draw_function_ref, const bool export_size) {
     std::vector<unsigned char> image;
     unsigned w;
     unsigned h;
@@ -28,11 +29,20 @@ string ImageConverter::convert(const string &filepath, const bool ignore_checksu
         cout << "Binary image" << endl;
         StringUtils::print(img);
     }
-    return convert_to_jack_code(img);
+    return convert_to_jack_code(img, draw_function_ref, export_size);
 }
 
-string ImageConverter::convert_to_jack_code(const vector<vector<bool> > &img) {
-    string header = R"(
+string ImageConverter::convert_to_jack_code(const vector<vector<bool> > &img, const string &draw_function_ref,
+                                            const bool export_size) {
+    string header;
+    if (export_size) {
+        header = format(R"(
+            |field int imageW, imageH;
+            |let imageW = {};
+            |let imageH = {};
+        )", img[0].size(), img.size());
+    }
+    header += R"(
     |method void draw(int x, int y) {
     )";
 
@@ -44,7 +54,7 @@ string ImageConverter::convert_to_jack_code(const vector<vector<bool> > &img) {
             if (!row[j]) {
                 auto jStr = j > 0 ? format("+{}", j) : "";
                 auto iStr = i > 0 ? format("+{}", i) : "";
-                res += format("|   do Screen.drawVisiblePixel(x{},y{});\n", jStr, iStr);
+                res += format("|   do {}(x{},y{});\n", draw_function_ref, jStr, iStr);
             }
         }
     }

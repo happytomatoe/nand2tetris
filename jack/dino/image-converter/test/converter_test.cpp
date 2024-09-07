@@ -37,15 +37,15 @@ string normalize(string str) {
 TEST(ConverterTest, BasicTest) {
     string expected = R"(
         method void draw(int x, int y) {
-           do Screen.drawVisiblePixel(x,y);
-           do Screen.drawVisiblePixel(x+1,y+1);
-           do Screen.drawVisiblePixel(x+2,y+2);
-           do Screen.drawVisiblePixel(x+3,y+3);
-           do Screen.drawVisiblePixel(x+4,y+4);
+           do Screen.drawPixel(x,y);
+           do Screen.drawPixel(x+1,y+1);
+           do Screen.drawPixel(x+2,y+2);
+           do Screen.drawPixel(x+3,y+3);
+           do Screen.drawPixel(x+4,y+4);
            return;
         }
         )";
-    auto res = ImageConverter::convert("data/test3.png", true, true);
+    auto res = ImageConverter::convert("data/test3.png", true, true, "Screen.drawPixel");
     auto n1 = normalize(res);
     auto n2 = normalize(expected);
     cout << "Actual: " << endl << n1 << endl << "Expected: " << endl << n2 << endl;

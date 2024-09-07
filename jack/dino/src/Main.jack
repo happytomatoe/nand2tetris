@@ -4,12 +4,13 @@ class Main {
     var Dino dino;
     var Cloud cloud;
     var Cactus cactus;
+    var ScreenCustom screen;
     let timestep = 50;
     let dino = Dino.new(50,150,-15,1);
     let cloud = Cloud.new(390,20,1, 5);
     let cactus = Cactus.new(400,150,3);
+    let screen = ScreenCustom.new(256,256);
 
-   
     while (true) {
       do cactus.update();
       do dino.update();

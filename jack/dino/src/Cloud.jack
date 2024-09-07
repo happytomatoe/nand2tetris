@@ -1,7 +1,7 @@
 class Cloud {
   field int x,y,speed,counter,moveEveryNTick;
-
-  constructor Cloud new(int x_,int y_,int speed_, int moveEveryNTick_) {
+    
+  constructor  Cloud new(int x_,int y_,int speed_, int moveEveryNTick_) {
    let x=x_;
   let y=y_;
   let speed = speed_;

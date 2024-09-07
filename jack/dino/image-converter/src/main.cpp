@@ -24,30 +24,31 @@ bool yes_or_no_prompt(const string &prompt) {
 
 
 int main(int argc, char *argv[]) {
-    string str;
-    string text;
-    CLI::App app{"Convert black and white image to Jack code"};
+    CLI::App app{"Convert black and white png to Jack code"};
     argv = app.ensure_utf8(argv);
-    string input_file;
-    optional<string> config_file;
-    bool debug, copy_to_clipboard;
+
+    string input_file, function_name = "Screen.drawPixel";
     app.add_option("input", input_file, "input file path")
             ->check(CLI::ExistingFile)->required();
+    app.add_option("-f,--function-name", function_name, "Function name to draw pixels. "
+                   "Defaults to 'Screen.drawPixel'");
+
+    bool debug = false, print_res = false, ignore_checksums = false, export_size=false;
     app.add_flag("-d,--debug", debug, "Debug mode");
-    app.add_flag("-c,--clip", copy_to_clipboard, "Copy output to clipboard");
+    app.add_flag("--ic,--ignore-checksums", ignore_checksums, "Ignore checksums when decompressing png");
+    app.add_flag("-o,--output", print_res, "Print result instead of copying to clipboard");
+    app.add_flag("-s,--export-size", export_size, "Export size of the image");
 
     CLI11_PARSE(app, argc, argv);
     if (debug) {
         cpptrace::register_terminate_handler();
     }
-
-    const auto res = ImageConverter::convert(input_file);
-    if (copy_to_clipboard) {
+    const auto res = ImageConverter::convert(input_file, ignore_checksums, debug, function_name,export_size);
+    if (print_res) {
+        cout << res;
+    } else {
         clip::set_text(res);
         cout << "Copied to clipboard" << endl;
-    } else {
-        cout << res;
     }
-    clip::set_text(res);
     return 0;
 }
