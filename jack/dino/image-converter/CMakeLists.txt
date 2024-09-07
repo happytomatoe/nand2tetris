@@ -15,11 +15,11 @@ target_sources(converter
 set_target_properties(converter PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(converter PUBLIC src )
 
+find_package(lodepng)
 find_package(CLI11)
 find_package(clip REQUIRED)
-find_package(re2 REQUIRED)
 find_package(cpptrace REQUIRED)
-target_link_libraries(converter PUBLIC re2::re2 cpptrace::cpptrace clip::clip CLI11::CLI11)
+target_link_libraries(converter PUBLIC cpptrace::cpptrace clip::clip CLI11::CLI11 lodepng::lodepng)
 
 add_executable(nand2tetris-image-converter src/main.cpp)
 target_link_libraries(nand2tetris-image-converter PUBLIC converter)
@@ -28,8 +28,12 @@ install(TARGETS nand2tetris-image-converter DESTINATION ~/bin)
 
 # enable testing functionality
 
+
+#test resources
+file(COPY data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+#tests
 find_package(GTest)
-add_executable(tests test/test.cpp)
+add_executable(tests test/converter_test.cpp)
 target_link_libraries(tests PUBLIC gtest::gtest converter)
 
 enable_testing()

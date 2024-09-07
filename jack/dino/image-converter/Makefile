@@ -11,7 +11,7 @@ build-debug: FORCE
 	cmake ../.. -DCMAKE_TOOLCHAIN_FILE=generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug -G Ninja -Dtools.system.package_manager:mode=install
 	cmake --build .
 run: build-debug
-	 ./build/Debug/image_converter
+	 ./build/Debug/nand2tetris-image-converter data/cactus.png
 
 clean:
 	rm -rf build

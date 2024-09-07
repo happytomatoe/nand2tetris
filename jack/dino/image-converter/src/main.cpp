@@ -26,39 +26,25 @@ bool yes_or_no_prompt(const string &prompt) {
 int main(int argc, char *argv[]) {
     string str;
     string text;
-    CLI::App app{"Convert binary image to Jack code"};
+    CLI::App app{"Convert black and white image to Jack code"};
     argv = app.ensure_utf8(argv);
-    string input_file_or_dir;
+    string input_file;
     optional<string> config_file;
-    bool debug;
+    bool debug, copy_to_clipboard;
+    app.add_option("input", input_file, "input file path")
+            ->check(CLI::ExistingFile)->required();
     app.add_flag("-d,--debug", debug, "Debug mode");
+    app.add_flag("-c,--clip", copy_to_clipboard, "Copy output to clipboard");
+
     CLI11_PARSE(app, argc, argv);
     if (debug) {
         cpptrace::register_terminate_handler();
     }
 
-    // Prompt user to enter multiple lines of text
-    cout << "Copy paste binary image and press enter: " << endl;
-    // Read input lines until an empty line is encountered
-    while (getline(cin, str)) {
-        if (str.empty()) {
-            break;
-        }
-        text += str + "\n";
-    }
-    bool comments = yes_or_no_prompt("Do you want me to add comments?(y/n)");
-    auto image = ImageConverter::read(text);
-    if (debug) {
-        StringUtils::print(image);
-    }
-    auto normalized = ImageConverter::normalize(image);
-    if (debug) {
-        cout << "Normalized" << endl;
-        StringUtils::print(normalized);
-    }
-    auto res = ImageConverter::convert(normalized, comments);
-    if (yes_or_no_prompt("Copy to clipboard?(y/n)")) {
+    const auto res = ImageConverter::convert(input_file);
+    if (copy_to_clipboard) {
         clip::set_text(res);
+        cout << "Copied to clipboard" << endl;
     } else {
         cout << res;
     }

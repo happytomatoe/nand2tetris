@@ -38,45 +38,12 @@ public:
         return res;
     }
 
-    static string snake_case_to_camel_case(const string &str) {
-        // Empty String
-        string result;
 
 
-        for (int i = 0; i < str.length(); i++) {
-            char ch = str[i];
-
-            //delete _ and make upper next char
-            if (i == 0) {
-                result.append(1, static_cast<char>(toupper(ch)));
-            } else if (ch == '_') {
-            } else if (i > 0 && str[i - 1] == '_') {
-                if (i < str.length() - 1) {
-                    result.append(1, toupper(ch));
-                }
-            } else {
-                result.append(1, static_cast<char>(tolower(ch)));
-            }
-        }
-
-        // return the result
-        return result;
-    }
-
-    static void print(const vector<string> &pixels) {
+    static void print(const vector<vector<bool> > &pixels) {
         for (const auto &pixel: pixels) {
             for (const auto &j: pixel) {
-                cout << j;
-                cout << " ";
-            }
-            cout << endl;
-        }
-    };
-
-    static void print(const vector<vector<string> > &pixels) {
-        for (const auto &pixel: pixels) {
-            for (const auto &j: pixel) {
-                cout << j;
+                cout << (j ? "1" : "0");
             }
             cout << endl;
         }

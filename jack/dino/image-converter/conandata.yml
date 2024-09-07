@@ -2,6 +2,7 @@
 # To keep your changes, remove these comment lines, but the plugin won't be able to modify your requirements
 
 requirements:
+  - "lodepng/cci.20230410"
   - "cli11/2.4.2"
   - "dacap-clip/1.9"
   - "cpptrace/0.6.3"

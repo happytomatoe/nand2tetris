@@ -1,85 +1,110 @@
 #include "ImageConverter.hpp"
-#include <ranges>
+
+#include <fstream>
+#include <lodepng.h>
 #include "StringUtils.h"
 
-vector<string> ImageConverter::read(const string &text) {
-    string array_search_res;
-    vector<string> res;
-    string row;
-    for (auto c: text) {
-        if (c == '\n' && !row.empty()) {
-            res.push_back(row);
-            row = "";
-        } else if (c == '1' || c == '0') {
-            row += c;
+string ImageConverter::convert(const string &filepath, const bool ignore_checksums, const bool debug) {
+    std::vector<unsigned char> image;
+    unsigned w;
+    unsigned h;
+    read(filepath, ignore_checksums, image, w, h);
+    const auto img = convert_to_binary_image(image, w, h);
+    if (debug) {
+        std::cout << "Width: " << w << std::endl;
+        std::cout << "Height: " << h << std::endl;
+        std::cout << "Num pixels: " << w * h << std::endl;
+
+        if (w > 0 && h > 0) {
+            std::cout << "Top left pixel color:"
+                    << " r: " << (int) image[0]
+                    << " g: " << (int) image[1]
+                    << " b: " << (int) image[2]
+                    << " a: " << (int) image[3]
+                    << std::endl;
+        }
+        cout << "Image lightness" << endl;
+        cout << printImage(image, w, h) << endl;
+        cout << "Binary image" << endl;
+        StringUtils::print(img);
+    }
+    return convert_to_jack_code(img);
+}
+
+string ImageConverter::convert_to_jack_code(const vector<vector<bool> > &img) {
+    string header = R"(
+    |method void draw(int x, int y) {
+    )";
+
+
+    string res = header;
+    for (int i = 0; i < img.size(); i++) {
+        auto row = img[i];
+        for (int j = 0; j < row.size(); j++) {
+            if (!row[j]) {
+                auto jStr = j > 0 ? format("+{}", j) : "";
+                auto iStr = i > 0 ? format("+{}", i) : "";
+                res += format("|   do Screen.drawVisiblePixel(x{},y{});\n", jStr, iStr);
+            }
+        }
+    }
+    auto footer = R"(
+        |   return;
+        |}
+    )";
+    return StringUtils::stripMargin(res + footer);
+}
+
+
+vector<vector<bool> > ImageConverter::convert_to_binary_image(const std::vector<unsigned char> &image, unsigned w,
+                                                              unsigned h) {
+    if (w <= 0 || h <= 0) {
+        throw runtime_error("Invalid image size: " + to_string(w) + "x" + to_string(h));
+    }
+    vector res(h, vector(w, false));
+    for (unsigned y = 0; y < h; y++) {
+        for (unsigned x = 0; x < w * 4; x += 4) {
+            if (image[y * w * 4 + x] > 224) res[y][x / 4] = true;
         }
     }
     return res;
 }
 
-string ImageConverter::convert(const vector<vector<string> > &img, const bool comments) {
-    /**
-    * Mapping
-    The (row, col) pixel in the physical screen is represented by
-    the (col % 16)th bit in RAM address SCREEN + 32* row + col /16
-    */
-    std::string header = "function void draw(int location) {\n";
-    if (comments)
-        header += "   //img height: " + std::to_string(img.size()) + " width: " + std::to_string(img[0].size()) + "\n";
-    header += "   var int memAddress;\n";
-    header += "   let memAddress=16384 + location;\n";
-    string res = header;
-    for (int i = 0; i < img.size(); ++i) {
-        if (comments)
-            res += "|   //row: " + to_string(i) + "\n";
-        for (int j = 0; j < img[i].size(); ++j) {
-            std::bitset<16> b3(img[i][j]);
-            auto number = static_cast<short>(b3.to_ullong() & 0xFFFF);
-            if (number != 0) {
-                if (comments) {
-                    if (j > 0) {
-                        res += format("|   //cols: {}-{} bits {}\n", to_string(j * 16), to_string((j + 1) * 16),
-                                      b3.to_string());
-                    } else {
-                        res += format("|   //cols: 0-16 bits {}\n", b3.to_string());
-                    }
-                }
-                int memAddress = 32 * i + j;
-                string addr = memAddress == 0 ? "" : "+" + to_string(memAddress);
-                if (number < -32768 || number > 32767) {
-                    throw cpptrace::domain_error("Unexpected number: " + to_string(number) + ". Bits " + b3.to_string());
-                }
-                res += format("|   do Memory.poke(memAddress{}, {});\n", addr, number);
-            }
+string ImageConverter::printImage(const std::vector<unsigned char> &image, unsigned w,
+                                  unsigned h) {
+    if (w <= 0 || h <= 0) {
+        throw runtime_error("Invalid image size: " + to_string(w) + "x" + to_string(h));
+    }
+    string res;
+    for (unsigned y = 0; y < h; y++) {
+        for (unsigned x = 0; x < w * 4; x += 4) {
+            res += to_string(image[y * w * 4 + x]) + ",";
         }
+        res += "\n";
     }
-    string footer = R"(|   return;
-         |})";
-    return StringUtils::stripMargin(res + footer);
+    return res;
 }
 
-int ImageConverter::count_rows(const string &string) {
-    std::string regexPunc = "(0x[\\da-zA-z]+,*\n)"; // matches any punctuations;
-    re2::RE2 re2Punc(regexPunc);
-    re2::StringPiece input(string);
-    int numberOfMatches = 0;
-    while (re2::RE2::FindAndConsume(&input, re2Punc)) {
-        ++numberOfMatches;
+void ImageConverter::read(const string &filepath, bool ignore_checksums, std::vector<unsigned char> &image, unsigned &w,
+                          unsigned &h) {
+    ifstream f(filepath.c_str());
+    if (!f.good()) {
+        throw runtime_error("File not found: " + filepath);
     }
-    return numberOfMatches;
+
+    std::vector<unsigned char> buffer;
+
+    lodepng::load_file(buffer, filepath); //load the image file with given filename
+
+    lodepng::State state;
+    if (ignore_checksums) {
+        state.decoder.ignore_crc = 1;
+        state.decoder.zlibsettings.ignore_adler32 = 1;
+    }
+
+    unsigned error = decode(image, w, h, state, buffer);
+
+    if (error) {
+        throw runtime_error("decoder error " + to_string(error) + ": " + lodepng_error_text(error));
+    }
 }
-
-
-/**
- *The Hack computer employs a memory-mapped approach to I/O.
- *Bitmapped, black and white output to a virtual 256 x 512 screen is
- *effected by writing a bitmap of the desired output to data memory locations 16384 (0x4000) through 24575 (0x5FFF).
- *The data words in this address range are viewed as a linear array of bits
- *with each bit value representing the black/white state of a single pixel on the computer emulator's virtual screen.
- *The least significant bit of the word in the first memory address of the screen RAM segment sets the pixel in
- *the upper left corner of the screen to white if it is 0 and black if it is 1.
- *The next-most significant bit in the first word controls the next pixel to the right, and so on.
- *After the first 512-pixel row is described by the first 32 words of screen memory,
- *the mapping is continued in the same fashion for the second row with the next 32 words.
- *Logic external to the computer reads the screen RAM memory map segment and updates the virtual screen.
-*/
