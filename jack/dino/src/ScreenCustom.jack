@@ -7,7 +7,7 @@ class ScreenCustom {
 	}
 
 	method void drawVisiblePixel(int x, int y){
-		if(x>-1&x<screenW&y>-1&y<screenH){
+		if((x>0)&(x<screenW)&(y>0)&(y<screenH)){
 			do Screen.drawPixel(x,y);
 		}
 		return;

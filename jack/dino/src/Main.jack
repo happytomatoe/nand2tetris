@@ -5,12 +5,14 @@ class Main {
     var Cloud cloud;
     var Cactus cactus;
     var ScreenCustom screen;
+    var Trail trail;
     let timestep = 50;
+    let screen = ScreenCustom.new(512,256);
     let dino = Dino.new(50,150,-15,1);
     let cloud = Cloud.new(390,20,1, 5);
-    let cactus = Cactus.new(400,150,3);
-    let screen = ScreenCustom.new(256,256);
-
+    let cactus = Cactus.new(400,150,8, screen);
+    let trail = Trail.new(0,170,screen);
+    // do trail.show();
     while (true) {
       do cactus.update();
       do dino.update();
