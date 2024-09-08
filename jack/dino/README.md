@@ -1,3 +1,7 @@
+# Clone of Dino game
+
+This is work in progress.
+
 TODO:
 
 Physics – 
