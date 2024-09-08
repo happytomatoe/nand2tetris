@@ -1,14 +1,12 @@
-class Cactus {
+class BigCactus {
   field int x,y,i, speed;
-  field ScreenCustom screen;
   field int imageW, imageH;
 
 
-  constructor Cactus new(int posX,int posY, int speed_, ScreenCustom screen_) {
-     let x=posX;
-     let y=posY;
+  constructor BigCactus new(int  x_,int y_, int speed_) {
+     let x=x_;
+     let y=y_;
      let speed=speed_;
-     let screen=screen_;
      let imageW = 23;
      let imageH = 46;
      return this;
@@ -17,6 +15,20 @@ class Cactus {
  method void dispose() {
   do Memory.deAlloc(this);
   return;
+}
+
+method int getX(){
+    return x;
+}
+method int getY(){
+    return y;
+}
+
+method int getW(){
+    return imageW;
+}
+method int getH(){
+    return imageH;
 }
 method void update(){
    do hide();
@@ -41,6 +53,7 @@ method void show() {
     do draw();
     return;
 }
+
 
 method void draw() {
    do Screen.drawPixel(x+9,y);
@@ -570,5 +583,6 @@ method void draw() {
 
    return;
 }
+
 
 }

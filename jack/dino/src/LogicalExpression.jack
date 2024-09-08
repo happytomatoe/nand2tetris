@@ -1,0 +1,6 @@
+class LogicalExpression {
+	function boolean gte(int a, int b){
+		var boolean res;
+		return (a>b) | (a=b); 
+	}
+}

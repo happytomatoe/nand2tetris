@@ -1,15 +1,28 @@
-# Clone of Dino game
+# Dino game
 
 This is work in progress.
 
 TODO:
 
 Physics – 
-- Collision detection   
+- Collision detection - done
 Input – 
-- Keyboard input
+- Keyboard input 
+	- Add jump - done
+	- Add duck
 Visual assets processing –
+- Death screen
+- Restart
 - Animations
+Object
+- Pebbles 
+- Small cactus
+Levels
+- Add change of speed
+Score pointer
+- High score
+- Score
+
 
 Helpfull links:
 - https://www.cs.huji.ac.il/course/2002/nand2tet/docs/ch_9_jack.pdf

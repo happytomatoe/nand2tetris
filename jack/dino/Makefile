@@ -1,2 +1,3 @@
 run:
-	cd src && JackCompiler.sh  &&  VMEmulator.sh
+	ls
+	bash build.sh

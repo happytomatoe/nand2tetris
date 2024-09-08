@@ -1,26 +1,58 @@
 class Main {
   function void main() {
-  var int timestep;
+    var int timestep, dinoFeetY, x;
+    var boolean collided, dead; 
     var Dino dino;
     var Cloud cloud;
-    var Cactus cactus;
-    var ScreenCustom screen;
+    var BigCactus cactus;
     var Trail trail;
     let timestep = 50;
-    let screen = ScreenCustom.new(512,256);
-    let dino = Dino.new(50,150,-15,1);
+    let dinoFeetY= 150;
+    let dino = Dino.new(50,dinoFeetY,-15,1);
     let cloud = Cloud.new(390,20,1, 5);
-    let cactus = Cactus.new(400,150,8, screen);
-    let trail = Trail.new(0,170,screen);
-    // do trail.show();
-    while (true) {
+    let cactus = BigCactus.new(450,dinoFeetY-3,8);
+    let trail = Trail.new(0,180);
+
+
+    while (~dead) {
       do cactus.update();
       do dino.update();
       do cloud.update();
+      do trail.update();
+      let collided= Main.colided(dino,cactus);
+      if(collided){
+        let dead = true;
+        do dino.die();
+      }
       do Sys.wait(timestep);
     }
     return;
   }
+  function boolean colided(Dino dino, BigCactus cactus){
+    // collision x-axis?
+    var int dinoX, dinoY, dinoW, dinoH;
+    var int cactusX, cactusY, cactusW, cactusH;
+    var boolean collisionX, cx1, cx2 , collisionY, cy1,cy2;
+    let cactusX = cactus.getX();
+    let cactusY = cactus.getY();
+    let cactusW = cactus.getW();
+    let cactusH = cactus.getH();
+    
 
+    let dinoX = dino.getX();
+    let dinoY = dino.getY();
+    let dinoW = dino.getW();
+    let dinoH = dino.getH();
+    
 
+    let cx1 = LogicalExpression.gte(dinoX + dinoW, cactusX);
+
+    let cx2 = LogicalExpression.gte(cactusX + cactusW , dinoX);
+    let collisionX =  cx1 & cx2 ;
+    // collision y-axis?
+    let cy1 = LogicalExpression.gte(dinoY + dinoH , cactusY);
+    let cy2 = LogicalExpression.gte(cactusY + cactusH , dinoY);
+    let collisionY = cy1 &  cy2;
+    return collisionX & collisionY;
+  }
 }
