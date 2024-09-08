@@ -1,7 +1,7 @@
 # Convert a PNG file into Jack code
-1) To install run next command. By default, it will copy the binary to `~/bin`. 
+1) To install run the next command. By default, it will copy the binary to `~/bin`. 
 You can change this in [CmakeLists.txt](CMakeLists.txt) by changing `install(TARGETS nand2tetris-image-converter DESTINATION ~/bin)` 
-```
+```shell
 make install
 ```
 2) Run the utility. For example 
