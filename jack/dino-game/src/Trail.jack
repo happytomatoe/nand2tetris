@@ -11,7 +11,8 @@
  }
 
  method void update(){
-     do draw();
+     do hide();
+     do show();
      return;
   }
 

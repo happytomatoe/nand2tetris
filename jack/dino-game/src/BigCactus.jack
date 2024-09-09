@@ -1,7 +1,7 @@
 class BigCactus {
   field int x,y,i, speed;
   field int imageW, imageH;
-
+  //TODO: add 2 bounding boxes for collision detection
 
   constructor BigCactus new(int  x_,int y_, int speed_) {
      let x=x_;
@@ -29,6 +29,10 @@ method int getW(){
 }
 method int getH(){
     return imageH;
+}
+method void setSpeed(int speed_){
+    let speed=speed_;
+    return;
 }
 method void update(){
    do hide();
