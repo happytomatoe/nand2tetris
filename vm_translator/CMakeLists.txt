@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
-project(vm_translator)
+project(hack_vm_translator)
 
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -34,6 +34,8 @@ target_link_libraries(translator PUBLIC cpptrace::cpptrace toml11::toml11)
 find_package(CLI11 REQUIRED)
 add_executable(${PROJECT_NAME} src/main.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC CLI11::CLI11 translator)
+
+install(TARGETS ${PROJECT_NAME} DESTINATION ~/bin)
 
 # enable testing functionality
 

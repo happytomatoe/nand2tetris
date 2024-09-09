@@ -1,5 +1,5 @@
 class MathCustom{
-	function int  modulo(int n, int div){
+	function int  mod(int n, int div){
 		while(true){
 			if(n-div<0){
 				return n;

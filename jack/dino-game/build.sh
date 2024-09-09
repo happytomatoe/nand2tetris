@@ -1,10 +1,16 @@
-#!/bin/bash
+#!/bin/env bash
 
-cd src && JackCompiler.sh && rm -f Out.vm  && cat *.vm>Out.vm && mv Out.vm ../build/ 
-c=$(wc -l < ../build/Out.vm)
+cp src/*.jack build/
+cd build 
+rm -f Out.vm
+JackCompiler.sh 
+rm *.jack
+wc -l *.vm |sort -rn
+cat *.vm>Out.vm
+c=$(wc -l < Out.vm)
 if [[  "$c" -gt 32767 ]]
 then
   echo "Output file is too big. Program counter will go into negative"
-  rm ../build/Out.vm
+  rm *.vm
   exit 1
 fi

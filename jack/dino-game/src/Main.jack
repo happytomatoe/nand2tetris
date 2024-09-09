@@ -22,7 +22,7 @@ class Main {
         let counter=0;
         let dino = Dino.new(50,dinoY,-13,1);
         let cloud = Cloud.new(390,20,1, 5);
-        let cactus = BigCactus.new(450,dinoY-3,obstaclesSpeed);
+        let cactus = BigCactus.new(1, 450,dinoY-3,obstaclesSpeed);
         let trail = Trail.new(0,180); 
         let dinoH = dino.getH();
         let pebbles = Pebbles.new(0,dinoY+dinoH-1, obstaclesSpeed); 
@@ -49,7 +49,7 @@ class Main {
           do pebbles.dispose();
 
         }
-        if(MathCustom.modulo(counter,100)=0){
+        if(MathCustom.mod(counter,100)=0){
           let obstaclesSpeed=obstaclesSpeed+2;
           do cactus.setSpeed(obstaclesSpeed);
           do pebbles.setSpeed(obstaclesSpeed);

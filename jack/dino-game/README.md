@@ -6,19 +6,23 @@ TODO:
 
 Physics – 
 - Collision detection - done
+- Add colisions boxes for obstacles
 Input – 
 - Keyboard input 
 	- Add jump - done
 	- Add duck
 Visual assets processing –
-- Death screen
-- Restart
+- Death screen - done. We can add a button there 
+- Restart - done
 - Animations
+ 	- Dino running - done
+ 	- Death dino animation - done
 Object
-- Pebbles 
-- Small cactus
+- Pebbles - done. 
+- Diffent cactuses
 Levels
 - Add change of speed
+- Procedural level generation
 Score pointer
 - High score
 - Score

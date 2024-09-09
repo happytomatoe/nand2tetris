@@ -1,5 +1,3 @@
-//TODO: add running animation, death screen, duck
-// 
 class Dino {
   field int x,y,newY,startY,velocity, jumpVelocity,gravity, counter, runStepChangeNTick;
   field int imageW, imageH;
@@ -80,7 +78,7 @@ method void calcNewPos(int timestep){
     return;
   }
   method void run(){
-    if(MathCustom.modulo(counter,runStepChangeNTick)=0){
+    if(MathCustom.mod(counter,runStepChangeNTick)=0){
       let runningStep=~runningStep;
     }
     return;

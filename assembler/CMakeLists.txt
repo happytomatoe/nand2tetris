@@ -1,7 +1,7 @@
 
 
 cmake_minimum_required(VERSION 3.28)
-project(assembler)
+project(hack-assembler)
 
 #find_package(CATCH2 REQUIRED)
 set(CMAKE_CXX_STANDARD 20)
@@ -26,19 +26,17 @@ target_sources(assemble
         src/assemble/Assembler.cpp
         src/assemble/Parser.cpp
 )
-
 target_include_directories(assemble PUBLIC src)
-
-find_package(spdlog)
 find_package(cpptrace REQUIRED)
-
-target_link_libraries(assemble PUBLIC cpptrace::cpptrace spdlog::spdlog)
-
+target_link_libraries(assemble PUBLIC cpptrace::cpptrace)
 
 
 find_package(CLI11 REQUIRED)
-add_executable(assembler src/main.cpp)
-target_link_libraries(assembler PRIVATE assemble CLI11::CLI11)
+add_executable(${PROJECT_NAME} src/main.cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE assemble CLI11::CLI11)
+
+
+install(TARGETS ${PROJECT_NAME} DESTINATION ~/bin)
 
 # testing binary
 

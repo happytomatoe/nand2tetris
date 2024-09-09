@@ -13,6 +13,8 @@ build-debug: FORCE
 run: build-debug
 	 ./build/Debug/vm_translator ./data/advanced/dino/Main.vm -c config_example.toml --debug
 
+install: build FORCE
+	cmake --install ./build/Release --config Release
 clean:
 	rm -rf build
 test: build FORCE

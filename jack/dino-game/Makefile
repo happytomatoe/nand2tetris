@@ -1,3 +1,3 @@
+.PHONY: run
 run:
-	ls
-	bash build.sh
+	./build.sh

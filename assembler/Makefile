@@ -12,6 +12,11 @@ build-debug: FORCE
 	cmake --build .
 run:
 	 ./build/Debug/assembler  ./data/MaxL.asm
+
+
+install: build FORCE
+	cmake --install ./build/Release --config Release
+
 perf: FORCE
 	#sudo perf record -g -F 99 -a ./build/Debug/assembler  ./data/PongLong.asm -o Pong.hack
 	sudo perf mem record -g -F 99 -a ./build/Debug/assembler  ./data/PongLong.asm -o Pong.hack

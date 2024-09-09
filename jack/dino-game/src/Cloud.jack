@@ -17,7 +17,7 @@ class Cloud {
 method void update(){
  var int mod;
  
- let mod=MathCustom.modulo(counter,moveEveryNTick);
+ let mod=MathCustom.mod(counter,moveEveryNTick);
  if(mod=0){
   do hide();
   if(x>5){
