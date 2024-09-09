@@ -28,6 +28,15 @@ namespace memory {
                    << "min: " << obj.min
                    << " max: " << obj.max;
         }
+
+        friend bool operator==(const Range &lhs, const Range &rhs) {
+            return lhs.min == rhs.min
+                   && lhs.max == rhs.max;
+        }
+
+        friend bool operator!=(const Range &lhs, const Range &rhs) {
+            return !(lhs == rhs);
+        }
     };
 
 

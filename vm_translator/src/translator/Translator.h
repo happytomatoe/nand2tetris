@@ -5,13 +5,13 @@
 #include <random>
 #include <string>
 #include <vector>
-
-#include "ConfigParser.h"
+#include "Config.h"
 #include "MemorySegment.h"
 #include "Token.h"
 
 using namespace std;
 using namespace token;
+using namespace translator;
 
 class Translator {
 public:

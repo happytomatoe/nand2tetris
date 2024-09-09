@@ -5,7 +5,6 @@
 
 #include "Translator.h"
 #include "assembly.h"
-#include "ConfigParser.h"
 #include "Lexer.h"
 #include "Validator.h"
 #include "Token.h"
@@ -13,8 +12,9 @@
 #include "StringUtils.h"
 using namespace token;
 
+
 const Config Translator::default_config = Config{
-    memory::default_memory_segment_min_max_adress, true, true
+    memory::default_memory_segment_min_max_adress, false, false
 };
 
 string Translator::translate(const string &file_path, const Config &config) {

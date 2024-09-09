@@ -5,7 +5,10 @@
 #include <filesystem>
 #include "translator/Translator.h"
 #include <cpptrace/cpptrace.hpp>
+#include <fstream>
+#include "StringUtils.h"
 #include "CLI/CLI.hpp"
+#include "translator/MemorySegmentsParser.h"
 using namespace std;
 
 constexpr auto assembler_extension = ".asm";
@@ -13,7 +16,7 @@ constexpr string vm_file_extension = ".vm";
 constexpr string lined_file_name = "Linked";
 constexpr auto sys_vm_file_name = "Sys.vm";
 
-void process_file(const string &input_file_or_dir, const string &output_file, const Config &config) {
+void process_file(const string &input_file_or_dir, const string &output_file, const translator::Config &config) {
     const string res = Translator().translate(input_file_or_dir, config);
     if (output_file.empty()) {
         cout << res;
@@ -94,28 +97,36 @@ void handle_dir(const filesystem::path &input_dir, const Config &config) {
 }
 
 int main(int argc, char *argv[]) {
-    CLI::App app{"Hack vm translator"};
+    CLI::App app{"Hack VM translator.\nTranslate a .vm file into .hack file"};
     argv = app.ensure_utf8(argv);
-    string input_file_or_dir;
-    optional<string> config_file;
-    bool debug;
+    string input_file_or_dir, memory_segments;
+    bool debug = false, memory_init = false, clear_stack = false;
     app.add_option("input", input_file_or_dir, "input file directory path")
             ->check(CLI::ExistingPath)->required();
-    app.add_option("-c,--config-file-location", config_file, "Config file location");
     app.add_flag("-d,--debug", debug, "Debug mode");
+    app.add_flag("--cs,--clear-stack", clear_stack, "Clear stack after each operation. Default: false");
+    app.add_flag("--im,--initilize-memory", memory_init, "Initialize memory segments. Default: false");
+
+    app.add_option("-m,--memory-segments", memory_segments, StringUtils::stripMargin(R"(
+    |Initialize memory segments usign json in format {"segment": [minAdress, maxAdress]} For example
+    |--memory-segments '{"stack": [256, 299], "local": [256, 399], "arg": [256, 499], "this": [3000, 3009], "that": [3010, 4000], "pointer": [3, 4], "temp": [5, 12], "static": [16, 255]}'
+    )"));
     CLI11_PARSE(app, argc, argv);
     if (debug) {
         cpptrace::register_terminate_handler();
     }
+
+    if (memory_init && memory_segments.empty()) {
+        throw runtime_error("Memory segments can't be empty when --initilize-memory flag is set");
+    }
+    const auto config = Config{
+        memory_init ? MemorySegmentsParser::parse(memory_segments) : memory::default_memory_segment_min_max_adress,
+        clear_stack, memory_init
+    };
+
     //check if there are .vm files inside input directory
     const filesystem::path path(input_file_or_dir);
     error_code ec; // For using the non-throwing overloads of functions below.
-    if (config_file.has_value()) {
-        cout << "Parsing config file " << config_file.value() << endl;
-    }
-    const auto config = config_file.has_value()
-                            ? ConfigParser::parse_file(config_file.value())
-                            : Translator::default_config;
     if (is_directory(path, ec)) {
         handle_dir(path, config);
     }
@@ -137,3 +148,9 @@ int main(int argc, char *argv[]) {
     }
     return EXIT_SUCCESS;
 }
+
+const map<string, memory::MemorySegment> segmentsTypes = {
+    {"stack", memory::Stack},
+    {"local", memory::Local,}, {"arg", memory::Arg}, {"this", memory::This},
+    {"that", memory::That}, {"pointer", memory::Pointer}, {"temp", memory::Temp}, {"static", memory::Static}
+};
