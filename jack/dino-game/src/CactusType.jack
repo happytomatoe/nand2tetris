@@ -1,0 +1,9 @@
+class CactusType {
+	function int Big1(){
+		return 1;
+	}
+	function int Big2(){
+		return 1;
+	}
+
+}

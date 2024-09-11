@@ -1,0 +1,25 @@
+class ScreenCustom {
+
+  function boolean visible(int x, int y, int w, int h){
+    var int endX, endY, screenW, screenH;
+    var boolean b1,b2,b3,b4,b5,b6, res;
+    let screenH=256;
+    let screenW=512;
+    let endX = x+w;
+    let endY= y+h;
+    let res = ((x>0) | (x=0)) & ((endX<screenW) | (endX=screenW)) & 
+    ((y>0) | (y=0)) & ((endY<screenH) | (endY=screenH));
+    // if(res){
+    // 	do Output.printString("Visible true");
+    // 	do Output.printInt(x);
+    // 	do Output.printString(",");
+    // 	do Output.printInt(y);
+    // 	do Output.printString(",");
+    // 	do Output.printInt(w);
+    // 	do Output.printString(",");
+    // 	do Output.printInt(h);
+    // 	do Output.printString(",");
+    // }
+    return res; 
+  }
+}

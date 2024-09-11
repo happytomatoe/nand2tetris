@@ -1,0 +1,36 @@
+//Overflow aware counter
+class Counter {
+	field int counter;
+	constructor Counter new (){
+		let counter=0;
+		return this;
+	}
+
+	method void dispose() {
+		do Memory.deAlloc(this);
+		return;
+	}
+	method void inc(){
+		let counter =counter+1;
+	    //short overflow reset
+	    if(counter>29999){
+	    	let counter=0;
+	    }
+	    return;
+	}
+	method void add(int a){
+		let counter =counter+a;
+	    //short overflow reset
+	    if(counter>29999){
+	    	let counter=counter-30000;
+	    }
+	    return;
+	}
+	method int get(){
+		return counter;
+	}
+	method void reset(){
+		let counter=0;
+		return;
+	}
+}

@@ -1,0 +1,85 @@
+class IntQueue {
+	field Array objects;
+	static String overflowMessage, emptyMessage,indexOutOfBoundMessage; 
+	//TODO: rename size
+	field int headIndex, lastElementIndex, size, capacity;
+	constructor IntQueue new(int capacity_) {
+		if(overflowMessage=null){
+			let overflowMessage="Queue overflow";
+		}
+		if(emptyMessage=null){
+			let emptyMessage="Empty Queue Exception";
+		}
+		if(indexOutOfBoundMessage=null){
+			let indexOutOfBoundMessage="Index out of bound exception";
+		}
+
+		let objects=Array.new(capacity_);
+		let headIndex=0;
+		let lastElementIndex=0;
+		let capacity=capacity_;
+		let size=0;
+		return this;
+	}
+	method void dispose() {
+		do objects.dispose();
+		do Memory.deAlloc(this);
+		return;
+	}
+	method int size(){
+		return size;
+	}
+	
+	method void add(int c){
+		if(size=capacity){
+			do Output.printString(overflowMessage);
+			do Sys.halt();
+		}
+		let objects[lastElementIndex]=c;
+		let lastElementIndex=lastElementIndex+1;
+		if(lastElementIndex=capacity){
+			let lastElementIndex=0;
+		}
+		let size=size+1;
+		return;
+	}
+	method int remove(){
+		if(size=0){
+			do Output.printString(emptyMessage);
+			do Sys.halt();
+		}
+		let headIndex=headIndex+1;
+		if(headIndex=capacity){
+			let headIndex=0;
+		}
+		let size=size-1;
+
+		return objects[headIndex-1];
+	}
+	method int head(){
+		if(size=0){
+			return null;
+		}
+		return objects[headIndex];
+	}
+
+	method int get(int index){
+		var int i;
+		if((index>size)|(index=size)){
+			do Output.printString(indexOutOfBoundMessage);
+			do Sys.halt();
+		}
+		
+		let i = index + headIndex; 
+		if(i>(capacity-1)){
+			let i = i-capacity;
+		}
+		return objects[i];
+	}
+	method void clear(){
+		let headIndex=0;
+		let lastElementIndex=0;
+		let size=0;
+		return;
+	}
+}
