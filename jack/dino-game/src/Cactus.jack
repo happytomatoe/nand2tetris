@@ -28,6 +28,14 @@ method void dispose() {
   do Memory.deAlloc(this);
   return;
 }
+method boolean isVisible(){
+    return visible;
+}
+
+method int getId(){
+    return id;
+}
+
 
 method void print(){
     do Output.printString("Cactus(");
@@ -92,29 +100,28 @@ return;
 method void update(){
 
 
+    //TODO: what's the clean  way to stop updating/hide/remove cactus?
     if(x>speed){
         do hide();
         let x=x-speed;
         do show();
         }else {
-            if(visible){
-                let visible=~visible;
-                do hide();
-            }
-
-            let x=-1;
+            do hide();
         }
+        
         return;
     }
     method void hide() {
         do Screen.setColor(false);
         do draw();
+        let visible=false;
         return;
     }
 
     method void show() {
         do Screen.setColor(true);
         do draw();
+        let visible=true;
         return;
     }
     method void draw(){

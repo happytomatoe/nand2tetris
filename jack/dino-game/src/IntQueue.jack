@@ -29,7 +29,9 @@ class IntQueue {
 	method int size(){
 		return size;
 	}
-	
+	method int capacity(){
+		return capacity;
+	}
 	method void add(int c){
 		if(size=capacity){
 			do Output.printString(overflowMessage);

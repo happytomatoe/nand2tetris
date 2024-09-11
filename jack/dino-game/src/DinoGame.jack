@@ -8,18 +8,18 @@ class DinoGame {
 	field Trail trail;
 	field Pebbles pebbles;
 	field boolean exit, waitForStart, dead; 
-	field int timestep, dinoY;
-	static String visibleCactusesName, cactusesOutOfScreenName,m1,startMessage, blank;
+	field int timestep, dinoY, cactusCountOfScreen;
+	static String visibleCactusesName, cactusesOutOfScreenName,cantSpawnMessage,startMessage, blank;
 
 	constructor DinoGame new() {
 		var int i, qSize;
 		let qSize=5;
-		let m1="Can't spawn new cactuses";
+		let cantSpawnMessage="Can't spawn new cactuses";
 		let startMessage="Press Up to start";
 		let cactusesOutOfScreenName="cactuses out of screen";
 		let visibleCactusesName= "visible cactuses";
 		let blank =" ";
-		let waitForStart=false;
+		let waitForStart=true;
 		
 		do Cactus.init();
 		let timestep = 50;
@@ -27,7 +27,9 @@ class DinoGame {
 		let dead=true;
 		let exit=false;
 
-
+		let cactusCountOfScreen = 500;
+		let cactusesTypes = IntQueue.new(cactusCountOfScreen);
+		let cactusesXs = IntQueue.new(cactusCountOfScreen);
 		let visibleCactuses=CactusQueue.new(qSize);
 		let cactusPool=CactusQueue.new(qSize);
 
@@ -61,7 +63,7 @@ class DinoGame {
 	method void run() {
 		var Cactus cactus;
 		var  Counter sceneX;
-		var int  dinoH, i, cactusX, cactusType;
+		var int  dinoH, i, cactusX, cactusType, t1,t2;
 		var boolean collided, obstaclesSpeed; 
 		//TODO: counter dispose
 		let sceneX=Counter.new();
@@ -69,6 +71,8 @@ class DinoGame {
 		let cloud = Cloud.new(390,20,1, 5);
 		let trail = Trail.new(0,180); 
 		let dinoH = dino.getH();
+		let t1=cactusPool.size();
+		let t2=visibleCactuses.size();
 		let pebbles = Pebbles.new(0,dinoY+dinoH-1, obstaclesSpeed);
 
 		do Output.moveCursor(11, 23);
@@ -81,18 +85,14 @@ class DinoGame {
 				do cloud.hide();
 				do cloud.move(390,20);
 				do dino.hide();
-				do DinoGame.hide(visibleCactuses);
-				do visibleCactuses.clear();
-				//hide sign
-				do Output.moveCursor(11, 23);
-				let i=0;
-				while(i<startMessage.length()){
-					do Output.printString(blank);
-					let i=i+1;
-				}
 
-				let cactusesXs = DinoGame.createCactusesXs(50);
-				let cactusesTypes = DinoGame.createCactusesTypes(50);
+				do DinoGame.removeFromScreen(visibleCactuses);
+				do visibleCactuses.move(cactusPool);
+				do DinoGame.hideStartMessage(startMessage.length());
+				do Output.moveCursor(0, 0);
+
+				do DinoGame.fillCactusesXs(cactusesXs);
+				do DinoGame.fillCactusesTypes(cactusesTypes);
 
 			}
 			while (~dead) {
@@ -122,16 +122,15 @@ class DinoGame {
 				do cloud.update();
 				do pebbles.update();
 
-				do DinoGame.removeCactusesOutOfScreen(visibleCactuses, cactusPool);
 				do DinoGame.update(visibleCactuses);
+				do DinoGame.moveInvisibleCactuses(visibleCactuses, cactusPool);
+
 
 				if(CollisionDetector.colided(dino, visibleCactuses)){
 					let dead = true;
 					do dino.die();
 					do Output.moveCursor(11, 23);
 					do Output.printString(startMessage);
-					do DinoGame.hide(visibleCactuses);
-					do DinoGame.moveCactuses(visibleCactuses, cactusPool);
 				}
 				do sceneX.add(obstaclesSpeed);
 				do Sys.wait(timestep);
@@ -140,12 +139,22 @@ class DinoGame {
 		}
 		return;
 	}
+	function void hideStartMessage(int messageLen){
+		var int i;
+		do Output.moveCursor(11, 23);
+		let i=0;
+		while(i<messageLen){
+			do Output.printString(blank);
+			let i=i+1;
+		}
+		return;
+	}
 	function boolean upKeyPressed(){
 		var char key;
 		let key = Keyboard.keyPressed();
 		return key=131;
 	}
-	function void hide(CactusQueue cactuses){
+	function void removeFromScreen(CactusQueue cactuses){
 		var Cactus cactus;
 		var int i;
 		let i=0;
@@ -168,24 +177,13 @@ class DinoGame {
 		return;
 	}
 
-	function void moveCactuses(CactusQueue visibleCactuses, CactusQueue cactusPool){
-		var int i;
-		let i=0;
-		while(i<visibleCactuses.size()){
-			do cactusPool.add(visibleCactuses.remove());
-			let i = i+1;
-		}
-		return;
-	}
-
-	function void removeCactusesOutOfScreen(CactusQueue cactuses, CactusQueue cactusPool){
+	function void moveInvisibleCactuses(CactusQueue cactuses, CactusQueue cactusPool){
 		var Cactus cactus;
 		let cactus = cactuses.head();
 		
 		while(~(cactus=null)){
-			if(cactus.getX()<0){
+			if(~cactus.isVisible()){
 				do cactusPool.add(cactuses.remove());
-				
 				let cactus = cactuses.head();
 				}else {
 					let cactus=null;
@@ -194,34 +192,32 @@ class DinoGame {
 			return;
 		}	 
 
-		function IntQueue createCactusesXs(int count){
-			var IntQueue cactuses;
-			var int i,type,t ;
-			let cactuses = IntQueue.new(count);
+		function void fillCactusesXs(IntQueue cactuses){
+			var int i;
 			let i=0;
-			while(i<count){
+			do cactuses.clear();
+			while(i<cactuses.capacity()){
 				do cactuses.add(500+Math.multiply(400,i));
 				let i=i+1;
 			}
 			if(cactuses.size()=0){
-				do Output.printString(m1);
+				do Output.printString(cantSpawnMessage);
 				do Sys.halt();
 			}
 			return cactuses;
 		}
 
-		function IntQueue createCactusesTypes(int count){
-			var IntQueue cactuses;
-			var int i,type,t ;
-			let cactuses = IntQueue.new(count);
+		function void fillCactusesTypes(IntQueue cactuses){
+			var int i,type;
 			let i=0;
-			while(i<count){
+			do cactuses.clear();
+			while(i<cactuses.capacity()){
 				let type = MathCustom.mod(i,2)+1;
 				do cactuses.add(type);
 				let i=i+1;
 			}
 			if(cactuses.size()=0){
-				do Output.printString(m1);
+				do Output.printString(cantSpawnMessage);
 				do Sys.halt();
 			}
 			return cactuses;

@@ -90,4 +90,14 @@ class CactusQueue {
 		let size=0;
 		return;
 	}
+	method void move(CactusQueue other){
+		var int i;
+		let i=0;
+		while(i<size()){
+			do other.add(remove());
+			let i = i+1;
+		}
+		return;
+
+	}
 }
