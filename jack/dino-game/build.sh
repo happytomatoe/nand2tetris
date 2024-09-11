@@ -2,7 +2,7 @@
 
 cp src/*.jack build/
 cd build 
-rm -f Out.vm
+rm -f *.vm
 JackCompiler.sh 
 rm *.jack
 wc -l *.vm |sort -rn

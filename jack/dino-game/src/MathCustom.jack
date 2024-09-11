@@ -1,5 +1,13 @@
 class MathCustom{
 	function int  mod(int n, int div){
+		if(div=0){
+			do Output.printString("Zero divider in modulo");
+			do Sys.halt();
+		}
+		if(n<0){
+			do Output.printString("Negate modulo");
+			do Sys.halt();
+		}
 		while(true){
 			if(n-div<0){
 				return n;

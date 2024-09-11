@@ -1,20 +1,30 @@
 class Dino {
-  field int x,y,newY,startY,velocity, jumpVelocity,gravity, counter, runStepChangeNTick;
+  field int x,y,newY,startY,velocity, jumpVelocity,gravity, runStepChangeNTick;
   field int imageW, imageH;
-
+  field Counter counter;
   field boolean jumping, runningStep;
 
-  constructor Dino new(int x1,int y1,int jumpVelocity_, int gravity_) {
-    let x=x1;
-    let y=y1;
+  constructor Dino new(int x_,int y_,int jumpVelocity_, int gravity_) {
+    let x=x_;
+    let y=y_;
     let startY=y;
     let gravity= gravity_;
     let jumpVelocity =jumpVelocity_;
     let imageW = 40;
     let imageH = 43;
-    let counter =0;
+    let counter = Counter.new();
     let runStepChangeNTick=3;
     return this;
+  }
+  method void move(int x_,int y_){
+    let x=x_;
+    let y=y_;
+    return;
+  }
+  method void dispose() {
+    do counter.dispose();
+    do Memory.deAlloc(this);
+    return;
   }
   method int getX(){
     return x;
@@ -29,12 +39,6 @@ class Dino {
   method int getH(){
     return imageH;
   }
-
-  /** Deallocates the object's memory. */
-  method void dispose() {
-    do Memory.deAlloc(this);
-    return;
-  }
   method void update(){
    var char key;
    let key = Keyboard.keyPressed();
@@ -45,40 +49,36 @@ class Dino {
   }
   if(jumping){
     do calcNewPos(1);  
-  }else{
+    }else{
       do run();
-  }
+    }
 
     do show();
-    let counter =counter+1;
-  //short overflow reset
-  if(counter>29999){
-    let counter=0;
-  }
-  return;
-}
-
-method void calcNewPos(int timestep){
-  var int doubleT;
-  let doubleT= Math.multiply(timestep,timestep);
-  let newY = y + Math.multiply(velocity, timestep)+ Math.divide(Math.multiply(gravity,doubleT),2);
-  if((newY>startY)|(newY=startY)){
-    let jumping=false;
-    let y=startY;
-    }else{
-      let y=newY;
-      let velocity= velocity+Math.multiply(gravity,timestep);
-    }
+    do counter.inc();
     return;
   }
-  method void hide() {
-    do Screen.setColor(false);
+
+  method void calcNewPos(int timestep){
+    var int doubleT;
+    let doubleT= Math.multiply(timestep,timestep);
+    let newY = y + Math.multiply(velocity, timestep)+ Math.divide(Math.multiply(gravity,doubleT),2);
+    if((newY>startY)|(newY=startY)){
+      let jumping=false;
+      let y=startY;
+      }else{
+        let y=newY;
+        let velocity= velocity+Math.multiply(gravity,timestep);
+      }
+      return;
+    }
+    method void hide() {
+      do Screen.setColor(false);
     //TODO: do something better
     do drawNormal();
     return;
   }
   method void run(){
-    if(MathCustom.mod(counter,runStepChangeNTick)=0){
+    if(MathCustom.mod(counter.get(),runStepChangeNTick)=0){
       let runningStep=~runningStep;
     }
     return;
@@ -959,30 +959,30 @@ method void calcNewPos(int timestep){
      }
 
 
-method void drawDeathEye() {
-   do Screen.setColor(false);
-   do Screen.drawPixel(x+24,y+3);
-   do Screen.drawPixel(x+25,y+3);
-   do Screen.drawPixel(x+26,y+3);
-   do Screen.drawPixel(x+27,y+3);
-   do Screen.drawPixel(x+24,y+4);
-   do Screen.drawPixel(x+27,y+4);
-   do Screen.drawPixel(x+24,y+5);
-   do Screen.drawPixel(x+27,y+5);
-   do Screen.drawPixel(x+24,y+6);
-   do Screen.drawPixel(x+25,y+6);
-   do Screen.drawPixel(x+26,y+6);
-   do Screen.drawPixel(x+27,y+6);
-   do Screen.setColor(true);
-   do Screen.drawPixel(x+25,y+4);
-   do Screen.drawPixel(x+26,y+4);
-   do Screen.drawPixel(x+25,y+5);
-   do Screen.drawPixel(x+26,y+5);
-   
-   
-   return;
-}
-    
+     method void drawDeathEye() {
+       do Screen.setColor(false);
+       do Screen.drawPixel(x+24,y+3);
+       do Screen.drawPixel(x+25,y+3);
+       do Screen.drawPixel(x+26,y+3);
+       do Screen.drawPixel(x+27,y+3);
+       do Screen.drawPixel(x+24,y+4);
+       do Screen.drawPixel(x+27,y+4);
+       do Screen.drawPixel(x+24,y+5);
+       do Screen.drawPixel(x+27,y+5);
+       do Screen.drawPixel(x+24,y+6);
+       do Screen.drawPixel(x+25,y+6);
+       do Screen.drawPixel(x+26,y+6);
+       do Screen.drawPixel(x+27,y+6);
+       do Screen.setColor(true);
+       do Screen.drawPixel(x+25,y+4);
+       do Screen.drawPixel(x+26,y+4);
+       do Screen.drawPixel(x+25,y+5);
+       do Screen.drawPixel(x+26,y+5);
+       
+       
+       return;
+     }
+     
 
 
 

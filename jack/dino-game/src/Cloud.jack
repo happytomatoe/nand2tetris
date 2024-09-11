@@ -1,10 +1,11 @@
 class Cloud {
-  field int x,y,speed,counter,moveEveryNTick;
-  
+  field int x,y,speed,moveEveryNTick;
+  field Counter counter;
   constructor  Cloud new(int x_,int y_,int speed_, int moveEveryNTick_) {
    let x=x_;
    let y=y_;
    let speed = speed_;
+   let counter  = Counter.new();
    let moveEveryNTick=moveEveryNTick_;
    return this;
  }
@@ -14,10 +15,16 @@ class Cloud {
   return;
 }
 
+  method void move(int x_,int y_){
+    let x=x_;
+    let y=y_;
+    return;
+  }
+
 method void update(){
  var int mod;
  
- let mod=MathCustom.mod(counter,moveEveryNTick);
+ let mod=MathCustom.mod(counter.get(),moveEveryNTick);
  if(mod=0){
   do hide();
   if(x>5){
@@ -27,7 +34,7 @@ method void update(){
     }
     do show();
   }
-  let counter=counter +1;
+  do counter.inc();
   return;
 }
 

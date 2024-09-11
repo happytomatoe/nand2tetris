@@ -3,6 +3,12 @@
 This is work in progress.
 
 TODO:
+- Add 2 cactuses, and 4 group of cactuses
+- Fix bug with jumping on cactus
+- Score
+- Add more clouds
+- If not hard add random
+- Fix heap memory overflow
 
 Physics – 
 - Collision detection - done
@@ -10,7 +16,6 @@ Physics –
 Input – 
 - Keyboard input 
 	- Add jump - done
-	- Add duck
 Visual assets processing –
 - Death screen - done. We can add a button there 
 - Restart - done
@@ -24,7 +29,6 @@ Levels
 - Add change of speed
 - Procedural level generation
 Score pointer
-- High score
 - Score
 
 
