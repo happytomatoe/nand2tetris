@@ -9,13 +9,14 @@ class DinoGame {
 	field Pebbles pebbles;
 	field boolean exit, waitForStart, dead; 
 	field int timestep, dinoY, cactusCountOfScreen;
-	static String visibleCactusesName, cactusesOutOfScreenName,cantSpawnMessage,startMessage, blank;
+	static String visibleCactusesName, cactusesOutOfScreenName,cantSpawnMessage,startMessage, restartMessage, blank;
 
 	constructor DinoGame new() {
 		var int i, qSize;
 		let qSize=5;
 		let cantSpawnMessage="Can't spawn new cactuses";
-		let startMessage="Press Up to start";
+		let startMessage=  "Press Up to start";
+		let restartMessage="Press Up to restart";
 		let cactusesOutOfScreenName="cactuses out of screen";
 		let visibleCactusesName= "visible cactuses";
 		let blank =" ";
@@ -63,16 +64,14 @@ class DinoGame {
 	method void run() {
 		var Cactus cactus;
 		var  Counter sceneX;
-		var int  dinoH, i, cactusX, cactusType, t1,t2;
-		var boolean collided, obstaclesSpeed; 
+		var int  dinoH, i, cactusX, cactusType;
+		var boolean collided, obstaclesSpeed, restarted; 
 		//TODO: counter dispose
 		let sceneX=Counter.new();
 		let dino = Dino.new(50,dinoY,-13,1);
 		let cloud = Cloud.new(390,20,1, 5);
 		let trail = Trail.new(0,180); 
 		let dinoH = dino.getH();
-		let t1=cactusPool.size();
-		let t2=visibleCactuses.size();
 		let pebbles = Pebbles.new(0,dinoY+dinoH-1, obstaclesSpeed);
 
 		do Output.moveCursor(11, 23);
@@ -85,142 +84,147 @@ class DinoGame {
 				do cloud.hide();
 				do cloud.move(390,20);
 				do dino.hide();
-
 				do DinoGame.removeFromScreen(visibleCactuses);
+
 				do visibleCactuses.move(cactusPool);
-				do DinoGame.hideStartMessage(startMessage.length());
-				do Output.moveCursor(0, 0);
+				if(restarted){
+					do DinoGame.hideString(restartMessage.length());
+					}else{
+						do DinoGame.hideString(startMessage.length());
+					}
 
-				do DinoGame.fillCactusesXs(cactusesXs);
-				do DinoGame.fillCactusesTypes(cactusesTypes);
+					do DinoGame.fillCactusesXs(cactusesXs);
+					do DinoGame.fillCactusesTypes(cactusesTypes);
 
-			}
-			while (~dead) {
-				if(MathCustom.mod(sceneX.get(),1000)=0){
-					let obstaclesSpeed=obstaclesSpeed+2;
-					do pebbles.setSpeed(obstaclesSpeed);
 				}
+				while (~dead) {
+					if(MathCustom.mod(sceneX.get(),1000)=0){
+						let obstaclesSpeed=obstaclesSpeed+2;
+						do pebbles.setSpeed(obstaclesSpeed);
+					}
 
-				let cactusX = cactusesXs.head();
-				let cactusType = cactusesTypes.head();
-				
-				while(cactusesXs.size()>0 & ScreenCustom.visible(cactusX-sceneX.get(), 0, Cactus.getWidth(cactusType), 0)){
-					let cactus = cactusPool.remove();
-					do cactus.setX(512-Cactus.getWidth(cactusType));
-					do cactus.setY(dinoY-3);
-					do cactus.setSpeed(obstaclesSpeed);
-					do cactus.setType(cactusType);
-					do visibleCactuses.add(cactus);
-
-					do cactusesXs.remove();
-					do cactusesTypes.remove();
 					let cactusX = cactusesXs.head();
 					let cactusType = cactusesTypes.head();
+
+					while(cactusesXs.size()>0 & ScreenCustom.visible(cactusX-sceneX.get(), 0, Cactus.getWidth(cactusType), 0)){
+						let cactus = cactusPool.remove();
+						do cactus.setX(512-Cactus.getWidth(cactusType));
+						do cactus.setY(dinoY-3);
+						do cactus.setSpeed(obstaclesSpeed);
+						do cactus.setType(cactusType);
+
+						do visibleCactuses.add(cactus);
+
+						do cactusesXs.remove();
+						do cactusesTypes.remove();
+						let cactusX = cactusesXs.head();
+						let cactusType = cactusesTypes.head();
+					}
+
+					do trail.update();
+					do cloud.update();
+					do pebbles.update();
+
+					do DinoGame.update(visibleCactuses);
+					do DinoGame.moveInvisibleCactuses(visibleCactuses, cactusPool);
+
+					do dino.update();
+
+					if(CollisionDetector.colided(dino, visibleCactuses)){
+						let dead = true;
+						let restarted=true;
+						do dino.die();
+						do Output.moveCursor(11, 23);
+						do Output.printString(restartMessage);
+					}
+
+					do sceneX.add(obstaclesSpeed);
+					do Sys.wait(timestep);
 				}
-				do trail.update();
-				do dino.update();
-				do cloud.update();
-				do pebbles.update();
-
-				do DinoGame.update(visibleCactuses);
-				do DinoGame.moveInvisibleCactuses(visibleCactuses, cactusPool);
-
-
-				if(CollisionDetector.colided(dino, visibleCactuses)){
-					let dead = true;
-					do dino.die();
-					do Output.moveCursor(11, 23);
-					do Output.printString(startMessage);
-				}
-				do sceneX.add(obstaclesSpeed);
 				do Sys.wait(timestep);
 			}
-			do Sys.wait(timestep);
-		}
-		return;
-	}
-	function void hideStartMessage(int messageLen){
-		var int i;
-		do Output.moveCursor(11, 23);
-		let i=0;
-		while(i<messageLen){
-			do Output.printString(blank);
-			let i=i+1;
-		}
-		return;
-	}
-	function boolean upKeyPressed(){
-		var char key;
-		let key = Keyboard.keyPressed();
-		return key=131;
-	}
-	function void removeFromScreen(CactusQueue cactuses){
-		var Cactus cactus;
-		var int i;
-		let i=0;
-		while(i<cactuses.size()){
-			let cactus=cactuses.get(i);
-			do cactus.hide();  
-			let i = i+1;
-		}
-		return;
-	}
-	function void update(CactusQueue cactuses){
-		var Cactus cactus;
-		var int i;
-		let i=0;
-		while(i<cactuses.size()){
-			let cactus=cactuses.get(i);
-			do cactus.update();  
-			let i = i+1;
-		}
-		return;
-	}
-
-	function void moveInvisibleCactuses(CactusQueue cactuses, CactusQueue cactusPool){
-		var Cactus cactus;
-		let cactus = cactuses.head();
-		
-		while(~(cactus=null)){
-			if(~cactus.isVisible()){
-				do cactusPool.add(cactuses.remove());
-				let cactus = cactuses.head();
-				}else {
-					let cactus=null;
-				}
-			}
 			return;
-		}	 
-
-		function void fillCactusesXs(IntQueue cactuses){
+		}
+		function void hideString(int messageLen){
 			var int i;
 			let i=0;
-			do cactuses.clear();
-			while(i<cactuses.capacity()){
-				do cactuses.add(500+Math.multiply(400,i));
+			while(i<messageLen){
+				do Output.backSpace();
 				let i=i+1;
 			}
-			if(cactuses.size()=0){
-				do Output.printString(cantSpawnMessage);
-				do Sys.halt();
+			do Output.printString(blank);
+			return;
+		}
+		function boolean upKeyPressed(){
+			var char key;
+			let key = Keyboard.keyPressed();
+			return key=131;
+		}
+		function void removeFromScreen(CactusQueue cactuses){
+			var Cactus cactus;
+			var int i;
+			let i=0;
+			while(i<cactuses.size()){
+				let cactus=cactuses.get(i);
+				do cactus.hide();  
+				let i = i+1;
 			}
-			return cactuses;
+			return;
+		}
+		function void update(CactusQueue cactuses){
+			var Cactus cactus;
+			var int i;
+			let i=0;
+			while(i<cactuses.size()){
+				let cactus=cactuses.get(i);
+				do cactus.update();  
+				let i = i+1;
+			}
+			return;
 		}
 
-		function void fillCactusesTypes(IntQueue cactuses){
-			var int i,type;
-			let i=0;
-			do cactuses.clear();
-			while(i<cactuses.capacity()){
-				let type = MathCustom.mod(i,2)+1;
-				do cactuses.add(type);
-				let i=i+1;
+		function void moveInvisibleCactuses(CactusQueue cactuses, CactusQueue cactusPool){
+			var Cactus cactus;
+			var int t;
+			let cactus = cactuses.head();
+
+			while(~(cactus=null)){
+				if(~cactus.isVisible()){
+					let t=cactuses.size();
+					do cactusPool.add(cactuses.remove());
+					do Assert.assertEq(t-1, cactuses.size(), "Something wrong with cactus add");
+					let cactus = cactuses.head();
+					}else {
+						let cactus=null;
+					}
+				}
+				return;
+			}	 
+
+			function void fillCactusesXs(IntQueue cactuses){
+				var int i;
+				let i=0;
+				do cactuses.clear();
+				while(i<cactuses.capacity()){
+					do cactuses.add(500+Math.multiply(400,i));
+					let i=i+1;
+				}
+
+				do Assert.assert(cactuses.size()>0 ,cantSpawnMessage);
+				return;
 			}
-			if(cactuses.size()=0){
-				do Output.printString(cantSpawnMessage);
-				do Sys.halt();
+
+			function void fillCactusesTypes(IntQueue cactuses){
+				var int i,type;
+				let i=0;
+				do cactuses.clear();
+				while(i<cactuses.capacity()){
+					let type = MathCustom.mod(i,2)+1;
+					do cactuses.add(type);
+					let i=i+1;
+				}
+				do Assert.assert(cactuses.size()>0 ,cantSpawnMessage);
+				return;
 			}
-			return cactuses;
+
 		}
-		
-	}

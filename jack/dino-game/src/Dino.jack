@@ -3,7 +3,7 @@ class Dino {
   field int imageW, imageH;
   field Counter counter;
   field boolean jumping, runningStep;
-
+  //TODO: running speed should allign with obstacled speed
   constructor Dino new(int x_,int y_,int jumpVelocity_, int gravity_) {
     let x=x_;
     let y=y_;

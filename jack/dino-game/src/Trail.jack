@@ -1,4 +1,5 @@
  class Trail{
+   //TODO: fix bug with trail not being adjacent to the cactus
    field int x, y;
    constructor Trail new(int x_, int y_){
       let x=x_;

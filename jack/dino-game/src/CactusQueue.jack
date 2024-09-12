@@ -90,13 +90,16 @@ class CactusQueue {
 		let size=0;
 		return;
 	}
+
+	
 	method void move(CactusQueue other){
-		var int i;
-		let i=0;
-		while(i<size()){
+		var Cactus c;
+		let c = head();
+		while(~(c=null)){
 			do other.add(remove());
-			let i = i+1;
+			let c = head();
 		}
+		do Assert.assertEq(size, 0, "Cactuses should be empty after move");
 		return;
 
 	}

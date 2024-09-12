@@ -3,7 +3,7 @@ class Cactus {
   field boolean visible;
   static Array imageSizes;
   //TODO: add 2 bounding boxes for collision detection
-
+  //TODO: add draw visible pixel function
   function void init(){
     let imageSizes = Array.new(4);
     //type 1
