@@ -17,7 +17,7 @@ constexpr string lined_file_name = "Linked";
 constexpr auto sys_vm_file_name = "Sys.vm";
 
 void process_file(const string &input_file_or_dir, const string &output_file, const translator::Config &config) {
-    const string res = Translator().translate(input_file_or_dir, config);
+    const string res = Translator(config).translate(input_file_or_dir);
     if (output_file.empty()) {
         cout << res;
     } else {
@@ -100,16 +100,17 @@ int main(int argc, char *argv[]) {
     CLI::App app{"Hack VM translator.\nTranslate a .vm file into .hack file"};
     argv = app.ensure_utf8(argv);
     string input_file_or_dir, memory_segments;
-    bool debug = false, memory_init = false, clear_stack = false;
+    bool debug = false, memory_init = false, clear_stack = false, disable_comments=false;
     app.add_option("input", input_file_or_dir, "input file directory path")
             ->check(CLI::ExistingPath)->required();
     app.add_flag("-d,--debug", debug, "Debug mode");
     app.add_flag("--cs,--clear-stack", clear_stack, "Clear stack after each operation. Default: false");
     app.add_flag("--im,--initilize-memory", memory_init, "Initialize memory segments. Default: false");
+    app.add_flag("--dc,--disable-comments", disable_comments, "Disable comments in files. Default: false");
 
     app.add_option("-m,--memory-segments", memory_segments, StringUtils::stripMargin(R"(
     |Initialize memory segments usign json in format {"segment": [minAdress, maxAdress]} For example
-    |--memory-segments '{"stack": [256, 299], "local": [256, 399], "arg": [256, 499], "this": [3000, 3009], "that": [3010, 4000], "pointer": [3, 4], "temp": [5, 12], "static": [16, 255]}'
+   |--memory-segments '{"stack": [256, 2047], "local": [2048, 2099], "arg": [3000, 3999], "this": [4000, 4999], "that": [5000, 5999], "pointer": [3, 4], "temp": [5, 12], "static": [16, 255]}'
     )"));
     CLI11_PARSE(app, argc, argv);
     if (debug) {
@@ -121,7 +122,7 @@ int main(int argc, char *argv[]) {
     }
     const auto config = Config{
         memory_init ? MemorySegmentsParser::parse(memory_segments) : memory::default_memory_segment_min_max_adress,
-        clear_stack, memory_init
+        clear_stack, memory_init, disable_comments
     };
 
     //check if there are .vm files inside input directory

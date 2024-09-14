@@ -15,7 +15,7 @@ namespace assembly {
         JMP,
     };
 
-    static constexpr string toString(const Jump jump) {
+    static constexpr string to_string(const Jump jump) {
         switch (jump) {
             case JGT:
                 return "JGT";

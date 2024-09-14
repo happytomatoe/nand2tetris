@@ -30,7 +30,6 @@ namespace token {
         Pointer,
         Constant,
         Static,
-        //
         Number,
         // Branching
         Label,

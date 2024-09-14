@@ -5,11 +5,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 20)
 
-
 #add_subdirectory(translator)
-
-add_library(translator
-        src/translator/MemorySegmentsParser.h)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+add_library(translator)
 target_sources(translator
         PUBLIC
         src/translator/exception.h
@@ -17,6 +15,7 @@ target_sources(translator
         src/translator/Lexer.h
         src/translator/Validator.h
         src/translator/MemorySegment.h
+        src/translator/MemorySegmentsParser.h
         src/translator/assembly.h
         PRIVATE
         src/translator/StringUtils.h
@@ -25,10 +24,9 @@ target_sources(translator
         src/translator/Lexer.cpp
 )
 find_package(nlohmann_json)
-find_package(toml11 REQUIRED)
 find_package(cpptrace REQUIRED)
 target_include_directories(translator PUBLIC src)
-target_link_libraries(translator PUBLIC cpptrace::cpptrace toml11::toml11 nlohmann_json::nlohmann_json)
+target_link_libraries(translator PUBLIC cpptrace::cpptrace nlohmann_json::nlohmann_json)
 
 
 find_package(CLI11 REQUIRED)

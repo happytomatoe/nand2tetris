@@ -81,7 +81,7 @@ void containsExpectedWithoutWhitespaces(const string &actual, const string &expe
 TEST(TranslatorTest, MemoryInit) {
     vector<Token> tokens = {Token(Eof)};
     containsExpectedWithoutWhitespaces(
-        Translator().translate(tokens, file_name, Config{memorySegmentMinMaxAdress, false, true}),
+        Translator({memorySegmentMinMaxAdress, false, true}).translate(tokens, file_name),
         memoryInitAsembly);
 }
 
@@ -98,7 +98,7 @@ TEST(TranslatorTest, PushConstant) {
     for (const auto &token: tokens) {
         cout << token << endl;
     }
-    auto actual = Translator().translate(tokens, file_name, config);
+    auto actual = Translator(config).translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
     auto expected = R"(
         @1
@@ -124,7 +124,7 @@ TEST_P(NormalMemorySegmentTest, Push) {
         Token(Push), Token(GetParam().first), Token(Number, 2),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, config);
+    auto actual = Translator(config).translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
 
     //addr=symbolAddress+i; *SP=*addr; SP++;
@@ -166,7 +166,7 @@ TEST(TranslatorTest, PushTemp) {
         Token(Push), Token(Temp), Token(Number, 2),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, config);
+    auto actual = Translator(config).translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
 
     //addr=symbolAddress+i; *SP=*addr; SP++;
@@ -192,7 +192,7 @@ TEST(TranslatorTest, PushTempInvalid) {
     for (auto token: tokens) {
         cout << token << endl;
     }
-    ASSERT_THROW(Translator().translate(tokens, file_name, config), AdressOutOfMemorySegmentRange);
+    ASSERT_THROW(Translator(config).translate(tokens, file_name), AdressOutOfMemorySegmentRange);
 }
 
 
@@ -205,7 +205,7 @@ TEST(TranslatorTest, PushStatic) {
     for (auto token: tokens) {
         cout << token << endl;
     }
-    auto actual = Translator().translate(tokens, file_name, config);
+    auto actual = Translator(config).translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
 
     /**
@@ -231,7 +231,7 @@ TEST(TranslatorTest, PushPointerThis) {
         Token(Push), Token(Pointer), Token(Number, 0),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, config);
+    auto actual = Translator(config).translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
 
     // push pointer 0/1 *SP=THIS/THAT; SP++
@@ -258,7 +258,7 @@ TEST(TranslatorTest, PushPointerThat) {
         Token(Push), Token(Pointer), Token(Number, 1),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, config);
+    auto actual = Translator(config).translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
 
     // push pointer 0/1 *SP=THIS/THAT; SP++
@@ -284,7 +284,7 @@ TEST(TranslatorTest, PushPointerInvalid) {
         Token(Push), Token(Pointer), Token(Number, 2),
         Token(Eof)
     };
-    EXPECT_THROW(Translator().translate(tokens, file_name, config), PointerOutOfRangeException);
+    EXPECT_THROW(Translator(config).translate(tokens, file_name), PointerOutOfRangeException);
 }
 
 
@@ -296,7 +296,7 @@ TEST_P(NormalMemorySegmentTest, Pop) {
         Token(Pop), Token(GetParam().first), Token(Number, 1),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, config);
+    auto actual = Translator(config).translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
 
     auto expected = format(R"(
@@ -330,7 +330,7 @@ TEST(TranslatorTest, PopStatic) {
         Token(Pop), Token(Static), Token(Number, 1),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, config);
+    auto actual = Translator(config).translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
 
     /**
@@ -353,7 +353,7 @@ TEST(TranslatorTest, PopTemp) {
         Token(Pop), Token(Temp), Token(Number, 1),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, config);
+    auto actual = Translator(config).translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
 
     /**
@@ -373,7 +373,7 @@ TEST(TranslatorTest, PopPointerThis) {
         Token(Pop), Token(Pointer), Token(Number, 0),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, config);
+    auto actual = Translator(config).translate(tokens, file_name);
     cout << "Atual \n" << actual << endl;
     auto t = Utils::preprocess(actual);
 
@@ -395,7 +395,7 @@ TEST(TranslatorTest, PopPointerThat) {
         Token(Pop), Token(Pointer), Token(Number, 1),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, config);
+    auto actual = Translator(config).translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
 
     /**
@@ -424,7 +424,7 @@ TEST(TranslatorTest, Add) {
         Token(Add),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, config);
+    auto actual = Translator(config).translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
 
     auto expected = stackPop2 + R"(
@@ -440,7 +440,7 @@ TEST(TranslatorTest, AddInvalid) {
         Token(Add),
         Token(Eof)
     };
-    ASSERT_THROW(Translator().translate(tokens, file_name, config), InvalidOperation);
+    ASSERT_THROW(Translator(config).translate(tokens, file_name), InvalidOperation);
 }
 
 TEST(TranslatorTest, Subtract) {
@@ -450,7 +450,7 @@ TEST(TranslatorTest, Subtract) {
         Token(Subtract),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, config);
+    auto actual = Translator(config).translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
 
     auto expected = stackPop2 + R"(
@@ -467,7 +467,7 @@ TEST(TranslatorTest, And) {
         Token(And),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, config);
+    auto actual = Translator(config).translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
 
     auto expected = stackPop2 + R"(
@@ -483,7 +483,7 @@ TEST(TranslatorTest, Or) {
         Token(Or),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, config);
+    auto actual = Translator(config).translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
 
     auto expected = stackPop2 + R"(
@@ -498,7 +498,7 @@ TEST(TranslatorTest, Negate) {
         Token(Negate),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, config);
+    auto actual = Translator(config).translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
 
     auto expected = R"(
@@ -514,7 +514,7 @@ TEST(TranslatorTest, NegateInvalid) {
         Token(Negate),
         Token(Eof)
     };
-    ASSERT_THROW(Translator().translate(tokens, file_name, config), InvalidOperation);
+    ASSERT_THROW(Translator(config).translate(tokens, file_name), InvalidOperation);
 }
 
 string logicalComparison(assembly::Jump jump);
@@ -534,7 +534,7 @@ TEST(TranslatorTest, Equals) {
         Token(Equals),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, config);
+    auto actual = Translator(config).translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
 
     t = remove_branch_rand_number(t);
@@ -568,7 +568,7 @@ string logicalComparison(assembly::Jump jump) {
             A=M-1
             M=1
        (END_CHECK)
-    )", operation, toString(jump));
+    )", operation, to_string(jump));
 }
 
 TEST(TranslatorTest, GreaterThan) {
@@ -578,7 +578,7 @@ TEST(TranslatorTest, GreaterThan) {
         Token(GreaterThan),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, config);
+    auto actual = Translator(config).translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
 
     t = remove_branch_rand_number(t);
@@ -593,7 +593,7 @@ TEST(TranslatorTest, LessThan) {
         Token(LessThan),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, config);
+    auto actual = Translator(config).translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
 
     t = remove_branch_rand_number(t);
@@ -607,7 +607,7 @@ TEST(TranslatorTest, Not) {
         Token(Not),
         Token(Eof)
     };
-    auto actual = Translator().translate(tokens, file_name, config);
+    auto actual = Translator(config).translate(tokens, file_name);
     auto t = Utils::preprocess(actual);
 
     auto expected = R"(

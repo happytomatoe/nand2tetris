@@ -1,6 +1,6 @@
 #ifndef INVALIDIDENTIFIERSORDEREXCEPTION_H
 #define INVALIDIDENTIFIERSORDEREXCEPTION_H
-
+#include "MemorySegment.h"
 #include <cpptrace/cpptrace.hpp>
 using namespace std;
 
@@ -81,11 +81,12 @@ public:
 
 class AdressOutOfMemorySegmentRange final : public BaseException {
 public:
-    explicit AdressOutOfMemorySegmentRange(int line_number,
-                                           string &&message_arg = "Number is out of range of memory segment",
+    explicit AdressOutOfMemorySegmentRange(int line_number, memory::Range r,
+                                           string &&message_arg = "",
                                            cpptrace::raw_trace &&trace = cpptrace::detail::get_raw_trace_and_absorb())
         noexcept
-        : BaseException(line_number, move(message_arg), move(trace)) {
+        : BaseException(line_number, move(format("Adress is out of range of memory segment. Memory segment min {} max {}", r.min, r.max)), move(trace)) {
+
     }
 };
 

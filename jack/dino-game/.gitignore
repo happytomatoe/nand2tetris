@@ -1,2 +1,6 @@
 **/*.vm
+**/*.asm
+**/*.hack
+
 .idea
+test

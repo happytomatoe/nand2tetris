@@ -41,3 +41,7 @@ _build/
 CMakeFiles/
 .cmake/
 *.asm
+.vscode/
+.fleet/
+.cache
+compile_commands.json
