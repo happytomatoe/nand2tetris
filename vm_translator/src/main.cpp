@@ -122,7 +122,7 @@ int main(int argc, char *argv[]) {
     }
     const auto config = Config{
         memory_init ? MemorySegmentsParser::parse(memory_segments) : memory::default_memory_segment_min_max_adress,
-        clear_stack, memory_init, disable_comments
+        clear_stack, memory_init, !disable_comments
     };
 
     //check if there are .vm files inside input directory

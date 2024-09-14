@@ -55,7 +55,8 @@ string Translator::translate(const vector<Token> &tokens,
         res += initializeMemorySegments();
     }
     for (int i = 0; i < tokens.size(); ++i, line_number++) {
-        res += "|//line number " + to_string(line_number) + "\n";
+        if (config.enable_comments)
+            res += "|//line number " + to_string(line_number) + "\n";
         switch (tokens[i].category) {
             case Terminal:
                 ++line_number;
@@ -103,7 +104,7 @@ string Translator::translate(const vector<Token> &tokens,
                 break;
             }
             case IfGoToCategory: {
-                if (config.disable_comments) {
+                if (config.enable_comments) {
                     res += "|//if go to";
                 }
                 res += stack_pop_into_d_register();
@@ -149,11 +150,11 @@ inline bool Translator::has_no_goto_or_if_goto(const vector<Token> &tokens) {
 
 string Translator::initializeMemorySegments() {
     string res;
-    if (!config.disable_comments) {
+    if (config.enable_comments) {
         res += "//memory init\n";
     }
     for (auto [p, address] : memory::symbol_adress) {
-        if (!config.disable_comments) {
+        if (config.enable_comments) {
             res += format("|//memory segment {}", toString(p));
         }
         res += format(R"(
@@ -164,7 +165,7 @@ string Translator::initializeMemorySegments() {
         )",
                       config.memory_segment_min_max_adress.at(p).min, address);
     }
-    if (!config.disable_comments) {
+    if (config.enable_comments) {
         res += "|//memory init end\n";
     }
     return res;
@@ -174,14 +175,17 @@ string Translator::handle_function_call(const Token &token) {
     string res;
 
     if (token.functionArgumentCount == 0) {
-        res += "|//push arg 0 when calling void function\n";
+        if (config.enable_comments)
+            res += "|//push arg 0 when calling void function\n";
         res += "|D=0\n";
         res += push_d_register_onto_stack();
     }
     auto argCount =
         token.functionArgumentCount == 0 ? 1 : token.functionArgumentCount;
+    if (config.enable_comments)
+        res += "|// save arg segment to later set the new function arg segment";
     res += format(R"(
-                            |// save arg segment to later set the new function arg segment
+                            
                             |@{}
                             |D=A
                             |@{}
@@ -200,17 +204,19 @@ string Translator::handle_function_call(const Token &token) {
     res += push_d_register_onto_stack();
 
     for (auto memory_segment : memory_segments_to_save_on_function_call) {
-        res +=
-            format(R"(
-                            |// save {} segment
+        if (config.enable_comments)
+            res += format("|// save {} segment", toString(memory_segment));
+        res += format(R"(
+                            
                             |@{}
                             |D=M
                         )",
-                   toString(memory_segment), getSymbolAdress(memory_segment));
+                      getSymbolAdress(memory_segment));
         res += push_d_register_onto_stack();
     }
+    if (config.enable_comments) res += "|//set new ARG";
     res += format(R"(
-                        |//set new ARG
+                        
                         |@temp_new_arg
                         |D=M
                         |@{0}
@@ -223,9 +229,8 @@ string Translator::handle_function_call(const Token &token) {
                   getSymbolAdress(memory::MemorySegment::Arg),
                   getSymbolAdress(memory::MemorySegment::Stack),
                   getSymbolAdress(memory::MemorySegment::Local));
-
+    if (config.enable_comments) res += " |//jump to function";
     res += format(R"(
-                        |//jump to function
                         |@{}
                         |0;JMP
                     )",
@@ -239,8 +244,9 @@ string Translator::handle_function_return() {
     auto return_adress_var_name = "return_address";
     auto arg_one_var_name = "current_function_arg_1_" + to_string(random_int());
     auto clear_stack_loop_name = "clear_stack_loop_" + to_string(random_int());
+    if (config.enable_comments) res += "|//copy return value to arg 0";
     res += format(R"(
-                        |//copy return value to arg 0
+                        
                         |@{}
                         |A=M-1
                         |D=M
@@ -250,17 +256,17 @@ string Translator::handle_function_return() {
                     )",
                   getSymbolAdress(memory::MemorySegment::Stack),
                   getSymbolAdress(memory::MemorySegment::Arg));
+    if (config.enable_comments) res += "|//save arg 1 into var";
     res +=
         format(R"(
-                        |//save arg 1 into var
                         |@{}
                         |D=M+1
                         |@{}
                         |M=D
                     )",
                getSymbolAdress(memory::MemorySegment::Arg), arg_one_var_name);
+    if (config.enable_comments) res += "|//save return address";
     res += format(R"(
-                        |//save return address
                         |@5
                         |D=A
                         |@{}
@@ -273,8 +279,8 @@ string Translator::handle_function_return() {
                   getSymbolAdress(memory::MemorySegment::Local),
                   return_adress_var_name);
     auto saved_local_var_name = "saved_local";
+    if (config.enable_comments) res += " |//save local into var";
     res += format(R"(
-                        |//save local into var
                         |@{}
                         |D=M
                         |@{}
@@ -283,8 +289,10 @@ string Translator::handle_function_return() {
                   getSymbolAdress(memory::MemorySegment::Local),
                   saved_local_var_name);
     for (auto memorySegment : memory_segments_to_restore_on_function_return) {
+        if (config.enable_comments)
+            res +=
+                format("|//recover memory segment {}", toString(memorySegment));
         res += format(R"(
-                        |//recover memory segment {}
                         |@{}
                         |MD=M-1
                         |A=D
@@ -292,12 +300,11 @@ string Translator::handle_function_return() {
                         |@{}
                         |M=D
                     )",
-                      toString(memorySegment), saved_local_var_name,
-                      getSymbolAdress(memorySegment));
+                      saved_local_var_name, getSymbolAdress(memorySegment));
     }
     if (config.clear_stack) {
+        if (config.enable_comments) res += "|//clear the stack";
         res += format(R"(
-                        |//clear the stack
                         |@{0}
                         |D=M-1
                         |@{1}
@@ -313,17 +320,18 @@ string Translator::handle_function_return() {
                       getSymbolAdress(memory::MemorySegment::Stack),
                       arg_one_var_name, clear_stack_loop_name);
     }
+    if (config.enable_comments)
+        res += "|//set stack pointer to current function arg 1";
     res +=
         format(R"(
-                        |//set stack pointer to current function arg 1
                         |@{}
                         |D=M
                         |@{}
                         |M=D
                     )",
                arg_one_var_name, getSymbolAdress(memory::MemorySegment::Stack));
+    if (config.enable_comments) res += "|//jump to return address";
     res += format(R"(
-                        |//jump to return address
                         |@{}
                         |A=M
                         |0;JMP
@@ -340,8 +348,8 @@ string Translator::handle_function_declaration(const Token &token) {
                 )",
                   token.functionName);
     if (token.functionArgumentCount > 0) {
+        if (config.enable_comments) res += "|//set local pointer";
         res += format(R"(
-                        |//set local pointer
                         |@{}
                         |D=M
                         |@{}
@@ -349,8 +357,8 @@ string Translator::handle_function_declaration(const Token &token) {
                     )",
                       getSymbolAdress(memory::Stack),
                       getSymbolAdress(memory::Local));
-
-        res += "|//set local vars\n|D=0\n";
+        if (config.enable_comments) res += "|//set local vars\n";
+        res += "|D=0\n";
         for (int j = 0; j < token.functionArgumentCount; ++j) {
             res += push_d_register_onto_stack();
         }
@@ -695,15 +703,16 @@ string Translator::push_d_register_onto_stack() {
         stack_size++;
     }
     auto spSymbolAdress = getSymbolAdress(memory::Stack);
-    return format(R"(
-                                |//stack push
+    string res;
+    if (config.enable_comments) res += "|//stack push";
+    return res + format(R"(
                                 |@{}
                                 |A=M
                                 |M=D
                                 |@{}
                                 |M=M+1
                             )",
-                  spSymbolAdress, spSymbolAdress);
+                        spSymbolAdress, spSymbolAdress);
 }
 
 string Translator::stack_pop_into_d_register() {
@@ -713,16 +722,17 @@ string Translator::stack_pop_into_d_register() {
         }
         stack_size--;
     }
-
-    return format(R"(
-                                |//stack pop;
+    string res;
+    if (config.enable_comments) res += "|//stack pop";
+    return res + format(R"(
+                                
                                 |@{0}
                                 |M=M-1
                                 |A=M
                                 |D=M{1}
                             )",
-                  getSymbolAdress(memory::Stack),
-                  config.clear_stack ? "\nM=0" : "");
+                        getSymbolAdress(memory::Stack),
+                        config.clear_stack ? "\nM=0" : "");
 }
 
 string Translator::logicalComparison(const TokenType &type) {
@@ -800,10 +810,16 @@ void Translator::check_overflow(const int number) const {
 inline string Translator::operationComment(
     const TokenType operation, const TokenType memorySementTokenType,
     int number) {
-    return format("\n|//{} {} {} \n", toString(operation),
-                  toString(memorySementTokenType), number);
+    string res;
+    if (config.enable_comments)
+        res += format("\n|//{} {} {} \n", toString(operation),
+                      toString(memorySementTokenType), number);
+    return res;
 }
 
 inline string Translator::operationComment(const TokenType operation) {
-    return format("\n|//{} \n", toString(operation));
+    string res;
+    if (config.enable_comments)
+        res += format("\n|//{} \n", toString(operation));
+    return res;
 }
