@@ -8,7 +8,7 @@ TODO:
 - Score
 - Add more clouds
 - If not hard add random
-- Fix heap memory overflow
+- Fix heap memory overflow - done
 
 Physics – 
 - Collision detection - done

@@ -41,19 +41,19 @@ namespace memory {
 
 
     const map<MemorySegment, Range> default_memory_segment_min_max_adress = {
-        {Pointer, {3, 4}},
-        {Temp, {5, 12}},
+            {Pointer, {3, 4}},
+            {Temp, {5, 12}},
 
-        {Static, {16, 255}},
-        {Stack, {256, 299}},
-        //Dynamically allocated
-        {Local, {256, 399}},
-        {Arg, {256, 499}},
-        {This, {3000, 3009}},
-        {That, {3010, 4000}},
-        // we don't save const in memory. It is only used to get a value and push
-        // it onto a stack
-    };
+            {Static, {16, 255}},
+            {Stack, {256, 2047}},
+            //Dynamically allocated
+            {Local, {2048, 2099}},
+            {Arg, {3000, 3999}},
+            {This, {4000, 4999}},
+            {That, {5000, 5999}},
+            // we don't save const in memory. It is only used to get a value and push
+            // it onto a stack
+        };
     const map<MemorySegment, int> symbol_adress = {
         {Stack, 0},
         {Local, 1},

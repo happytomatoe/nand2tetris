@@ -5,7 +5,7 @@ class MathCustom{
 			do Sys.halt();
 		}
 		if(n<0){
-			do Output.printString("Negate modulo");
+			do Output.printString("Negative first arg for modulo");
 			do Sys.halt();
 		}
 		while(true){

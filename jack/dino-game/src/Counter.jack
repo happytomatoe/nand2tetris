@@ -33,4 +33,7 @@ class Counter {
 		let counter=0;
 		return;
 	}
+	method int mod(int divider){
+		return MathCustom.mod(counter, divider);
+	}
 }

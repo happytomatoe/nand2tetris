@@ -13,6 +13,7 @@ class Dino {
     let imageW = 40;
     let imageH = 43;
     let counter = Counter.new();
+    //TODO: add change when obstacles move faster
     let runStepChangeNTick=3;
     return this;
   }
@@ -71,18 +72,23 @@ class Dino {
       }
       return;
     }
+
     method void hide() {
       do Screen.setColor(false);
-    //TODO: do something better
-    do drawNormal();
-    return;
+      //TODO: do something better
+      do drawCommonPart();
+      do drawFeetRun2();
+      do drawFeetRun1();
+      return;
   }
+
   method void run(){
     if(MathCustom.mod(counter.get(),runStepChangeNTick)=0){
       let runningStep=~runningStep;
     }
     return;
   }
+
   method void show() {
     do Screen.setColor(true);
     do drawNormal();

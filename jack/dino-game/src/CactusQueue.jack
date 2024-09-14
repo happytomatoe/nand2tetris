@@ -91,7 +91,29 @@ class CactusQueue {
 		return;
 	}
 
-	
+	method void update(){
+		var Cactus cactus;
+		var int i;
+		let i=0;
+		while(i<size()){
+			let cactus=get(i);
+			do cactus.update();  
+			let i = i+1;
+		}
+		return;
+	}
+	method void hide(){
+		var Cactus cactus;
+		var int i;
+		let i=0;
+		while(i<size()){
+			let cactus=get(i);
+			do cactus.hide();  
+			let i = i+1;
+		}
+		return;
+	}
+
 	method void move(CactusQueue other){
 		var Cactus c;
 		let c = head();
