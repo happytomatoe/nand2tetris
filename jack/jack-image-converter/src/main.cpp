@@ -27,12 +27,10 @@ int main(int argc, char *argv[]) {
     CLI::App app{"Convert black and white png to Jack code"};
     argv = app.ensure_utf8(argv);
 
-    string input_file, function_name = "Screen.drawPixel";
+    string input_file;
     app.add_option("input", input_file, "input file path")
             ->check(CLI::ExistingFile)->required();
-    app.add_option("-f,--function-name", function_name, "Function name to draw pixels. "
-                   "Defaults to 'Screen.drawPixel'");
-
+    
     bool debug = false, print_res = false, ignore_checksums = false, export_size=false;
     app.add_flag("-d,--debug", debug, "Debug mode");
     app.add_flag("--ic,--ignore-checksums", ignore_checksums, "Ignore checksums when decompressing png");
@@ -43,7 +41,7 @@ int main(int argc, char *argv[]) {
     if (debug) {
         cpptrace::register_terminate_handler();
     }
-    const auto res = ImageConverter::convert(input_file, ignore_checksums, debug, function_name,export_size);
+    const auto res = ImageConverter::convert(input_file, ignore_checksums, debug,export_size);
     if (print_res) {
         cout << res;
     } else {

@@ -16,9 +16,9 @@ run: build-debug
 clean:
 	rm -rf build
 test: build FORCE
-	cd  ./build/Release && ctest
+	cd  ./build/Release && ctest --verbose
 test-debug: build FORCE
-	cd  ./build/Debug && ctest
+	cd  ./build/Debug && ctest --output-on-failure
 
 install: build FORCE
 	cmake --install ./build/Release --config Release

@@ -4,8 +4,7 @@
 #include <lodepng.h>
 #include "StringUtils.h"
 
-string ImageConverter::convert(const string &filepath, const bool ignore_checksums, const bool debug,
-                               const string &draw_function_ref, const bool export_size) {
+string ImageConverter::convert(const string &filepath, const bool ignore_checksums, const bool debug, const bool export_size) {
     std::vector<unsigned char> image;
     unsigned w;
     unsigned h;
@@ -29,11 +28,10 @@ string ImageConverter::convert(const string &filepath, const bool ignore_checksu
         cout << "Binary image" << endl;
         StringUtils::print(img);
     }
-    return convert_to_jack_code(img, draw_function_ref, export_size);
+    return convert_to_jack_code(img, export_size);
 }
 
-string ImageConverter::convert_to_jack_code(const vector<vector<bool> > &img, const string &draw_function_ref,
-                                            const bool export_size) {
+string ImageConverter::convert_to_jack_code(const vector<vector<bool> > &img, const bool export_size) {
     string header;
     if (export_size) {
         header = format(R"(
@@ -45,19 +43,10 @@ string ImageConverter::convert_to_jack_code(const vector<vector<bool> > &img, co
     header += R"(|method void draw(int x, int y) {
 )";
     string res = header;
-
-    for (int i = 0; i < img.size(); i++) {
-        auto row = img[i];
-        for (int j = 0; j < row.size(); j++) {
-            if (!row[j]) {
-                auto jStr = j > 0 ? format("+{}", j) : "";
-                auto iStr = i > 0 ? format("+{}", i) : "";
-                res += format("|   do {}(x{},y{});\n", draw_function_ref, jStr, iStr);
-            }
-        }
+    for(auto r: findRectangles(img)){
+        res += +"|"+ r.convert_to_jack_code(); 
     }
-    auto footer = R"(
-        |   return;
+    auto footer = R"(|   return;
         |}
     )";
     return StringUtils::stripMargin(res + footer);
@@ -115,4 +104,55 @@ void ImageConverter::read(const string &filepath, bool ignore_checksums, std::ve
     if (error) {
         throw runtime_error("decoder error " + to_string(error) + ": " + lodepng_error_text(error));
     }
+}
+
+
+
+vector<Rectangle> ImageConverter::findRectangles(const vector<vector<bool>>& image) {
+    int rows = image.size();
+    int cols = image[0].size();
+    vector<vector<bool>> visited(rows, vector<bool>(cols, false));
+    vector<Rectangle> rectangles;
+
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
+            if (!image[i][j] && !visited[i][j]) {
+                // Start a new rectangle
+                int min_x = j, min_y = i;
+                int max_x = j, max_y = i;
+
+                // Expand to the right
+                while (max_x + 1 < cols && !image[min_y][max_x + 1] &&
+                       !visited[min_y][max_x + 1]) {
+                    ++max_x;
+                }
+
+                // Expand downward
+                bool can_expand_down = true;
+                while (can_expand_down && max_y + 1 < rows) {
+                    for (int x = min_x; x <= max_x; ++x) {
+                        if (image[max_y + 1][x] || visited[max_y + 1][x]) {
+                            can_expand_down = false;
+                            break;
+                        }
+                    }
+                    if (can_expand_down) {
+                        ++max_y;
+                    }
+                }
+
+                // Mark the rectangle as visited
+                for (int y = min_y; y <= max_y; ++y) {
+                    for (int x = min_x; x <= max_x; ++x) {
+                        visited[y][x] = true;
+                    }
+                }
+
+                // Store the rectangle
+                rectangles.emplace_back(min_x, min_y, max_x, max_y);
+            }
+        }
+    }
+
+    return rectangles;
 }
