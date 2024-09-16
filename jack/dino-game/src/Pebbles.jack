@@ -39,91 +39,24 @@ class Pebbles {
 		return;
 	}
 	method void draw() {
-		do drawWithOffset(x+55,y);
-		do drawWithOffset(x+56,y);
-		do drawWithOffset(x+57,y);
-		do drawWithOffset(x+151,y);
-		do drawWithOffset(x+152,y);
-		do drawWithOffset(x+153,y);
-		do drawWithOffset(x+154,y);
-		do drawWithOffset(x+226,y);
-		do drawWithOffset(x+227,y);
-		do drawWithOffset(x+228,y);
-		do drawWithOffset(x+353,y);
-		do drawWithOffset(x+354,y);
-		do drawWithOffset(x+355,y);
-		do drawWithOffset(x+356,y);
-		do drawWithOffset(x+6,y+1);
-		do drawWithOffset(x+7,y+1);
-		do drawWithOffset(x+8,y+1);
-		do drawWithOffset(x+9,y+1);
-		do drawWithOffset(x+85,y+1);
-		do drawWithOffset(x+102,y+1);
-		do drawWithOffset(x+103,y+1);
-		do drawWithOffset(x+182,y+1);
-		do drawWithOffset(x+183,y+1);
-		do drawWithOffset(x+215,y+1);
-		do drawWithOffset(x+246,y+1);
-		do drawWithOffset(x+321,y+1);
-		do drawWithOffset(x+322,y+1);
-		do drawWithOffset(x+362,y+1);
-		do drawWithOffset(x+381,y+1);
-		do drawWithOffset(x+382,y+1);
-		do drawWithOffset(x+383,y+1);
-		do drawWithOffset(x+438,y+1);
-		do drawWithOffset(x+439,y+1);
-		do drawWithOffset(x+440,y+1);
-		do drawWithOffset(x+497,y+1);
-		do drawWithOffset(x+498,y+1);
-		do drawWithOffset(x+499,y+1);
-		do drawWithOffset(x+231,y+2);
-		do drawWithOffset(x+299,y+2);
-		do drawWithOffset(x+410,y+2);
-		do drawWithOffset(x+411,y+2);
-		do drawWithOffset(x+491,y+2);
-		do drawWithOffset(x+41,y+3);
-		do drawWithOffset(x+70,y+3);
-		do drawWithOffset(x+71,y+3);
-		do drawWithOffset(x+90,y+3);
-		do drawWithOffset(x+91,y+3);
-		do drawWithOffset(x+92,y+3);
-		do drawWithOffset(x+93,y+3);
-		do drawWithOffset(x+137,y+3);
-		do drawWithOffset(x+138,y+3);
-		do drawWithOffset(x+178,y+3);
-		do drawWithOffset(x+188,y+3);
-		do drawWithOffset(x+189,y+3);
-		do drawWithOffset(x+190,y+3);
-		do drawWithOffset(x+262,y+3);
-		do drawWithOffset(x+266,y+3);
-		do drawWithOffset(x+267,y+3);
-		do drawWithOffset(x+282,y+3);
-		do drawWithOffset(x+283,y+3);
-		do drawWithOffset(x+284,y+3);
-		do drawWithOffset(x+464,y+3);
-		do drawWithOffset(x+465,y+3);
-		do drawWithOffset(x,y+4);
-		do drawWithOffset(x+1,y+4);
-		do drawWithOffset(x+2,y+4);
-		do drawWithOffset(x+3,y+4);
-		do drawWithOffset(x+14,y+4);
-		do drawWithOffset(x+15,y+4);
-		do drawWithOffset(x+48,y+4);
-		do drawWithOffset(x+49,y+4);
-		do drawWithOffset(x+50,y+4);
-		do drawWithOffset(x+51,y+4);
-		do drawWithOffset(x+122,y+4);
-		do drawWithOffset(x+335,y+4);
-		do drawWithOffset(x+336,y+4);
-		do drawWithOffset(x+337,y+4);
-		do drawWithOffset(x+416,y+4);
-		do drawWithOffset(x+417,y+4);
-		do drawWithOffset(x+418,y+4);
-		do drawWithOffset(x+419,y+4);
-		do drawWithOffset(x+428,y+4);
-
+		var int i;
+		let i=0;
+		while(i<490){
+			do drawWithOffset(x+i+6,y);
+			do drawWithOffset(x+i+7,y);
+			do drawWithOffset(x+i+8,y);
+			do drawWithOffset(x+i+9,y);
+			do drawWithOffset(x,y+3);
+			do drawWithOffset(x+i+1,y+3);
+			do drawWithOffset(x+i+2,y+3);
+			do drawWithOffset(x+i+3,y+3);
+			do drawWithOffset(x+i+14,y+3);
+			do drawWithOffset(x+i+15,y+3);
+			let i=i+52;
+		}
 		return;
 	}
+
 	method void drawWithOffset(int posX,int posY){
 		var int posX_;
 		let posX_=posX-counter;
@@ -133,8 +66,4 @@ class Pebbles {
 		do Screen.drawPixel(posX_,posY);
 		return;
 	}
-	
-
-
-
 }

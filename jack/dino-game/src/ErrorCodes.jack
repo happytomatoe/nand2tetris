@@ -1,0 +1,57 @@
+class ErrorCodes {
+    //Cactuses should be empty after move"
+    function int cactusesShouldBeEmptyAfterMove(){
+        return 50;
+    }
+    //Empty Queue Exception
+    function int cactusQueueEmptyOnRemove(){
+        return 51;
+    }
+    //Queue overflow
+    function int cactusQueueOverflow(){
+        return 52;
+    }
+    function int cactusQueueIndexOutOfBound(){
+        return 53;
+    }
+    //Cannot draw cactus out of screen.Coordinates and size 
+    function int cannotDrawCactusOfScreen(){
+        return 54;
+    }
+
+    //IntQueue should be empty after move"
+    function int intsShouldBeEmptyAfterMove(){
+        return 55;
+    }
+    //Empty Queue Exception
+    function int intsQueueEmptyOnRemove(){
+        return 56;
+    }
+    //Queue overflow
+    function int intsQueueOverflow(){
+        return 57;
+    }
+    function int intsQueueIndexOutOfBound(){
+        return 58;
+    }
+    //Can't spawn new cactuses
+    function int  cantSpawnNewCactuses(){
+        return 59;
+    }
+    //wrongCactusRemoveMessage
+    function int somethingWentWrongWhenTryingToRemoveCactus(){
+        return 60;
+    }
+    //Zero divider in modulo
+    function int zeroDividerMessage(){
+        return 61;
+    }
+    //Negative first arg for modulo
+    function int negativNMessage(){
+        return 62;
+    }
+    function int cantFindAvailableCactus(){
+        return 63;
+    }
+    
+}   

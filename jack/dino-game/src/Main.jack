@@ -1,9 +1,190 @@
 class Main {
-    function void main() {
-        var DinoGame game;
-        let game = DinoGame.getInstance();
-        do game.run();
-        do game.dispose();
-        return;
-    }
-}
+	static Main instance; 
+	field Dino dino;
+	field Array cactusPool;
+	field Pebbles pebbles;
+	field boolean exit, waitForStart, dead; 
+	field int timestep, dinoY, cactusPoolSize, nextCactusX;
+	static String startMessage;
+
+	function void main() {
+		var Main game;
+		let game = Main.new();
+		do game.run();
+		return;
+	}
+	constructor Main new() {
+		var int i, qSize;
+		let cactusPoolSize=10;
+
+		let startMessage=  "Press Up to start";
+		let waitForStart=true;
+		
+		let timestep = 30; 
+		let dinoY= 150;
+		let dead=true;
+		let exit=false;
+
+		let cactusPool =  Array.new(cactusPoolSize);
+
+		let i=0;
+		while(i<cactusPoolSize){
+			let cactusPool[i]= Cactus.new(-1,dinoY-3);
+			let i=i+1;
+		}
+		let nextCactusX=500;
+		return this;
+	}
+
+
+	method void run() {
+		var int  dinoH, i,  cactusEndY,sceneX;
+		var boolean obstaclesSpeed;
+		let dino = Dino.new(50,dinoY,-13,1);
+		let dinoH = dino.getH();
+		let pebbles = Pebbles.new(0,dinoY+dinoH-1, obstaclesSpeed);
+
+		do Output.moveCursor(11, 23);
+		do Output.printString(startMessage);
+		while(~exit){
+			if((~(waitForStart)) | Keys.upPressed()){
+				do Screen.clearScreen();
+				let dead=false;
+				let obstaclesSpeed=5;
+				let sceneX=0;
+				do hideCactuses();
+				do Output.moveCursor(0,0);	
+			}
+			while (~dead) {
+				if(MathCustom.mod(sceneX,1000)=0){
+					let obstaclesSpeed=obstaclesSpeed+2;
+					do pebbles.setSpeed(obstaclesSpeed);
+				}
+
+				do addVisibleCactuses(obstaclesSpeed, sceneX);
+				
+				do updateCactuses();
+
+				do Main.drawTrail(180);
+				do pebbles.update();
+				do dino.update();
+				let dead = dinoColided();
+				if(dead){
+					do dino.die();
+					do Output.moveCursor(11, 23);
+					do Output.printString(startMessage);
+				}
+
+				let sceneX= sceneX+ obstaclesSpeed;
+				if(sceneX>29999){
+					let sceneX=sceneX-30000;
+				}
+				do Sys.wait(timestep);
+			}
+			do Sys.wait(timestep);
+		}
+		return;
+	}
+	method boolean dinoColided(){
+		var Cactus cactus;
+		var int i;
+		let i=0;
+		while(i<cactusPoolSize){
+			let cactus=cactusPool[i];
+			if(cactus.isVisible() & CollisionDetector.colided(dino,cactus)){
+				return true;
+			}
+			let i=i+1;
+		}
+			
+		return false;
+	}
+	method void hideCactuses(){
+		var Cactus cactus;
+		var int i;
+		let i=0;
+		while(i<cactusPoolSize){
+			let cactus=cactusPool[i];
+			do cactus.setVisible(false);
+			let i = i+1;
+		}
+		return;
+	}
+	method void updateCactuses(){
+		var Cactus cactus;
+		var int i;
+		let i=0;
+		while(i<cactusPoolSize){
+			let cactus=cactusPool[i];
+			if(cactus.isVisible()){
+				do cactus.update();  
+			}
+			let i = i+1;
+		}
+		return;
+	}
+	method void addVisibleCactuses(int obstaclesSpeed, int sceneX){
+		var Cactus cactus;
+
+		while(ScreenCustom.visible(nextCactusX-sceneX, 0, Cactus.getW(), 0)){
+			let cactus = getAvailableCactus();
+			if(cactus=null){
+				do Sys.error(ErrorCodes.cantFindAvailableCactus());
+			}
+			//TODO: add 3 cactuses together
+			do cactus.setX(511-Cactus.getW());
+			do cactus.setSpeed(obstaclesSpeed);
+			do cactus.setVisible(true);
+
+			let nextCactusX=nextCactusX+400;
+		}
+		return;
+	}
+	method Cactus getAvailableCactus(){
+		var Cactus cactus;
+		var int i;
+		let i=0;
+		while(i<cactusPoolSize){
+			let cactus=cactusPool[i];
+			if(~cactus.isVisible()){
+				return cactus;
+			}
+			let i=i+1;
+		}
+		return null;
+	}
+	function void drawTrail(int y){
+		do Screen.drawLine(0,y, 512,y);
+		return;
+	}
+
+
+	// function void fillCactusesXs(IntQueue cactuses){
+	// 	var int i,t,j,c,k;
+	// 	let i=1;
+	// 	let c=1;
+	// 	do cactuses.clear();
+	// 	do cactuses.add(500);
+	// 	while(i<cactuses.capacity()){
+	// 		let t = 500+Math.multiply(400,c);
+	// 		let k = MathCustom.mod(c,4)+1;
+	// 		if((k=3)|(k=4)){
+	// 			let j=i+3;
+	// 			while((i<cactuses.capacity())&(i<j)){
+	// 				do cactuses.add(t);
+	// 				let i=i+1;
+	// 				let t=t+25;
+	// 			}
+	// 			}else{	
+	// 				do cactuses.add(t);
+	// 				let i=i+1;
+
+	// 			}
+	// 			let c=c+1;
+	// 		}
+	// 		if(cactuses.size()<1){
+	// 			do Sys.error(ErrorCodes.cantSpawnNewCactuses());
+	// 		}
+	// 		return;
+	// 	}
+	}

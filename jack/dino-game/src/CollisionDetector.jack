@@ -1,41 +1,25 @@
 class CollisionDetector {
+    function boolean colided(Dino dino, Cactus cactus){
+        // collision x-axis?
+        var int dinoX, dinoY, dinoW, dinoH;
+        var int cactusX, cactusY, cactusW, cactusH;
+        let cactusX = cactus.getX();
+        let cactusY = cactus.getY()+3;
+        let cactusW = Cactus.getW();
+        let cactusH = Cactus.getH()-3;
 
-	function boolean colided(Dino dino, CactusQueue cactuses){
-		var int i;
-		let i=0;
-		while(i<cactuses.size()){
-			if(CollisionDetector.colidedWithCactus(dino,cactuses.get(i))){
-				return true;
-			}
-			let i=i+1;
-		}
-		return false;
-	}
-	function boolean colidedWithCactus(Dino dino, Cactus cactus){
-    // collision x-axis?
-    var int dinoX, dinoY, dinoW, dinoH;
-    var int cactusX, cactusY, cactusW, cactusH;
-    var boolean collisionX, cx1, cx2 , collisionY, cy1,cy2;
-    let cactusX = cactus.getX();
-    let cactusY = cactus.getY()+3;
-    let cactusW = cactus.getW();
-    let cactusH = cactus.getH()-3;
-    
+        let dinoX = dino.getX();
+        let dinoY = dino.getY();
+        let dinoW = dino.getW()-1;
+        let dinoH = dino.getH()-1;
 
-    let dinoX = dino.getX();
-    let dinoY = dino.getY();
-    let dinoW = dino.getW()-1;
-    let dinoH = dino.getH()-1;
-    
-
-    let cx1 = LogicalExpression.gte(dinoX + dinoW, cactusX);
-
-    let cx2 = LogicalExpression.gte(cactusX + cactusW , dinoX);
-    let collisionX =  cx1 & cx2 ;
-    // collision y-axis?
-    let cy1 = LogicalExpression.gte(dinoY + dinoH , cactusY);
-    let cy2 = LogicalExpression.gte(cactusY + cactusH , dinoY);
-    let collisionY = cy1 &  cy2;
-    return collisionX & collisionY;
-}
+        return CollisionDetector.gte(dinoX + dinoW, cactusX) & 
+        CollisionDetector.gte(cactusX + cactusW , dinoX) & 
+        CollisionDetector.gte(dinoY + dinoH , cactusY) &
+        CollisionDetector.gte(cactusY + cactusH , dinoY);
+    }
+    function boolean gte(int a, int b){
+      var boolean res;
+      return a>(b-1); 
+    }
 }
