@@ -37,6 +37,8 @@ string Translator::translate(const string &file_path) {
         string base_filename =
             file_path.substr(file_path.find_last_of("/\\") + 1);
         auto s = translate(tokens, base_filename);
+        const regex empty_lines("[\n\\s]{2,}");
+        s = regex_replace(s, empty_lines, "\n");
         return s;
     } catch (BaseException &e) {
         cout << "Exception on line " << e.line_number + 1 << endl
