@@ -31,17 +31,18 @@ int main(int argc, char *argv[]) {
     app.add_option("input", input_file, "input file path")
             ->check(CLI::ExistingFile)->required();
     
-    bool debug = false, print_res = false, ignore_checksums = false, export_size=false;
+    bool debug = false, print_res = false, ignore_checksums = false, export_size=false, disable_grouping=false;
     app.add_flag("-d,--debug", debug, "Debug mode");
     app.add_flag("--ic,--ignore-checksums", ignore_checksums, "Ignore checksums when decompressing png");
     app.add_flag("-o,--output", print_res, "Print result instead of copying to clipboard");
     app.add_flag("-s,--export-size", export_size, "Export size of the image");
+    app.add_flag("--dg,--disable-grouping", disable_grouping, "Disable grouping pixels into lines or rectangles");
 
     CLI11_PARSE(app, argc, argv);
     if (debug) {
         cpptrace::register_terminate_handler();
     }
-    const auto res = ImageConverter::convert(input_file, ignore_checksums, debug,export_size);
+    const auto res = ImageConverter::convert(input_file, ignore_checksums, debug, export_size, disable_grouping);
     if (print_res) {
         cout << res;
     } else {

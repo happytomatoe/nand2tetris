@@ -1,10 +1,15 @@
 #include "ImageConverter.hpp"
 
-#include <fstream>
 #include <lodepng.h>
+
+#include <fstream>
+
 #include "StringUtils.h"
 
-string ImageConverter::convert(const string &filepath, const bool ignore_checksums, const bool debug, const bool export_size) {
+string ImageConverter::convert(const string &filepath,
+                               const bool ignore_checksums, const bool debug,
+                               const bool export_size,
+                               const bool disable_grouping) {
     std::vector<unsigned char> image;
     unsigned w;
     unsigned h;
@@ -17,34 +22,48 @@ string ImageConverter::convert(const string &filepath, const bool ignore_checksu
 
         if (w > 0 && h > 0) {
             std::cout << "Top left pixel color:"
-                    << " r: " << (int) image[0]
-                    << " g: " << (int) image[1]
-                    << " b: " << (int) image[2]
-                    << " a: " << (int) image[3]
-                    << std::endl;
+                      << " r: " << (int)image[0] << " g: " << (int)image[1]
+                      << " b: " << (int)image[2] << " a: " << (int)image[3]
+                      << std::endl;
         }
         cout << "Image lightness" << endl;
         cout << printImage(image, w, h) << endl;
         cout << "Binary image" << endl;
         StringUtils::print(img);
     }
-    return convert_to_jack_code(img, export_size);
+    return convert_to_jack_code(img, export_size, disable_grouping);
 }
 
-string ImageConverter::convert_to_jack_code(const vector<vector<bool> > &img, const bool export_size) {
+string ImageConverter::convert_to_jack_code(const vector<vector<bool>> &img,
+                                            const bool export_size,
+                                            const bool disable_grouping) {
     string header;
     if (export_size) {
         header = format(R"(
             |field int imageW, imageH;
             |let imageW = {};
             |let imageH = {};
-        )", img[0].size(), img.size());
+        )",
+                        img[0].size(), img.size());
     }
     header += R"(|method void draw(int x, int y) {
 )";
     string res = header;
-    for(auto r: findRectangles(img)){
-        res += +"|"+ r.convert_to_jack_code(); 
+    if (disable_grouping) {
+        for (int i = 0; i < img.size(); i++) {
+            auto row = img[i];
+            for (int j = 0; j < row.size(); j++) {
+                if (!row[j]) {
+                    auto jStr = j > 0 ? format("+{}", j) : "";
+                    auto iStr = i > 0 ? format("+{}", i) : "";
+                    res += format("|   do Screen.drawPixel(x{},y{});\n", jStr, iStr);
+                }
+            }
+        }
+    } else {
+        for (auto r : findRectangles(img)) {
+            res += +"|" + r.convert_to_jack_code();
+        }
     }
     auto footer = R"(|   return;
         |}
@@ -52,11 +71,11 @@ string ImageConverter::convert_to_jack_code(const vector<vector<bool> > &img, co
     return StringUtils::stripMargin(res + footer);
 }
 
-
-vector<vector<bool> > ImageConverter::convert_to_binary_image(const std::vector<unsigned char> &image, unsigned w,
-                                                              unsigned h) {
+vector<vector<bool>> ImageConverter::convert_to_binary_image(
+    const std::vector<unsigned char> &image, unsigned w, unsigned h) {
     if (w <= 0 || h <= 0) {
-        throw runtime_error("Invalid image size: " + to_string(w) + "x" + to_string(h));
+        throw runtime_error("Invalid image size: " + to_string(w) + "x" +
+                            to_string(h));
     }
     vector res(h, vector(w, false));
     for (unsigned y = 0; y < h; y++) {
@@ -67,10 +86,11 @@ vector<vector<bool> > ImageConverter::convert_to_binary_image(const std::vector<
     return res;
 }
 
-string ImageConverter::printImage(const std::vector<unsigned char> &image, unsigned w,
-                                  unsigned h) {
+string ImageConverter::printImage(const std::vector<unsigned char> &image,
+                                  unsigned w, unsigned h) {
     if (w <= 0 || h <= 0) {
-        throw runtime_error("Invalid image size: " + to_string(w) + "x" + to_string(h));
+        throw runtime_error("Invalid image size: " + to_string(w) + "x" +
+                            to_string(h));
     }
     string res;
     for (unsigned y = 0; y < h; y++) {
@@ -82,7 +102,8 @@ string ImageConverter::printImage(const std::vector<unsigned char> &image, unsig
     return res;
 }
 
-void ImageConverter::read(const string &filepath, bool ignore_checksums, std::vector<unsigned char> &image, unsigned &w,
+void ImageConverter::read(const string &filepath, bool ignore_checksums,
+                          std::vector<unsigned char> &image, unsigned &w,
                           unsigned &h) {
     ifstream f(filepath.c_str());
     if (!f.good()) {
@@ -91,7 +112,8 @@ void ImageConverter::read(const string &filepath, bool ignore_checksums, std::ve
 
     std::vector<unsigned char> buffer;
 
-    lodepng::load_file(buffer, filepath); //load the image file with given filename
+    lodepng::load_file(buffer,
+                       filepath);  // load the image file with given filename
 
     lodepng::State state;
     if (ignore_checksums) {
@@ -102,13 +124,13 @@ void ImageConverter::read(const string &filepath, bool ignore_checksums, std::ve
     unsigned error = decode(image, w, h, state, buffer);
 
     if (error) {
-        throw runtime_error("decoder error " + to_string(error) + ": " + lodepng_error_text(error));
+        throw runtime_error("decoder error " + to_string(error) + ": " +
+                            lodepng_error_text(error));
     }
 }
 
-
-
-vector<Rectangle> ImageConverter::findRectangles(const vector<vector<bool>>& image) {
+vector<Rectangle> ImageConverter::findRectangles(
+    const vector<vector<bool>> &image) {
     int rows = image.size();
     int cols = image[0].size();
     vector<vector<bool>> visited(rows, vector<bool>(cols, false));

@@ -52,7 +52,7 @@ TEST(ConverterTest, BasicTest) {
            return;
         }
         )";
-    auto res = ImageConverter::convert("data/test.png", true, true, false);
+    auto res = ImageConverter::convert("data/test.png", true, true, false, false);
     auto n1 = normalize(res);
     auto n2 = normalize(expected);
     cout << "Actual: " << endl
@@ -74,7 +74,7 @@ TEST(ConverterTest, ShapesTest) {
             return;
         }
         )";
-    auto res = ImageConverter::convert("data/shapes.png", true, true, false);
+    auto res = ImageConverter::convert("data/shapes.png", true, true, false, false);
     auto n1 = normalize(res);
     auto n2 = normalize(expected);
     cout << "Actual: " << endl
