@@ -18,9 +18,9 @@ install: build-debug FORCE
 clean:
 	rm -rf build
 test: build FORCE
-	cd  ./build/Release && ctest
+	cd  ./build/Release && ctest --output-on-failure
 test-debug: build FORCE
-	cd  ./build/Debug && ctest
+	cd  ./build/Debug && ctest --output-on-failure
 
 
 test-prog: build FORCE

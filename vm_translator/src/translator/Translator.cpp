@@ -51,13 +51,15 @@ string Translator::translate(const vector<Token> &tokens,
                              const string &file_name) {
     stack_size_counting_enabled = has_no_goto_or_if_goto(tokens);
     string res;
+    TokenType previous_operation_type;
     // init memory segments
 
     if (config.memory_init) {
         res += initializeMemorySegments();
     }
     for (int i = 0; i < tokens.size(); ++i, line_number++) {
-        if (config.enable_comments)
+        if (config.enable_comments && i < tokens.size() - 1 &&
+            tokens[i + 1].category != Terminal)
             res += "|//line number " + to_string(line_number) + "\n";
         switch (tokens[i].category) {
             case Terminal:
@@ -83,6 +85,7 @@ string Translator::translate(const vector<Token> &tokens,
                             throw StackPointerOutOfRangeException(line_number);
                         }
                     }
+                    previous_operation_type = operation;
                     break;
                 } else if (operation == Pop) {
                     res += handle_pop(file_name, memorySementTokenType, number);
@@ -91,18 +94,23 @@ string Translator::translate(const vector<Token> &tokens,
                             throw StackPointerOutOfRangeException(line_number);
                         }
                     }
+                    previous_operation_type = operation;
                     break;
                 } else {
                     throw InvalidOperation(line_number);
                 }
             }
             case ArithmeticOrLogicOperation: {
-                res +=
-                    handle_arithmetic_logical_operation(line_number, tokens[i]);
+                res += handle_arithmetic_logical_operation(
+                    line_number, tokens[i], previous_operation_type);
+
+                previous_operation_type = tokens[i].type;
                 break;
             }
             case LabelCategory: {
                 res += format("({})\n", tokens[i].label);
+
+                previous_operation_type = tokens[i].type;
                 break;
             }
             case IfGoToCategory: {
@@ -115,6 +123,8 @@ string Translator::translate(const vector<Token> &tokens,
                     |D;JGT
                 )",
                               tokens[i].label);
+
+                previous_operation_type = tokens[i].type;
                 break;
             }
             case GoToCategory: {
@@ -123,6 +133,8 @@ string Translator::translate(const vector<Token> &tokens,
                     |0;JMP
                 )",
                               tokens[i].label);
+
+                previous_operation_type = tokens[i].type;
                 break;
             }
             case FunctionCategory: {
@@ -135,6 +147,7 @@ string Translator::translate(const vector<Token> &tokens,
                 } else {
                     throw InvalidToken(line_number, "Unknown operation");
                 }
+                previous_operation_type = tokens[i].type;
                 break;
             }
             default:
@@ -180,7 +193,7 @@ string Translator::handle_function_call(const Token &token) {
         if (config.enable_comments)
             res += "|//push arg 0 when calling void function\n";
         res += "|D=0\n";
-        res += push_d_register_onto_stack();
+        res += push_onto_stack();
     }
     auto argCount =
         token.functionArgumentCount == 0 ? 1 : token.functionArgumentCount;
@@ -203,7 +216,7 @@ string Translator::handle_function_call(const Token &token) {
                         |D=A
                     )",
                   call_end_label);
-    res += push_d_register_onto_stack();
+    res += push_onto_stack();
 
     for (auto memory_segment : memory_segments_to_save_on_function_call) {
         if (config.enable_comments)
@@ -214,7 +227,7 @@ string Translator::handle_function_call(const Token &token) {
                             |D=M
                         )",
                       getSymbolAdress(memory_segment));
-        res += push_d_register_onto_stack();
+        res += push_onto_stack();
     }
     if (config.enable_comments) res += "|//set new ARG";
     res += format(R"(
@@ -362,7 +375,7 @@ string Translator::handle_function_declaration(const Token &token) {
         if (config.enable_comments) res += "|//set local vars\n";
         res += "|D=0\n";
         for (int j = 0; j < token.functionArgumentCount; ++j) {
-            res += push_d_register_onto_stack();
+            res += push_onto_stack();
         }
     }
     return res;
@@ -395,13 +408,14 @@ string Translator::getLine(const string &text, const int line_number) {
     return "";
 }
 
-string Translator::handle_arithmetic_logical_operation(const int line_number,
-                                                       const Token &token) {
+string Translator::handle_arithmetic_logical_operation(
+    const int line_number, const Token &token, const TokenType &previous_operation) {
     string res;
     switch (const auto operation = token.type) {
         case Add: {
             res += operationComment(operation);
-            res += two_operand_operation(operation, "M=D+M");
+            res +=
+                two_operand_operation(operation, "M=D+M", previous_operation);
             break;
         }
         case Subtract: {
@@ -409,7 +423,8 @@ string Translator::handle_arithmetic_logical_operation(const int line_number,
             res += two_operand_operation(operation, R"(
                 |D=D-M
                 |M=-D
-            )");
+            )",
+                                         previous_operation);
             break;
         }
         case Negate: {
@@ -439,12 +454,14 @@ string Translator::handle_arithmetic_logical_operation(const int line_number,
         }
         case And: {
             res += operationComment(operation);
-            res += two_operand_operation(operation, "M=D&M");
+            res +=
+                two_operand_operation(operation, "M=D&M", previous_operation);
             break;
         }
         case Or: {
             res += operationComment(operation);
-            res += two_operand_operation(operation, "M=D|M");
+            res +=
+                two_operand_operation(operation, "M=D|M", previous_operation);
             break;
         }
         case Not: {
@@ -477,7 +494,8 @@ string Translator::handle_arithmetic_logical_operation(const int line_number,
  * @param clear_stack - if true freed memory will be set to 0
  */
 string Translator::two_operand_operation(const TokenType &operation,
-                                         const string &operation_instructions) {
+                                         const string &operation_instructions,
+                                         const TokenType &previous_token_type) {
     if (stack_size_counting_enabled) {
         if (stack_size < 2) {
             throw InvalidOperation(
@@ -486,16 +504,22 @@ string Translator::two_operand_operation(const TokenType &operation,
         }
         stack_size--;
     }
-    return format(R"(
-       |@{}
-       |M=M-1
-       |A=M
-       |D=M{}
+    string res;
+    if (previous_token_type != Push) {
+        res = format(R"(
+            |@{}
+            |M=M-1
+            |A=M
+            |D=M{}
+        )",
+                     getSymbolAdress(memory::Stack),
+                     config.clear_stack ? "\nM=0" : "");
+    }
+    return res + format(R"(
        |A=A-1
        |{}
     )",
-                  getSymbolAdress(memory::Stack),
-                  config.clear_stack ? "\nM=0" : "", operation_instructions);
+                        operation_instructions);
 }
 
 string Translator::file_name_without_extension(const string &file_name) {
@@ -527,19 +551,23 @@ string Translator::handle_push(const string &file_name,
                                 |D=M
                             )",
                           symbolAdress, number);
-            res += push_d_register_onto_stack();
+            res += push_onto_stack();
             break;
         }
         case Constant: {
             // SP=i; SP++
             check_overflow(number);
             res += operationComment(operation, memorySementTokenType, number);
-            res += format(R"(
+            if (number >= -1 & number <= 1) {
+                res += push_onto_stack(to_string(number));
+            } else {
+                res += format(R"(
                             |@{}
                             |D=A
                       )",
-                          number);
-            res += push_d_register_onto_stack();
+                              number);
+                res += push_onto_stack();
+            }
             break;
         }
         case Static: {
@@ -554,7 +582,7 @@ string Translator::handle_push(const string &file_name,
                                 |D=M
                             )",
                           file_name_without_extension(file_name), number);
-            res += push_d_register_onto_stack();
+            res += push_onto_stack();
             break;
         }
         case Temp: {
@@ -571,7 +599,7 @@ string Translator::handle_push(const string &file_name,
                                 |D=M
                             )",
                           number + memSegmentRange.min);
-            res += push_d_register_onto_stack();
+            res += push_onto_stack();
             break;
         }
         case Pointer: {
@@ -594,7 +622,7 @@ string Translator::handle_push(const string &file_name,
                                  |D=M
                             )",
                           symbolAdress);
-            res += push_d_register_onto_stack();
+            res += push_onto_stack();
             break;
         }
         default:
@@ -700,7 +728,7 @@ string Translator::handle_pop(const string &file_name,
     return res;
 }
 
-string Translator::push_d_register_onto_stack() {
+string Translator::push_onto_stack(const string &value_to_push) {
     if (stack_size_counting_enabled) {
         stack_size++;
     }
@@ -709,12 +737,11 @@ string Translator::push_d_register_onto_stack() {
     if (config.enable_comments) res += "|//stack push";
     return res + format(R"(
                                 |@{}
-                                |A=M
-                                |M=D
-                                |@{}
-                                |M=M+1
+                                |AM=M+1
+                                |A=A-1
+                                |M={}
                             )",
-                        spSymbolAdress, spSymbolAdress);
+                        spSymbolAdress, value_to_push);
 }
 
 string Translator::stack_pop_into_d_register() {

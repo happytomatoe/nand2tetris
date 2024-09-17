@@ -58,10 +58,11 @@ private:
 
     string logicalComparison(const TokenType &type);
 
-    string two_operand_operation(const TokenType &operation, const string &operation_instructions);
+    string two_operand_operation(const TokenType &operation,
+                                         const string &operation_instructions, const TokenType &previous_token_type);
 
     string handle_arithmetic_logical_operation(
-        int line_number, const Token &token);
+        int line_number, const Token &token, const TokenType &previous_operation);
 
     string operationComment(TokenType operation, TokenType memorySementTokenType, int number);
 
@@ -75,7 +76,7 @@ private:
     [[nodiscard]] string handle_pop(const string &file_name,
                                     TokenType memorySementTokenType, int number);
 
-    string push_d_register_onto_stack();
+    string push_onto_stack(const string &value_to_push="D");
 
     string stack_pop_into_d_register();
 
