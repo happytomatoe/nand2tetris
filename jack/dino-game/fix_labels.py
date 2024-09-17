@@ -8,7 +8,7 @@ import sqlite3
 if __name__ == '__main__':
     l = sys.argv[1]
 
-    print("File",l)
+    # print("File",l)
     filename = Path(l).stem
     with open(l) as f:
         text = f.read()

@@ -49,7 +49,7 @@ method void setX(int x_){
 }
 method void update(){
 
- do hide();
+     do hide();
     //TODO: what's the clean  way to stop updating/hide/remove cactus?
     if(x>speed){
         let x=x-speed;
