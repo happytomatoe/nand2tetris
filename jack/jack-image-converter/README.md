@@ -1,4 +1,4 @@
-# Convert a PNG file into Jack code
+# Convert a black and white PNG image into Jack code
 1) To install run the next command. By default, it will copy the binary to `~/bin`. 
 You can change this in [CmakeLists.txt](CMakeLists.txt) by changing `install(TARGETS ${PROJECT_NAME} DESTINATION ~/bin)` 
 ```shell
