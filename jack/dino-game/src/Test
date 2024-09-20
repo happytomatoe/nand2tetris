@@ -1,0 +1,14 @@
+class Test {
+  field int x,y;
+  field boolean visible;
+  constructor  Test new(int y_) {
+   let x=-1;
+   let y=y_;
+   return this;
+  }
+
+  method void dispose() {
+   do Memory.deAlloc(this);
+   return;
+ }
+}

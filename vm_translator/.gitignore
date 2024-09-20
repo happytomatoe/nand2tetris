@@ -45,3 +45,4 @@ CMakeFiles/
 .fleet/
 .cache
 compile_commands.json
+!/data/advanced/MyTest/*.asm

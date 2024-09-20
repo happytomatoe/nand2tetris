@@ -17,11 +17,13 @@ target_sources(translator
         src/translator/MemorySegment.h
         src/translator/MemorySegmentsParser.h
         src/translator/assembly.h
+        src/translator/Linker.h
         PRIVATE
         src/translator/StringUtils.h
         src/translator/Token.cpp
         src/translator/Translator.cpp
         src/translator/Lexer.cpp
+        src/translator/Linker.cpp
 )
 find_package(nlohmann_json)
 find_package(cpptrace REQUIRED)
@@ -44,7 +46,8 @@ add_executable(tests test/lexer_test.cpp
         test/translator_test.cpp
         test/translator_file_basic_test.cpp
         test/translator_file_advanced_test.cpp
-        test/memory_parser_test.cpp)
+        test/memory_parser_test.cpp
+        test/linker_test.cpp)
 target_link_libraries(tests PUBLIC gtest::gtest translator)
 
 enable_testing()

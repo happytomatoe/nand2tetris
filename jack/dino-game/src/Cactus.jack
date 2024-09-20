@@ -2,8 +2,10 @@ class Cactus {
   field int x,y, speed, type;
   field boolean visible;
   constructor Cactus new(int  x_,int y_) {
+     var int z;
      let x=x_;
      let y=y_;
+let z=x*y;
      let visible=false;
 
      return this;

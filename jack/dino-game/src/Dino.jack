@@ -59,8 +59,8 @@ class Dino {
   method void calcNewPos(){
     var int doubleT,timestep;
     let timestep=1;
-    let doubleT= Math.multiply(timestep,timestep);
-    let newY = y + Math.multiply(velocity, timestep)+ Math.divide(Math.multiply(gravity,doubleT),2);
+    let doubleT= timestep*timestep;
+    let newY = y + (velocity*timestep) + ((gravity*doubleT)/2);
     if((newY>startY)|(newY=startY)){
       let jumping=false;
       let y=startY;

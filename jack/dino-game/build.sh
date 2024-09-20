@@ -3,7 +3,7 @@ set  -e
 mkdir build
 nand2tetris compile src build 
 assemble=true
-disable_comments=true
+disable_comments=false
 
 
 
@@ -26,3 +26,5 @@ sqlite3 ../stats.db "SELECT * FROM functions ORDER BY count desc LIMIT 10"
 # echo ""
 # rm *.jack
 # wc -l *.vm |sort -rn
+CPUEmulator.sh
+cp Linked.asm ~/
