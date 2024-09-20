@@ -1,4 +1,4 @@
-import { Compiler } from "./Compiler";
+import Compiler from "./Compiler";
 
 function compile() {
   console.log('Compiling ...');
@@ -15,6 +15,4 @@ function error(line: number, message: string): string {
 
 function report(line: number, where: string, message: string): string {
   return `[line ${line} Error  ${where}:${message}`;
-  // hadError = true;
-  throw new Error("not Implemented")
 }

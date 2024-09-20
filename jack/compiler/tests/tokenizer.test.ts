@@ -1,8 +1,5 @@
 import Tokenizer from '../src/Tokenizer';
 import { TokenType, Token } from '../src/Token';
-
-import * as fs from 'fs'; 
-import * as path from 'path';
 describe('testing index file', () => {
   test('basic', () => {
     const l = new Tokenizer("a + b");
@@ -27,11 +24,9 @@ describe('testing index file', () => {
     const actual = l.tokenize();
     expect(actual).toEqual(expected);
   });
-    import * as path from 'path';
 
-    test("main.jack", () => {
-      const file = path.join(__dirname, "./", "bla.txt");
-      const f = fs.readFileSync('Main.jack', 'utf8');
-      console.log(f.toString());
-    });
+  test("main.jack", () => {
+   
+    console.log(f.toString());
+  });
 });
