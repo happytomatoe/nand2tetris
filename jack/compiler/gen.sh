@@ -10,3 +10,4 @@ sed -i -e 's/public get ruleIndex(/public override get ruleIndex\(/g' JackParser
 sed -i -e 's/public enterRule(/public override enterRule\(/g' JackParser.ts 
 sed -i -e 's/public exitRule(/public override exitRule\(/g' JackParser.ts 
 sed -i -e 's/public accept<Result>(/public override accept<Result>\(/g' JackParser.ts 
+sed -i -e 's/public copyFrom(/public override copyFrom\(/g' JackParser.ts 

@@ -1,4 +1,4 @@
-import { ClassDeclarationContext, ClassNameContext, SubroutineDecContext, TermContext } from './generated/JackParser';
+import { ClassDeclarationContext, ClassNameContext, SubroutineDecContext } from './generated/JackParser';
 import { JackParserVisitor } from './generated/JackParserVisitor';
 import { AbstractParseTreeVisitor } from 'antlr4ts/tree/AbstractParseTreeVisitor'
 

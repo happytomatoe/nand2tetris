@@ -34,7 +34,6 @@ describe('Parser', () => {
 
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
-        
         // Parse the input, where `compilationUnit` is whatever entry point you defined
         const tree = parser.program();
         expect(errorListener.error).toBe(false)

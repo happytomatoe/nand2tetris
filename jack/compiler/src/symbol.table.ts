@@ -14,6 +14,7 @@ export class SymbolTable {
         this.entries.push(entry);
     }
     lookup(name: string) {
+        //TODO: look for entries in enclosed scopes
         return this.entries.find(entry => entry.name === name);
     }
     pushScope(scope: Scope) {

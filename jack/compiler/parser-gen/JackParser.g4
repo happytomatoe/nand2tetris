@@ -4,27 +4,32 @@ options {
 	tokenVocab = JackLexer;
 }
 
-program: classDeclaration*;
+program: classDeclaration EOF;
 
 classDeclaration:
 	CLASS className LBRACE classVarDec* subroutineDec* RBRACE;
 className: IDENTIFIER;
-classVarDec: (STATIC | FIELD) varType IDENTIFIER (
-		COMMA IDENTIFIER
-	)* SEMICOLON;
-
+classVarDec:
+	STATIC fieldList SEMICOLON	# staticFieldDeclaration
+	| FIELD fieldList SEMICOLON	# fieldDeclaration;
+fieldList: varType fieldName ( COMMA fieldName)*;
+fieldName: IDENTIFIER;
 subroutineDec:
-	 (CONSTRUCTOR | METHOD | FUNCTION) subroutineReturnType subroutineName LPAREN parameterList RPAREN
-		subroutineBody;
-
+	CONSTRUCTOR subroutineDecWithoutType	# constructor
+	| METHOD subroutineDecWithoutType		# method
+	| FUNCTION subroutineDecWithoutType		# function;
+subroutineDecWithoutType:
+	subroutineReturnType subroutineName LPAREN parameterList RPAREN subroutineBody;
 subroutineName: IDENTIFIER;
 subroutineReturnType: varType | VOID;
 
 varType: INT | CHAR | BOOLEAN | IDENTIFIER;
 
-parameterList: (varType parameter (COMMA varType parameter)*)?;
-parameter: IDENTIFIER;
-subroutineBody: LBRACE varDec* statements returnStatement RBRACE;
+parameterList: (parameter (COMMA parameter)*)?;
+parameter: varType parameterName;
+parameterName: IDENTIFIER;
+subroutineBody:
+	LBRACE varDec* statements returnStatement RBRACE;
 
 varDec: VAR varType varName (COMMA IDENTIFIER)* SEMICOLON;
 varName: IDENTIFIER;
@@ -36,7 +41,7 @@ statement:
 	| doStatement;
 
 letStatement:
-	LET (IDENTIFIER | arrayAccess) EQUALS expression SEMICOLON;
+	LET (IDENTIFIER | arrayAccess) EQUALS <assoc=right> expression SEMICOLON;
 
 ifStatement:
 	IF LPAREN expression RPAREN LBRACE statements RBRACE (
@@ -57,7 +62,7 @@ returnStatement: RETURN expression? SEMICOLON;
 expressionList: (expression (COMMA expression)*)?;
 
 expression:
-	expression binaryOperator expression
+	binaryOperation = expression binaryOperator expression 
 	| constant
 	| IDENTIFIER
 	| subroutineCall

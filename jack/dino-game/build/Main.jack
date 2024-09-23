@@ -10,10 +10,6 @@ class Main {
         constructor Main new(int x, int y){
             return this;
         }
-        constructor Main new(int x, int y, int y2){
-            return this;
-        }
-        
         function void f(){
         return;
         }
