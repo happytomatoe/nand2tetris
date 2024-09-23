@@ -9,10 +9,10 @@ function compile() {
 }
 document.querySelector<HTMLButtonElement>('#compile')?.addEventListener('click', () => compile());
 
-function error(line: number, message: string): string {
-  return report(line, "", message);
-}
+// function error(line: number, message: string): string {
+//   return report(line, "", message);
+// }
 
-function report(line: number, where: string, message: string): string {
-  return `[line ${line} Error  ${where}:${message}`;
-}
+// function report(line: number, where: string, message: string): string {
+//   return `[line ${line} Error  ${where}:${message}`;
+// }

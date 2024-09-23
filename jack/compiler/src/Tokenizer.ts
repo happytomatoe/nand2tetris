@@ -24,7 +24,7 @@ export default class Tokenizer {
                             this.advance();
                         }
                     } else {
-                        this.error('Unexpected character ' + this.code[this.current]);
+                        this.unexpectedCharError(this.code[this.current]);
                     }
                     break;
                 case '(':
@@ -66,7 +66,7 @@ export default class Tokenizer {
                 case '*':
                     this.addToken(TokenType.Multiply);
                     break;
-                case '/':
+                case '\\':
                     this.addToken(TokenType.Divide);
                     break;
                 case '&':
@@ -105,7 +105,7 @@ export default class Tokenizer {
                         this.identifier();
                         break;
                     } else {
-                        this.error('Unexpected character ' + this.code[this.current]);
+                        this.unexpectedCharError('Unexpected character ' + this.code[this.current]);
                         break;
                     }
             }
@@ -141,7 +141,7 @@ export default class Tokenizer {
             this.advance();
         }
         if (this.isAtEnd()) {
-            this.error('Unterminated string');
+            this.unexpectedCharError('Unterminated string');
         }
         this.advance();
         const value = this.code.slice(start + 1, this.current - 1);
@@ -170,8 +170,8 @@ export default class Tokenizer {
         return true;
     }
 
-    error(message: string) {
-        this.errors.push(new TokenizerError(this.line, message));
+    unexpectedCharError(message: string) {
+        this.errors.push(new TokenizerError(this.line, 'Unexpected character `' +message +"`"));
     }
 }
 

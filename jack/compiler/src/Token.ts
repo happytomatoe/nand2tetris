@@ -59,42 +59,11 @@ export class Token {
         this.line = line;
     }
     toString(): string {
-        return `[Token ${TokenType.toString(this.type)}, line ${this.line}, literal '${this.literal}']`;
+        return `[Token ${TokenType[this.type]}, line ${this.line}, literal '${this.literal}']`;
     }
 }
 
-export namespace TokenType {
-
-    export function toString(type: TokenType): string {
-        switch (type) {
-            case TokenType.LeftParen: return "LeftParen";
-            case TokenType.RightParen: return "RightParen";
-            case TokenType.LeftSquareBracket: return "LeftSquareBracket";
-            case TokenType.RightSquareBracket: return "RightSquareBracket";
-            case TokenType.LeftBrace: return "LeftBrace";
-            case TokenType.RightBrace: return "RightBrace";
-            case TokenType.Comma: return "Comma";
-            case TokenType.Semicolon: return "Semicolon";
-            case TokenType.Equals: return "Equals";
-            case TokenType.PeriodDot: return "PeriodDot";
-            case TokenType.Plus: return "Plus";
-            case TokenType.Minus: return "Minus";
-            case TokenType.Multiply: return "Multiply";
-            case TokenType.Divide: return "Divide";
-            case TokenType.And: return "And";
-            case TokenType.Or: return "Or";
-            case TokenType.Tilde: return "Tilde";
-            case TokenType
-                .LessThan: return "LessThan";
-            case TokenType.GreaterThan: return "GreaterThan";
-            case TokenType.NumberConstant: return "NumberConstant";
-            case TokenType.StringConstant: return "StringConstant";
-            case TokenType.BooleanConstant: return "BooleanConstant";
-            case TokenType.NullConstant: return "NullConstant";
-            case TokenType.Identifier: return "Identifier";
-            case TokenType.EOF: return "EOF";
-            default:
-                throw new Error(`Unknown token type: ${type}`);
-        }
-    }
-}
+// export function toString(type: TokenType): string {
+//     const c = nameof<TokenType>(type);
+//     return c;
+// }
