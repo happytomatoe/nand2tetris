@@ -33,6 +33,8 @@
     // "noUnusedParameters": true,
 
     "incremental": true,
-    "declaration": true
-  }
+    "declaration": true,
+    
+  },
+  
 }

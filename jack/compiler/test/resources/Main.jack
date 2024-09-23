@@ -1,0 +1,37 @@
+class Main {
+            static int a, a1, a2, a3, a4;
+            field boolean b, b1, b2;
+            field C c;
+            field char c1,c2;
+
+
+
+            function void main() {
+                    var Main main;
+                    var char g, h, k;
+                    var int i;
+                    var boolean e;
+                    let main =  Main.new();
+
+
+                    let a=1;
+                    let b=true;
+                    let i=Main.add(a, b);
+                    let i=0;
+                    /* Prints some text using the standard library. */
+                    do Output.printString("Hello world!");
+                    do Output.println();      // New line
+                    do Output.printInt(i);
+                    return;
+            }
+
+            constructor Main new ( int a_, boolean b_, char c_, C c_ ) {
+                let a = a_;
+                let b = b_;
+                let c = c_;
+                return 1;
+            }
+            method int add(int x, int y) {
+                return x + y;
+            }
+}

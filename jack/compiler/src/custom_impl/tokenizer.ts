@@ -1,5 +1,5 @@
-import TokenizerError from './TokenizerError';
-import { Token, TokenType } from './Token';
+import TokenizerError, { ErrorMessages } from './tokenizer.error';
+import { Token, TokenType } from './token';
 export default class Tokenizer {
     code: string;
     current: number = 0;
@@ -20,11 +20,23 @@ export default class Tokenizer {
                     break;
                 case '/':
                     if (this.match('/')) {
-                        while (this.peek() !== '\n') {
+                        while (this.peek() !== '\n' && !this.isAtEnd()) {
                             this.advance();
                         }
-                    } else {
-                        this.unexpectedCharError(this.code[this.current]);
+                    }
+                    else if (this.match('*')) {
+                        let commentEndFound = false;
+                        while (!commentEndFound && !this.isAtEnd()) {
+                            while (this.peek() !== '*' && !this.isAtEnd()) {
+                                this.advance();
+                            }
+                            if (this.match('*') && this.match('/')) {
+                                commentEndFound = true;
+                            }
+                        }
+                    }
+                    else {
+                        this.error(new TokenizerError(this.line, `Should there be a comment?`));
                     }
                     break;
                 case '(':
@@ -84,9 +96,9 @@ export default class Tokenizer {
                 case '>':
                     this.addToken(TokenType.GreaterThan);
                     break;
-                case ':':
-                    this.addToken(TokenType.Colon);
-                    break;
+                // case ':':
+                //     this.addToken(TokenType.Colon);
+                //     break;
                 //TODO: check if we can have 2 operators together
                 //I assume we don't
 
@@ -97,7 +109,7 @@ export default class Tokenizer {
 
                 default:
                     if (this.whitespaceChars.indexOf(c) != -1) {
-                        break
+                        break;
                     } else if (isDigit(c)) {
                         this.number();
                         break;
@@ -105,7 +117,7 @@ export default class Tokenizer {
                         this.identifier();
                         break;
                     } else {
-                        this.unexpectedCharError('Unexpected character ' + this.code[this.current]);
+                        this.error(this.unexpectedTokenError(c));
                         break;
                     }
             }
@@ -114,38 +126,54 @@ export default class Tokenizer {
         return this.errors.length > 0 ? this.errors : this.tokens;
     }
     identifier() {
+
         const start = this.current - 1;
-        while (isAlphaNumberic(this.peek())) {
+        while (isAlphaNumeric(this.peek())) {
             this.advance();
         }
         const text = this.code.slice(start, this.current);
-        console.log('Identifier:', text);
         if (keywords.has(text)) {
             this.addToken(keywords.get(text)!);
+        } else if (booleanConstants.has(text)) {
+            this.addToken(TokenType.BooleanConstant, booleanConstants.get(text)!);
+        } else if (text == 'null') {
+            this.addToken(TokenType.NullConstant);
         } else {
             this.addToken(TokenType.Identifier, text);
         }
     }
     number() {
-        const start = this.current;
+        const start = this.current - 1;
         while (isDigit(this.peek())) {
             this.advance();
         }
-        this.addToken(TokenType.NumberConstant, this.code.slice(start, this.current));
-
+        const literal = this.code.slice(start, this.current);
+        this.addToken(TokenType.NumberConstant, +literal);
     }
+    //TODO: check if there are escape sequences
     string() {
-        const start = this.current;
-        while (this.peek() != '"' && !this.isAtEnd()) {
-            if (this.peek() == '\n') this.line++;
+        const start = this.current - 1;
+        while (this.peek() != '"' && this.peek() != '\n' && !this.isAtEnd()) {
             this.advance();
         }
-        if (this.isAtEnd()) {
-            this.unexpectedCharError('Unterminated string');
+        if (this.peek() != '"') {
+            this.error(ErrorMessages.unterminatedString);
+            this.advance();
+        } else {
+            this.advance();
+            const value = this.code.slice(start + 1, this.current - 1);
+            this.addToken(TokenType.StringConstant, value);
         }
-        this.advance();
-        const value = this.code.slice(start + 1, this.current - 1);
-        this.addToken(TokenType.StringConstant, value);
+    }
+    error(error: TokenizerError | string) {
+        if (error instanceof TokenizerError) {
+            this.errors.push(error);
+        } else {
+            this.errors.push(new TokenizerError(this.line, error));
+        }
+        while (this.peek() != ';' && !this.isAtEnd()) {
+            this.advance();
+        }
     }
 
     peek() {
@@ -156,7 +184,7 @@ export default class Tokenizer {
     advance() {
         return this.code[this.current++];
     }
-    addToken(type: TokenType, literal?: string) {
+    addToken(type: TokenType, literal?: string | number | boolean) {
         this.tokens.push(new Token(type, this.line, literal));
     }
 
@@ -170,8 +198,8 @@ export default class Tokenizer {
         return true;
     }
 
-    unexpectedCharError(message: string) {
-        this.errors.push(new TokenizerError(this.line, 'Unexpected character `' +message +"`"));
+    unexpectedTokenError(token: string) {
+        return TokenizerError.unexpectedToken(this.line, token);
     }
 }
 
@@ -183,12 +211,15 @@ function isAlpha(c: string) {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c === '_';
 }
 
-function isAlphaNumberic(c: string) {
+function isAlphaNumeric(c: string) {
     const a = isDigit(c);
     const d = isAlpha(c);
     return a || d;
 }
-
+const booleanConstants = new Map<string, boolean>([
+    ["true", true],
+    ["false", false]
+]);
 const keywords = new Map<string, TokenType>([
     ["class", TokenType.class],
     ["constructor", TokenType.constructor],
@@ -207,8 +238,5 @@ const keywords = new Map<string, TokenType>([
     ["else", TokenType.else],
     ["while", TokenType.while],
     ["return", TokenType.return],
-    ["true", TokenType.true],
-    ["false", TokenType.false],
-    ["null", TokenType.null],
     ["this", TokenType.this],
 ]);

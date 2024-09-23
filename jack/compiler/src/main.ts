@@ -1,4 +1,5 @@
-import Compiler from "./Compiler";
+import { keywords } from "../tests/tokenizer.test.utils";
+import Compiler from "./compiler";
 
 function compile() {
   console.log('Compiling ...');

@@ -1,4 +1,4 @@
-import Tokenizer from "./Tokenizer";
+import Tokenizer from "./custom_impl/tokenizer";
 
 export default class Compiler {
     static compile(source: string): string {
