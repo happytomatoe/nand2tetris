@@ -5,19 +5,14 @@ options {
 }
 
 program: classDeclaration EOF;
-
 classDeclaration:
-	CLASS className LBRACE classVarDec* subroutineDec* RBRACE;
+	CLASS className LBRACE classVarDec* subroutineDeclaration* rBrace;
 className: IDENTIFIER;
-classVarDec:
-	STATIC fieldList SEMICOLON	# staticFieldDeclaration
-	| FIELD fieldList SEMICOLON	# fieldDeclaration;
+classVarDec: (STATIC | FIELD) fieldList SEMICOLON;
 fieldList: varType fieldName ( COMMA fieldName)*;
 fieldName: IDENTIFIER;
-subroutineDec:
-	CONSTRUCTOR subroutineDecWithoutType	# constructor
-	| METHOD subroutineDecWithoutType		# method
-	| FUNCTION subroutineDecWithoutType		# function;
+subroutineDeclaration: subroutineType subroutineDecWithoutType;
+subroutineType: CONSTRUCTOR | METHOD | FUNCTION;
 subroutineDecWithoutType:
 	subroutineReturnType subroutineName LPAREN parameterList RPAREN subroutineBody;
 subroutineName: IDENTIFIER;
@@ -28,51 +23,51 @@ varType: INT | CHAR | BOOLEAN | IDENTIFIER;
 parameterList: (parameter (COMMA parameter)*)?;
 parameter: varType parameterName;
 parameterName: IDENTIFIER;
-subroutineBody:
-	LBRACE varDec* statements returnStatement RBRACE;
-
-varDec: VAR varType varName (COMMA IDENTIFIER)* SEMICOLON;
+subroutineBody: LBRACE varDeclaration* statements rBrace;
+rBrace: RBRACE;
+varDeclaration:
+	VAR varType varNameInDeclaration (COMMA varNameInDeclaration)* SEMICOLON;
+varNameInDeclaration: IDENTIFIER;
 varName: IDENTIFIER;
 statements: statement*;
 statement:
 	letStatement
-	| ifStatement
+	| ifElseStatement
 	| whileStatement
-	| doStatement;
+	| doStatement
+	| returnStatement;
 
 letStatement:
-	LET (IDENTIFIER | arrayAccess) EQUALS <assoc=right> expression SEMICOLON;
+	LET (varName | arrayAccess) EQUALS expression SEMICOLON; //TODO: check if we need right assoc for this
 
+ifElseStatement: ifStatement elseStatement?;
 ifStatement:
-	IF LPAREN expression RPAREN LBRACE statements RBRACE (
-		ELSE LBRACE statements RBRACE
-	)?;
+	IF LPAREN expression RPAREN LBRACE statements rBrace;
+elseStatement: ELSE LBRACE statements rBrace;
 
 whileStatement:
-	WHILE LPAREN expression RPAREN LBRACE statements RBRACE;
+	WHILE LPAREN expression RPAREN LBRACE statements rBrace;
 
 doStatement: DO subroutineCall SEMICOLON;
 
-subroutineCall:
-	IDENTIFIER LPAREN expressionList RPAREN
-	| (IDENTIFIER | THIS_LITERAL) DOT IDENTIFIER LPAREN expressionList RPAREN;
-
+subroutineCall: subroutineId LPAREN expressionList RPAREN;
+subroutineId: ((className | THIS_LITERAL) DOT)? subroutineName;
 returnStatement: RETURN expression? SEMICOLON;
 
 expressionList: (expression (COMMA expression)*)?;
 
 expression:
-	binaryOperation = expression binaryOperator expression 
-	| constant
-	| IDENTIFIER
+	expression binaryOperator expression
+	| constant 
+	| varName
 	| subroutineCall
 	| arrayAccess
-	| unaryOp
+	| unaryOperation
 	| groupedExpression;
 
 groupedExpression: LPAREN expression RPAREN;
-unaryOp: unaryOperator expression;
-arrayAccess: IDENTIFIER LBRACKET expression RBRACKET;
+unaryOperation: unaryOperator expression;
+arrayAccess: varName LBRACKET expression RBRACKET;
 
 constant:
 	INTEGER_LITERAL

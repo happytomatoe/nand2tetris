@@ -3,18 +3,14 @@
 
 import { ParseTreeVisitor } from "antlr4ts/tree/ParseTreeVisitor";
 
-import { ConstructorContext } from "./JackParser";
-import { MethodContext } from "./JackParser";
-import { FunctionContext } from "./JackParser";
-import { StaticFieldDeclarationContext } from "./JackParser";
-import { FieldDeclarationContext } from "./JackParser";
 import { ProgramContext } from "./JackParser";
 import { ClassDeclarationContext } from "./JackParser";
 import { ClassNameContext } from "./JackParser";
 import { ClassVarDecContext } from "./JackParser";
 import { FieldListContext } from "./JackParser";
 import { FieldNameContext } from "./JackParser";
-import { SubroutineDecContext } from "./JackParser";
+import { SubroutineDeclarationContext } from "./JackParser";
+import { SubroutineTypeContext } from "./JackParser";
 import { SubroutineDecWithoutTypeContext } from "./JackParser";
 import { SubroutineNameContext } from "./JackParser";
 import { SubroutineReturnTypeContext } from "./JackParser";
@@ -23,20 +19,25 @@ import { ParameterListContext } from "./JackParser";
 import { ParameterContext } from "./JackParser";
 import { ParameterNameContext } from "./JackParser";
 import { SubroutineBodyContext } from "./JackParser";
-import { VarDecContext } from "./JackParser";
+import { RBraceContext } from "./JackParser";
+import { VarDeclarationContext } from "./JackParser";
+import { VarNameInDeclarationContext } from "./JackParser";
 import { VarNameContext } from "./JackParser";
 import { StatementsContext } from "./JackParser";
 import { StatementContext } from "./JackParser";
 import { LetStatementContext } from "./JackParser";
+import { IfElseStatementContext } from "./JackParser";
 import { IfStatementContext } from "./JackParser";
+import { ElseStatementContext } from "./JackParser";
 import { WhileStatementContext } from "./JackParser";
 import { DoStatementContext } from "./JackParser";
 import { SubroutineCallContext } from "./JackParser";
+import { SubroutineIdContext } from "./JackParser";
 import { ReturnStatementContext } from "./JackParser";
 import { ExpressionListContext } from "./JackParser";
 import { ExpressionContext } from "./JackParser";
 import { GroupedExpressionContext } from "./JackParser";
-import { UnaryOpContext } from "./JackParser";
+import { UnaryOperationContext } from "./JackParser";
 import { ArrayAccessContext } from "./JackParser";
 import { ConstantContext } from "./JackParser";
 import { UnaryOperatorContext } from "./JackParser";
@@ -51,46 +52,6 @@ import { BinaryOperatorContext } from "./JackParser";
  * operations with no return type.
  */
 export interface JackParserVisitor<Result> extends ParseTreeVisitor<Result> {
-	/**
-	 * Visit a parse tree produced by the `constructor`
-	 * labeled alternative in `JackParser.subroutineDec`.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	visitConstructor?: (ctx: ConstructorContext) => Result;
-
-	/**
-	 * Visit a parse tree produced by the `method`
-	 * labeled alternative in `JackParser.subroutineDec`.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	visitMethod?: (ctx: MethodContext) => Result;
-
-	/**
-	 * Visit a parse tree produced by the `function`
-	 * labeled alternative in `JackParser.subroutineDec`.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	visitFunction?: (ctx: FunctionContext) => Result;
-
-	/**
-	 * Visit a parse tree produced by the `staticFieldDeclaration`
-	 * labeled alternative in `JackParser.classVarDec`.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	visitStaticFieldDeclaration?: (ctx: StaticFieldDeclarationContext) => Result;
-
-	/**
-	 * Visit a parse tree produced by the `fieldDeclaration`
-	 * labeled alternative in `JackParser.classVarDec`.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	visitFieldDeclaration?: (ctx: FieldDeclarationContext) => Result;
-
 	/**
 	 * Visit a parse tree produced by `JackParser.program`.
 	 * @param ctx the parse tree
@@ -134,11 +95,18 @@ export interface JackParserVisitor<Result> extends ParseTreeVisitor<Result> {
 	visitFieldName?: (ctx: FieldNameContext) => Result;
 
 	/**
-	 * Visit a parse tree produced by `JackParser.subroutineDec`.
+	 * Visit a parse tree produced by `JackParser.subroutineDeclaration`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitSubroutineDec?: (ctx: SubroutineDecContext) => Result;
+	visitSubroutineDeclaration?: (ctx: SubroutineDeclarationContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `JackParser.subroutineType`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitSubroutineType?: (ctx: SubroutineTypeContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `JackParser.subroutineDecWithoutType`.
@@ -197,11 +165,25 @@ export interface JackParserVisitor<Result> extends ParseTreeVisitor<Result> {
 	visitSubroutineBody?: (ctx: SubroutineBodyContext) => Result;
 
 	/**
-	 * Visit a parse tree produced by `JackParser.varDec`.
+	 * Visit a parse tree produced by `JackParser.rBrace`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitVarDec?: (ctx: VarDecContext) => Result;
+	visitRBrace?: (ctx: RBraceContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `JackParser.varDeclaration`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitVarDeclaration?: (ctx: VarDeclarationContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `JackParser.varNameInDeclaration`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitVarNameInDeclaration?: (ctx: VarNameInDeclarationContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `JackParser.varName`.
@@ -232,11 +214,25 @@ export interface JackParserVisitor<Result> extends ParseTreeVisitor<Result> {
 	visitLetStatement?: (ctx: LetStatementContext) => Result;
 
 	/**
+	 * Visit a parse tree produced by `JackParser.ifElseStatement`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitIfElseStatement?: (ctx: IfElseStatementContext) => Result;
+
+	/**
 	 * Visit a parse tree produced by `JackParser.ifStatement`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	visitIfStatement?: (ctx: IfStatementContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `JackParser.elseStatement`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitElseStatement?: (ctx: ElseStatementContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `JackParser.whileStatement`.
@@ -258,6 +254,13 @@ export interface JackParserVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitSubroutineCall?: (ctx: SubroutineCallContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `JackParser.subroutineId`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitSubroutineId?: (ctx: SubroutineIdContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `JackParser.returnStatement`.
@@ -288,11 +291,11 @@ export interface JackParserVisitor<Result> extends ParseTreeVisitor<Result> {
 	visitGroupedExpression?: (ctx: GroupedExpressionContext) => Result;
 
 	/**
-	 * Visit a parse tree produced by `JackParser.unaryOp`.
+	 * Visit a parse tree produced by `JackParser.unaryOperation`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitUnaryOp?: (ctx: UnaryOpContext) => Result;
+	visitUnaryOperation?: (ctx: UnaryOperationContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `JackParser.arrayAccess`.

@@ -46,10 +46,16 @@ COMMENT: '/*' .*? '*/' -> skip;
 LINE_COMMENT: '//' ~[\r\n]* -> skip;
 
 INTEGER_LITERAL: [0-9]+;
-STRING_LITERAL: '"' .*? '"';
 BOOLEAN_LITERAL: 'true' | 'false';
 NULL_LITERAL: 'null';
 THIS_LITERAL: 'this';
 
 IDENTIFIER: [a-zA-Z_] [a-zA-Z0-9_]*;
+
+STRING_LITERAL
+  : UnterminatedStringLiteral '"'
+  ;
+UnterminatedStringLiteral
+  : '"' ~["\\\r\n]*
+  ;
 
