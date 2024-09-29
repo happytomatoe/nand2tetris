@@ -52,7 +52,7 @@ export class BinderListener implements JackParserListener {
             this.stopProcessingSubroutines = true;
         } else {
             this.subroutineId = id;
-            const paramsCount = subroutineWithoutTypeCtx.parameterList().parameter().length
+        const paramsCount = subroutineWithoutTypeCtx.parameterList().parameter().length
             this.subRoutineInfo = {
                 type: subroutineType,
                 paramsCount: paramsCount,
@@ -75,3 +75,4 @@ export class BinderListener implements JackParserListener {
         this.errors = [];
     }
 }
+

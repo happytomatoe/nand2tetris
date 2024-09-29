@@ -24,4 +24,4 @@ dist-ssr
 *.sw?
 .coverage
 docs
-grammar/.antlr
+src/resources/.antlr

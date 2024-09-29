@@ -82,9 +82,9 @@ export class ValidatorListener implements JackParserListener {
      * Var name when using it - do Statement, let ... as oposed to varNameInDeclaration
      */
     enterVarName(ctx: VarNameContext) {
-        if (this.inFunction && this.#existsSymbol(ctx.text) && !this.#existsSymbol(ctx.text, LocalSymbolTable.functionScopes)) {
+        if (this.inFunction && this.localSymbolTable.existsSymbol(ctx.text) && !this.localSymbolTable.existsSymbol(ctx.text, LocalSymbolTable.functionScopes)) {
             this.#addError(new FieldCantBeReferencedInFunction(ctx.start.line, ctx.start.startIndex));
-        } else if (!this.#existsSymbol(ctx.text)) {
+        } else if (!this.localSymbolTable.existsSymbol(ctx.text)) {
             this.#addError(new UndeclaredVariableError(ctx.start.line, ctx.start.startIndex, ctx.text));
         }
     };
@@ -137,7 +137,7 @@ export class ValidatorListener implements JackParserListener {
         const constCtx = ctx.expression().constant()
         //corresponding literal type check
         if (varName != undefined && constCtx != undefined &&
-            this.#existsSymbol(ctx.varName()!.text) &&
+            this.localSymbolTable.existsSymbol(ctx.varName()!.text) &&
             ctx.expression().constant()!.NULL_LITERAL() == undefined) {
             const type = this.localSymbolTable.getType(ctx.varName()!.text)!
             if (literalTypes.indexOf(type) != -1) {
@@ -195,7 +195,7 @@ export class ValidatorListener implements JackParserListener {
         } else {
             // var method
             const [varName, methodName] = subroutineId.text.split('.')
-            if (this.#existsSymbol(varName)) {
+            if (this.localSymbolTable.existsSymbol(varName)) {
                 const varType = this.localSymbolTable.getType(varName)
                 subroutineIdText = varType + "." + methodName
                 callType = CallType.VarMethod;
@@ -258,6 +258,7 @@ export class ValidatorListener implements JackParserListener {
         }
         this.inConstructor = false;
         this.inFunction = false;
+        this.localSymbolTable.clearSubroutineVars();
     };
 
     exitClassDeclaration(ctx: ClassDeclarationContext) {
@@ -267,23 +268,16 @@ export class ValidatorListener implements JackParserListener {
     };
 
     //Utils
-
-    #existsSymbol(name: string, scopesToSearch = [ScopeType.Local, ScopeType.Argument, ScopeType.This, ScopeType.Static]) {
-        return this.localSymbolTable.existsSymbol(this.#getVarId(name));
-    }
     #localSymbolTableAdd(line: number, position: number, scope: ScopeType, name: string, type: string) {
-        if (this.#existsSymbol(name)) {
+        if (this.localSymbolTable.existsSymbol(name)) {
             this.#addError(new DuplicatedVariableException(line, position, name));
         } else {
-            this.localSymbolTable.add(scope, this.subroutineName + "." + name, type);
+            this.localSymbolTable.add(scope, name, type);
         }
     }
     #addError<T extends JackCompilerError>(error: T) {
         if (!this.stopProcessingErrorsInThisScope)
             this.errors.push(error);
-    }
-    #getVarId(name: string) {
-        return this.subroutineName + "." + name;
     }
     //to fix compiler error
     visitTerminal?: (/*@NotNull*/ node: TerminalNode) => void;

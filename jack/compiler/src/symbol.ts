@@ -42,8 +42,8 @@ export class LocalSymbolTable {
         [ScopeType.Argument]: {},
         [ScopeType.Local]: {},
     };
-
     static readonly functionScopes = [ScopeType.Local, ScopeType.Argument, ScopeType.Static];
+
     existsSymbol(name: string, scopesToSearch = [ScopeType.Local, ScopeType.Argument, ScopeType.This, ScopeType.Static]): boolean {
         for (const scope of scopesToSearch) {
             if (this.vars[scope][name] != undefined) {
@@ -62,5 +62,9 @@ export class LocalSymbolTable {
     }
     add(scope: ScopeType, varName: string, type: VariableType) {
         this.vars[scope][varName] = type;
+    }
+    clearSubroutineVars() {
+        this.vars[ScopeType.Argument] = {};
+        this.vars[ScopeType.Local] = {};
     }
 }
