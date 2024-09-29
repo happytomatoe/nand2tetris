@@ -38,16 +38,18 @@ statement:
 	| returnStatement;
 
 letStatement:
-	LET (varName | arrayAccess) EQUALS expression SEMICOLON; //TODO: check if we need right assoc for this
+	LET (varName | arrayAccess) EQUALS expression SEMICOLON;
+//TODO: check if we need right assoc for this
 
 ifElseStatement: ifStatement elseStatement?;
 ifStatement:
 	IF LPAREN expression RPAREN LBRACE statements rBrace;
 elseStatement: ELSE LBRACE statements rBrace;
 
-whileStatement:
-	WHILE LPAREN expression RPAREN LBRACE statements rBrace;
-
+whileStatement
+	locals[startLabel:string="";endLabel:string="";]:
+	WHILE LPAREN whileExpression RPAREN LBRACE statements rBrace;
+whileExpression: expression;
 doStatement: DO subroutineCall SEMICOLON;
 
 subroutineCall: subroutineId LPAREN expressionList RPAREN;
@@ -58,7 +60,7 @@ expressionList: (expression (COMMA expression)*)?;
 
 expression:
 	expression binaryOperator expression
-	| constant 
+	| constant
 	| varName
 	| subroutineCall
 	| arrayAccess

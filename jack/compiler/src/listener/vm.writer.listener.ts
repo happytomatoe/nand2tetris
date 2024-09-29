@@ -1,6 +1,6 @@
 import { TerminalNode } from "antlr4ts/tree/TerminalNode";
 import { JackParserListener } from "../generated/JackParserListener";
-import { BinaryOperatorContext, ClassDeclarationContext, ConstantContext, ExpressionContext, ReturnStatementContext, SubroutineCallContext, SubroutineDeclarationContext, SubroutineDecWithoutTypeContext } from "../generated/JackParser";
+import { BinaryOperatorContext, ClassDeclarationContext, ConstantContext, ExpressionContext, LetStatementContext, ReturnStatementContext, SubroutineCallContext, SubroutineDeclarationContext, SubroutineDecWithoutTypeContext, VarDeclarationContext, WhileExpressionContext, WhileStatementContext } from "../generated/JackParser";
 import { GenericSymbol } from "../symbol";
 
 const binaryOperationToVmCmd: Record<string, string> = {
@@ -23,6 +23,8 @@ const unaryOperationToVmCmd: Record<string, string> = {
 export class VMWriter implements JackParserListener {
     public result: string = ""
     private className: string = "";
+    private localVars: string[] = [];
+    private currentLabelInd: number = 0;
     constructor(private globalSymbolTable: Record<string, GenericSymbol>) {
     }
     enterSubroutineDeclaration(ctx: SubroutineDeclarationContext) {
@@ -42,6 +44,11 @@ export class VMWriter implements JackParserListener {
             this.result += "    pop pointer 0\n";
         }
     };
+    enterVarDeclaration(ctx: VarDeclarationContext) {
+        ctx.varNameInDeclaration().forEach((nameContext) => {
+            this.localVars.push(nameContext.IDENTIFIER().text)
+        })
+    };
     enterClassDeclaration(ctx: ClassDeclarationContext) {
         if (this.className != "") {
             throw new Error("Cannot change class name")
@@ -54,7 +61,9 @@ export class VMWriter implements JackParserListener {
         }
     };
     exitExpression(ctx: ExpressionContext) {
-        if (ctx.binaryOperator() != undefined) {
+        if (ctx.varName() != undefined) {
+            this.result += `    push local ${this.localVars.indexOf(ctx.varName()!.IDENTIFIER().text)}\n`;
+        } else if (ctx.binaryOperator() != undefined) {
             const binaryOp = ctx.binaryOperator()!.text
             if (binaryOperationToVmCmd[binaryOp] == undefined) {
                 throw new Error(`Unknown binary operator ${binaryOp}`)
@@ -68,6 +77,28 @@ export class VMWriter implements JackParserListener {
             this.result += "\t" + unaryOperationToVmCmd[unaryOp] + "\n";
         }
     };
+
+    exitLetStatement(ctx: LetStatementContext) {
+        if (ctx.varName() != undefined) {
+            this.result += `    pop local ${this.localVars.indexOf(ctx.varName()!.IDENTIFIER().text)}\n`;
+        }
+    };
+    enterWhileStatement(ctx: WhileStatementContext) {
+        const label = `${this.className}_${this.currentLabelInd++}`
+        ctx.startLabel = label
+        ctx.endLabel = `${this.className}_${this.currentLabelInd++}`
+        this.result += `    label ${label} \n`;
+    };
+    exitWhileExpression(ctx: WhileExpressionContext) {
+        //TODO: is there a better way to do this?
+        const parent = ctx._parent as WhileStatementContext;
+        this.result += "    not\n";
+        this.result += `    if-goto ${parent.endLabel} \n`;
+    };
+    exitWhileStatement(ctx: WhileStatementContext) {
+        this.result += `    goto ${ctx.startLabel}\n`;
+        this.result += `    label ${ctx.endLabel}\n`;
+    };
     exitReturnStatement(ctx: ReturnStatementContext) {
         if (ctx.expression()?.constant()?.THIS_LITERAL() != undefined) {
             this.result += "    push pointer 0\n";
@@ -77,8 +108,12 @@ export class VMWriter implements JackParserListener {
         this.result += "    return\n";
     };
     enterSubroutineCall(ctx: SubroutineCallContext) {
-        this.result += "    call A.b 0\n";
+        this.result += `    call ${ctx.subroutineId().text} 0\n`;
         this.result += "    pop temp 0\n";
+    };
+    exitSubroutineDeclaration(ctx: SubroutineDeclarationContext) {
+
+        this.localVars = []
     };
     //to fix compiler error
     visitTerminal?: (/*@NotNull*/ node: TerminalNode) => void;

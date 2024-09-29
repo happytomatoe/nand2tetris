@@ -30,6 +30,7 @@ import { IfElseStatementContext } from "./JackParser";
 import { IfStatementContext } from "./JackParser";
 import { ElseStatementContext } from "./JackParser";
 import { WhileStatementContext } from "./JackParser";
+import { WhileExpressionContext } from "./JackParser";
 import { DoStatementContext } from "./JackParser";
 import { SubroutineCallContext } from "./JackParser";
 import { SubroutineIdContext } from "./JackParser";
@@ -240,6 +241,13 @@ export interface JackParserVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitWhileStatement?: (ctx: WhileStatementContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `JackParser.whileExpression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitWhileExpression?: (ctx: WhileExpressionContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `JackParser.doStatement`.

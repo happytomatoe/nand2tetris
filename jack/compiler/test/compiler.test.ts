@@ -153,6 +153,39 @@ describe("Compiler", () => {
 
         `;
     })
+    test('boolean literal assign using logical operators', () => {
+        const input = `
+        class A{
+            function void a(){
+                var boolean b;
+                let b = 1>2 & 3<4 | 5>6 & 7=7;
+                return;
+            }
+        }
+         `
+        const expected = `
+            function A.a 1
+                push constant 1
+                push constant 2
+                gt
+                push constant 3
+                and
+                push constant 4
+                lt
+                push constant 5
+                or
+                push constant 6
+                gt
+                push constant 7
+                and
+                push constant 7
+                eq
+                pop local 0
+                push constant 0
+                return
+        `;
+          testCompiler(input, expected);
+    })
     test('char literal assign', () => {
         const input = `
         class A{
@@ -227,7 +260,7 @@ describe("Compiler", () => {
                 push constant 0
                 return
         `;
-        testCompiler(input,expected);
+        testCompiler(input, expected);
     })
     test('assignment for varname', () => {
         const input = `
@@ -333,7 +366,7 @@ describe("Compiler", () => {
                 push constant 0
                 return
         `;
-        testCompiler(input,expected);
+        testCompiler(input, expected);
     })
     test('assignment to ~1', () => {
         const input = `
@@ -353,7 +386,7 @@ describe("Compiler", () => {
             push constant 0
             return
         `;
-        testCompiler(input,expected);
+        testCompiler(input, expected);
     })
     test('assignment for grouped expr', () => {
         const input = `
@@ -471,6 +504,7 @@ describe("Compiler", () => {
                 push constant 0
                 return
         `;
+        testCompiler(input, expected);
     })
 
     test('function call', () => {
@@ -494,7 +528,7 @@ describe("Compiler", () => {
                 push constant 0
                 return
         `;
-        testCompiler(input,expected);
+        testCompiler(input, expected);
     })
     test('method call', () => {
         const input = `
@@ -540,7 +574,7 @@ describe("Compiler", () => {
             push pointer 0
             return
         `;
-        testCompiler(input,expected);
+        testCompiler(input, expected);
     })
 
     test('return literal', () => {
@@ -557,7 +591,7 @@ describe("Compiler", () => {
             push constant 1
             return
         `;
-        testCompiler(input,expected);
+        testCompiler(input, expected);
     })
     test('method return void', () => {
         const input = `
@@ -573,7 +607,7 @@ describe("Compiler", () => {
             push constant 0
             return
         `;
-        testCompiler(input,expected);
+        testCompiler(input, expected);
     })
 
     test('return simple expression', () => {
@@ -592,8 +626,7 @@ describe("Compiler", () => {
                 call Math.multiply 2
                 return
         `;
-        console.log(expected)
-        testCompiler(input,expected);
+        testCompiler(input, expected);
     })
 })
 
