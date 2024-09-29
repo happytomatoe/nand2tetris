@@ -30,7 +30,7 @@ push local 0
 ```
 pop local 0
 ```
-## Arrithmetic-logical commands
+## Arithmetic-logical commands
 
 |cmd  |  op     | comment                               | Possible values     |
 |-----|---------|---------------------------------------|---------------------|
@@ -51,6 +51,17 @@ add
 pop constant 21
 ```
 Operations operate on top 2 elements in the stack
+
+## Branching
+- label label
+- goto label
+- if-goto label
+## Functions 
+|cmd  | comment                               |
+|-----|---------------------------------------|
+| function functionName nVars | nvars represents local vars count
+| call functionName nArgs     | nArgs represents how many values on top of the stack will become arguments for the called function 
+| return                      |
 
 
 ## Translation formulas
