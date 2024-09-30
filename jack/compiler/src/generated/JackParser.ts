@@ -1,6 +1,9 @@
 // Generated from JackParser.g4 by ANTLR 4.9.0-SNAPSHOT
 
 
+	import { SubroutineScope } from "../symbol";
+
+
 import { ATN } from "antlr4ts/atn/ATN";
 import { ATNDeserializer } from "antlr4ts/atn/ATNDeserializer";
 import { FailedPredicateException } from "antlr4ts/FailedPredicateException";
@@ -1483,13 +1486,13 @@ export class JackParser extends Parser {
 					_localctx = new ExpressionContext(_parentctx, _parentState);
 					this.pushNewRecursionContext(_localctx, _startState, JackParser.RULE_expression);
 					this.state = 278;
-					if (!(this.precpred(this._ctx, 7))) {
-						throw this.createFailedPredicateException("this.precpred(this._ctx, 7)");
+					if (!(this.precpred(this._ctx, 2))) {
+						throw this.createFailedPredicateException("this.precpred(this._ctx, 2)");
 					}
 					this.state = 279;
 					this.binaryOperator();
 					this.state = 280;
-					this.expression(8);
+					this.expression(3);
 					}
 					}
 				}
@@ -1781,7 +1784,7 @@ export class JackParser extends Parser {
 	private expression_sempred(_localctx: ExpressionContext, predIndex: number): boolean {
 		switch (predIndex) {
 		case 0:
-			return this.precpred(this._ctx, 7);
+			return this.precpred(this._ctx, 2);
 		}
 		return true;
 	}
@@ -1904,8 +1907,8 @@ export class JackParser extends Parser {
 		"\u0117\x05L\'\x02\u0114\u0117\x05J&\x02\u0115\u0117\x05H%\x02\u0116\u010F" +
 		"\x03\x02\x02\x02\u0116\u0111\x03\x02\x02\x02\u0116\u0112\x03\x02\x02\x02" +
 		"\u0116\u0113\x03\x02\x02\x02\u0116\u0114\x03\x02\x02\x02\u0116\u0115\x03" +
-		"\x02\x02\x02\u0117\u011E\x03\x02\x02\x02\u0118\u0119\f\t\x02\x02\u0119" +
-		"\u011A\x05T+\x02\u011A\u011B\x05F$\n\u011B\u011D\x03\x02\x02\x02\u011C" +
+		"\x02\x02\x02\u0117\u011E\x03\x02\x02\x02\u0118\u0119\f\x04\x02\x02\u0119" +
+		"\u011A\x05T+\x02\u011A\u011B\x05F$\x05\u011B\u011D\x03\x02\x02\x02\u011C" +
 		"\u0118\x03\x02\x02\x02\u011D\u0120\x03\x02\x02\x02\u011E\u011C\x03\x02" +
 		"\x02\x02\u011E\u011F\x03\x02\x02\x02\u011FG\x03\x02\x02\x02\u0120\u011E" +
 		"\x03\x02\x02\x02\u0121\u0122\x07\x16\x02\x02\u0122\u0123\x05F$\x02\u0123" +
@@ -2165,6 +2168,7 @@ export class FieldNameContext extends ParserRuleContext {
 
 
 export class SubroutineDeclarationContext extends ParserRuleContext {
+	public symbols: SubroutineScope | undefined;
 	public subroutineType(): SubroutineTypeContext {
 		return this.getRuleContext(0, SubroutineTypeContext);
 	}
@@ -3205,18 +3209,6 @@ export class ExpressionListContext extends ParserRuleContext {
 
 
 export class ExpressionContext extends ParserRuleContext {
-	public expression(): ExpressionContext[];
-	public expression(i: number): ExpressionContext;
-	public expression(i?: number): ExpressionContext | ExpressionContext[] {
-		if (i === undefined) {
-			return this.getRuleContexts(ExpressionContext);
-		} else {
-			return this.getRuleContext(i, ExpressionContext);
-		}
-	}
-	public binaryOperator(): BinaryOperatorContext | undefined {
-		return this.tryGetRuleContext(0, BinaryOperatorContext);
-	}
 	public constant(): ConstantContext | undefined {
 		return this.tryGetRuleContext(0, ConstantContext);
 	}
@@ -3231,6 +3223,18 @@ export class ExpressionContext extends ParserRuleContext {
 	}
 	public unaryOperation(): UnaryOperationContext | undefined {
 		return this.tryGetRuleContext(0, UnaryOperationContext);
+	}
+	public expression(): ExpressionContext[];
+	public expression(i: number): ExpressionContext;
+	public expression(i?: number): ExpressionContext | ExpressionContext[] {
+		if (i === undefined) {
+			return this.getRuleContexts(ExpressionContext);
+		} else {
+			return this.getRuleContext(i, ExpressionContext);
+		}
+	}
+	public binaryOperator(): BinaryOperatorContext | undefined {
+		return this.tryGetRuleContext(0, BinaryOperatorContext);
 	}
 	public groupedExpression(): GroupedExpressionContext | undefined {
 		return this.tryGetRuleContext(0, GroupedExpressionContext);

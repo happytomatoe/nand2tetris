@@ -4,6 +4,7 @@ import { ConstructorMushReturnThis, DuplicatedVariableException, FieldCantBeRefe
 import { ClassDeclarationContext, ClassNameContext, ClassVarDecContext, ConstantContext, ElseStatementContext, IfStatementContext, LetStatementContext, ParameterContext, RBraceContext, ReturnStatementContext, StatementContext, SubroutineBodyContext, SubroutineCallContext, SubroutineDeclarationContext, SubroutineDecWithoutTypeContext, VarDeclarationContext, VarNameContext, VarTypeContext, WhileStatementContext } from "../generated/JackParser";
 import { JackParserListener } from "../generated/JackParserListener";
 import { GenericSymbol, LocalSymbolTable, ScopeType, SubroutineType } from "../symbol";
+import { CallType, getCallType } from "./common";
 
 /**
  * Validates Jack file
@@ -79,15 +80,17 @@ export class ValidatorListener implements JackParserListener {
     };
 
     /**
-     * Var name when using it - do Statement, let ... as oposed to varNameInDeclaration
+     * Var name when using it - do Statement, let ... as opposed to varNameInDeclaration
      */
     enterVarName(ctx: VarNameContext) {
-        if (this.inFunction && this.localSymbolTable.existsSymbol(ctx.text) && !this.localSymbolTable.existsSymbol(ctx.text, LocalSymbolTable.functionScopes)) {
-            this.#addError(new FieldCantBeReferencedInFunction(ctx.start.line, ctx.start.startIndex));
-        } else if (!this.localSymbolTable.existsSymbol(ctx.text)) {
+        const symbol = this.localSymbolTable.lookup(ctx.text)
+        if (symbol == undefined) {
             this.#addError(new UndeclaredVariableError(ctx.start.line, ctx.start.startIndex, ctx.text));
+        } else if (this.inFunction && symbol.scope == ScopeType.This) {
+            this.#addError(new FieldCantBeReferencedInFunction(ctx.start.line, ctx.start.startIndex));
         }
     };
+
     enterConstant(ctx: ConstantContext) {
         if (ctx.THIS_LITERAL() != undefined && this.inFunction) {
             this.#addError(new ThisCantBeReferencedInFunction(ctx.start.line, ctx.start.startIndex));
@@ -137,9 +140,9 @@ export class ValidatorListener implements JackParserListener {
         const constCtx = ctx.expression().constant()
         //corresponding literal type check
         if (varName != undefined && constCtx != undefined &&
-            this.localSymbolTable.existsSymbol(ctx.varName()!.text) &&
+            this.localSymbolTable.lookup(ctx.varName()!.text) &&
             ctx.expression().constant()!.NULL_LITERAL() == undefined) {
-            const type = this.localSymbolTable.getType(ctx.varName()!.text)!
+            const type = this.localSymbolTable.lookup(ctx.varName()!.text)!.type
             if (literalTypes.indexOf(type) != -1) {
                 const constantCtx = ctx.expression().constant()!
                 switch (type) {
@@ -185,26 +188,7 @@ export class ValidatorListener implements JackParserListener {
     enterSubroutineCall(ctx: SubroutineCallContext) {
         //check if variable exists with the name before dot
         const subroutineId = ctx.subroutineId()
-        let callType: CallType;
-
-        let subroutineIdText: string;
-        if (subroutineId.text.indexOf('.') == -1) {
-            //local method
-            callType = CallType.LocalMethod
-            subroutineIdText = this.className + "." + subroutineId.subroutineName().text
-        } else {
-            // var method
-            const [varName, methodName] = subroutineId.text.split('.')
-            if (this.localSymbolTable.existsSymbol(varName)) {
-                const varType = this.localSymbolTable.getType(varName)
-                subroutineIdText = varType + "." + methodName
-                callType = CallType.VarMethod;
-            } else {
-                // class function/ctor
-                subroutineIdText = subroutineId.text
-                callType = CallType.ClassFunctionOrConstructor;
-            }
-        }
+        const { callType, subroutineIdText } = getCallType(subroutineId, this.className, this.localSymbolTable)
 
         const symbol = this.globalSymbolTable[subroutineIdText]
         if (symbol == undefined) {
@@ -258,7 +242,10 @@ export class ValidatorListener implements JackParserListener {
         }
         this.inConstructor = false;
         this.inFunction = false;
-        this.localSymbolTable.clearSubroutineVars();
+
+    };
+    exitSubroutineDeclaration(ctx: SubroutineDeclarationContext) {
+        ctx.symbols = this.localSymbolTable.popStack();
     };
 
     exitClassDeclaration(ctx: ClassDeclarationContext) {
@@ -269,10 +256,10 @@ export class ValidatorListener implements JackParserListener {
 
     //Utils
     #localSymbolTableAdd(line: number, position: number, scope: ScopeType, name: string, type: string) {
-        if (this.localSymbolTable.existsSymbol(name)) {
+        if (this.localSymbolTable.lookup(name)) {
             this.#addError(new DuplicatedVariableException(line, position, name));
         } else {
-            this.localSymbolTable.add(scope, name, type);
+            this.localSymbolTable.define(scope, name, type);
         }
     }
     #addError<T extends JackCompilerError>(error: T) {
@@ -281,7 +268,6 @@ export class ValidatorListener implements JackParserListener {
     }
     //to fix compiler error
     visitTerminal?: (/*@NotNull*/ node: TerminalNode) => void;
-
 }
 
 
@@ -346,8 +332,3 @@ const literalTypes = [
     ...builtInTypes,
     "String"
 ]
-enum CallType {
-    VarMethod = 1,
-    LocalMethod = 2,
-    ClassFunctionOrConstructor = 3
-}

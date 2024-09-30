@@ -4,7 +4,6 @@ import { BinderListener } from "../src/listener/binder.listener";
 import path from "path";
 import { ErrorListener } from "../src/listener/error.listener";
 import { listenToTheTree, parseJackFile, parseJackText, testResourcesDirs } from "./test.helper";
-import { JackParserListener } from '../src/generated/JackParserListener';
 
 describe('Parser', () => {
     const jestConsole = console;
@@ -36,7 +35,6 @@ describe('Parser', () => {
         }
         fail('Expected Error');
     })
-
 });
 
 function testJackDir(testFolder: string): void {

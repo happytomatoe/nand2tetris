@@ -15,6 +15,7 @@ export interface SubroutineInfo {
  * Symbol that represents class or a subroutine
  */
 export interface GenericSymbol {
+    //TODO: crate class and function symbols
     subroutineInfo?: SubroutineInfo;
 }
 export function createSubroutineSymbol(paramsCount: number, type: SubroutineType, localVarsCount?: number): GenericSymbol {
@@ -32,39 +33,49 @@ export enum ScopeType {
     Argument,
     Local,
 }
+export type VariableSymbol = {
+    name: string;
+    type: VariableType;
+    scope: ScopeType;
+}
+
+export type SubroutineScope = {
+    arguments: VariableSymbol[];
+    locals: VariableSymbol[];
+}
 /**
  *   Symbol table that provides lookup for variables in different scopes in a file
  */
 export class LocalSymbolTable {
-    private vars: Record<ScopeType, Record<string, string>> = {
-        [ScopeType.Static]: {},
-        [ScopeType.This]: {},
-        [ScopeType.Argument]: {},
-        [ScopeType.Local]: {},
-    };
-    static readonly functionScopes = [ScopeType.Local, ScopeType.Argument, ScopeType.Static];
+    //create scopes hierarchy
+    private classVars: Record<string, VariableSymbol> = {}
+    constructor(private subroutineVars: SubroutineScope = { arguments: [], locals: [] } as SubroutineScope) { }
+    lookup(name: string): VariableSymbol | undefined {
+        const localVar = this.subroutineVars.locals.find(v => v.name === name)
+        if (localVar != undefined) return localVar;
 
-    existsSymbol(name: string, scopesToSearch = [ScopeType.Local, ScopeType.Argument, ScopeType.This, ScopeType.Static]): boolean {
-        for (const scope of scopesToSearch) {
-            if (this.vars[scope][name] != undefined) {
-                return true;
-            }
+        const sym = this.subroutineVars.arguments.find(v => v.name === name)
+        if (sym != undefined) return sym;
+
+        return this.classVars[name];
+    }
+
+    //define symbol in scope
+    define(scope: ScopeType, varName: string, type: VariableType) {
+        if (scope === ScopeType.Static || scope == ScopeType.This) {
+            this.classVars[varName] = { name: varName, type, scope }
+        } else if (scope === ScopeType.Argument) {
+            this.subroutineVars.arguments.push({ name: varName, type, scope })
+        } else if (scope === ScopeType.Local) {
+            this.subroutineVars.locals.push({ name: varName, type, scope })
+        } else {
+            throw new Error("Invalid scope: " + scope)
         }
-        return false;
     }
-    getType(name: string, scopesToSearch = [ScopeType.Local, ScopeType.Argument, ScopeType.This, ScopeType.Static]) {
-        for (const scope of scopesToSearch) {
-            if (this.vars[scope][name] != undefined) {
-                return this.vars[scope][name];
-            }
-        }
-        return undefined;
-    }
-    add(scope: ScopeType, varName: string, type: VariableType) {
-        this.vars[scope][varName] = type;
-    }
-    clearSubroutineVars() {
-        this.vars[ScopeType.Argument] = {};
-        this.vars[ScopeType.Local] = {};
+
+    popStack() {
+        const oldScope = this.subroutineVars
+        this.subroutineVars = { arguments: [], locals: [] } as SubroutineScope;
+        return oldScope;
     }
 }

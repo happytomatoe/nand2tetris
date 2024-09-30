@@ -1,6 +1,9 @@
 // Generated from JackParser.g4 by ANTLR 4.9.0-SNAPSHOT
 
 
+	import { SubroutineScope } from "../symbol";
+
+
 import { ParseTreeListener } from "antlr4ts/tree/ParseTreeListener";
 
 import { ProgramContext } from "./JackParser";

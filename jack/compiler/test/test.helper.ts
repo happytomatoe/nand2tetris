@@ -15,7 +15,7 @@ export function parseJackFile(filePath: string, trace = false) {
     return parseJackText(f, errorListener, trace);
 }
 
-export function parseJackText(src: string, errorListener?: ErrorListener, trace: boolean = false): ProgramContext {
+export function parseJackText(src: string, errorListener?: ErrorListener, trace: boolean = false, throwOnErrors = true): ProgramContext {
     if (errorListener === undefined) {
         errorListener = new ErrorListener();
     }

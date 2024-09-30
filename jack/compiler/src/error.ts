@@ -44,10 +44,7 @@ export class UndeclaredVariableError extends JackCompilerError {
     constructor(line: number, charPositionInLine: number, variableName: string) {
         super(line, charPositionInLine, "Undeclared variable " + variableName);
     }
-
 }
-
-
 export class UnknownClassError extends JackCompilerError {
     constructor(line: number, charPositionInLine: number, className: string) {
         super(line, charPositionInLine, `Class ${className} doesn't exist`);

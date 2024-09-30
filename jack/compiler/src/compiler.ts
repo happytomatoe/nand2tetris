@@ -9,10 +9,10 @@ import { ErrorListener } from "./listener/error.listener";
 import { ValidatorListener } from "./listener/validator.listener";
 import { JackCompilerError } from "./error";
 import { VMWriter } from "./listener/vm.writer.listener";
-export default class Compiler {
+export class Compiler {
     static compile(src: string): string | JackCompilerError[] {
 
-        const globalSymbolsListener = new BinderListener();
+        const binder = new BinderListener();
         const errorListener = new ErrorListener();
         const lexer = new JackLexer(CharStreams.fromString(src));
         if (errorListener) {
@@ -28,20 +28,23 @@ export default class Compiler {
         }
         const tree = parser.program();
         if (errorListener.errors.length > 0) {
+            console.log("Errors when parsing or lexing");
             return errorListener.errors;
         }
         // console.log(tree.toStringTree(parser.ruleNames));
 
-        ParseTreeWalker.DEFAULT.walk(globalSymbolsListener, tree);
-        if (globalSymbolsListener.errors.length > 0) {
-            return globalSymbolsListener.errors;
+        ParseTreeWalker.DEFAULT.walk(binder, tree);
+        if (binder.errors.length > 0) {
+            console.log("Errors in binder");
+            return binder.errors;
         }
-        const validator = new ValidatorListener(globalSymbolsListener.globalSymbolTable);
+        const validator = new ValidatorListener(binder.globalSymbolTable);
         ParseTreeWalker.DEFAULT.walk(validator, tree);
         if (validator.errors.length > 0) {
-            return globalSymbolsListener.errors;
+            console.log("Errors in validator " + JSON.stringify(validator.errors));
+            return validator.errors;
         }
-        const vmWriter = new VMWriter(globalSymbolsListener.globalSymbolTable);
+        const vmWriter = new VMWriter(binder.globalSymbolTable);
         ParseTreeWalker.DEFAULT.walk(vmWriter, tree);
 
         return vmWriter.result;

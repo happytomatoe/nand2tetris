@@ -609,7 +609,6 @@ function testJackDir(testFolder: string): void {
         const validatorListener = listenToTheTree(tree, new ValidatorListener(globalSymbolsListener.globalSymbolTable));
         expect(validatorListener.errors).toEqual([]);
     }
-
 }
 
 function testValidator<T extends { name: string }>(
