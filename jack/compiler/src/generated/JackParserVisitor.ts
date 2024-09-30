@@ -28,6 +28,7 @@ import { StatementContext } from "./JackParser";
 import { LetStatementContext } from "./JackParser";
 import { IfElseStatementContext } from "./JackParser";
 import { IfStatementContext } from "./JackParser";
+import { IfExpressionContext } from "./JackParser";
 import { ElseStatementContext } from "./JackParser";
 import { WhileStatementContext } from "./JackParser";
 import { WhileExpressionContext } from "./JackParser";
@@ -41,6 +42,7 @@ import { GroupedExpressionContext } from "./JackParser";
 import { UnaryOperationContext } from "./JackParser";
 import { ArrayAccessContext } from "./JackParser";
 import { ConstantContext } from "./JackParser";
+import { BooleanLiteralContext } from "./JackParser";
 import { UnaryOperatorContext } from "./JackParser";
 import { BinaryOperatorContext } from "./JackParser";
 
@@ -229,6 +231,13 @@ export interface JackParserVisitor<Result> extends ParseTreeVisitor<Result> {
 	visitIfStatement?: (ctx: IfStatementContext) => Result;
 
 	/**
+	 * Visit a parse tree produced by `JackParser.ifExpression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitIfExpression?: (ctx: IfExpressionContext) => Result;
+
+	/**
 	 * Visit a parse tree produced by `JackParser.elseStatement`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -318,6 +327,13 @@ export interface JackParserVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitConstant?: (ctx: ConstantContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `JackParser.booleanLiteral`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitBooleanLiteral?: (ctx: BooleanLiteralContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `JackParser.unaryOperator`.

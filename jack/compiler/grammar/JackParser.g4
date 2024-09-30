@@ -41,9 +41,12 @@ letStatement:
 	LET (varName | arrayAccess) EQUALS expression SEMICOLON;
 //TODO: check if we need right assoc for this
 
-ifElseStatement: ifStatement elseStatement?;
-ifStatement:
-	IF LPAREN expression RPAREN LBRACE statements rBrace;
+ifElseStatement
+	locals[endLabel:string="";]: ifStatement elseStatement?;
+ifStatement
+	locals[endLabel:string="";]:
+	IF LPAREN ifExpression RPAREN LBRACE statements rBrace;
+ifExpression: expression;
 elseStatement: ELSE LBRACE statements rBrace;
 
 whileStatement
@@ -74,10 +77,10 @@ arrayAccess: varName LBRACKET expression RBRACKET;
 constant:
 	INTEGER_LITERAL
 	| STRING_LITERAL
-	| BOOLEAN_LITERAL
+	| booleanLiteral
 	| NULL_LITERAL
 	| THIS_LITERAL;
-
+booleanLiteral: TRUE | FALSE;
 unaryOperator: TILDE | MINUS;
 binaryOperator:
 	PLUS

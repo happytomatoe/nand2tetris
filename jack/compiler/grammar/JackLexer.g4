@@ -46,7 +46,8 @@ COMMENT: '/*' .*? '*/' -> skip;
 LINE_COMMENT: '//' ~[\r\n]* -> skip;
 
 INTEGER_LITERAL: [0-9]+;
-BOOLEAN_LITERAL: 'true' | 'false';
+TRUE: 'true'; 
+FALSE: 'false';
 NULL_LITERAL: 'null';
 THIS_LITERAL: 'this';
 

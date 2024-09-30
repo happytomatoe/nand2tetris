@@ -154,7 +154,7 @@ export class ValidatorListener implements JackParserListener {
                         }
                         break;
                     case "boolean":
-                        if (constantCtx.BOOLEAN_LITERAL() === undefined) {
+                        if (constantCtx.booleanLiteral() === undefined) {
                             this.#addError(new WrongLiteralTypeError(ctx.start.line, ctx.start.startIndex, type));
                         }
                         break;

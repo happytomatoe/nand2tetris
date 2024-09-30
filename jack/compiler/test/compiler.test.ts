@@ -429,11 +429,9 @@ describe("Compiler", () => {
                 pop local 0
                 push local 0
                 not
-                if-goto A_1
+                if-goto A_0
                 push constant 0
                 pop local 0
-                goto A_0
-            label A_1
             label A_0
                 push constant 0
                 return
@@ -461,17 +459,18 @@ describe("Compiler", () => {
                 pop local 0
                 push local 0
                 not
-                if-goto A_1
+                if-goto A_0
                 push constant 1
                 pop local 1
-                goto A_0
-            label A_1
+                goto A_1
+            label A_0
                 push constant 2
                 pop local 1
-            label A_0
+            label A_1
                 push constant 0
                 return
         `;
+        testCompiler(input, expected);
     })
     test('while constant', () => {
         const input = `
