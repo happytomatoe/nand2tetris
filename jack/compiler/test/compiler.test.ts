@@ -87,15 +87,25 @@ describe("Compiler", () => {
     test('function with parameters', () => {
         const input = `
         class A{
-        function void init(int a, boolean b){
+            function void a(int a){
+                    var int b;
+                    let b = a + 1;
                     return;
                 }
         }
          `
         const expected = `
-
+            function A.a 1
+                push argument 0
+                push constant 1
+                add
+                pop local 0
+                push constant 0
+                return
         `;
+        testCompiler(input, expected);
     })
+    //TODO: add test that you cannot assign to argument
     //Assign
     test('boolean literal assign', () => {
         const input = `
@@ -174,6 +184,7 @@ describe("Compiler", () => {
                 push constant 0
                 return
         `;
+        testCompiler(input, expected);
     })
     test('null literal assign', () => {
         const input = `
@@ -192,6 +203,7 @@ describe("Compiler", () => {
                 push constant 0
                 return
         `;
+        testCompiler(input, expected);
     })
     test('this literal assign', () => {
         const input = `
@@ -215,6 +227,7 @@ describe("Compiler", () => {
             push constant 0
             return
         `;
+        testCompiler(input, expected);
     })
     test('int literal assign', () => {
         const input = `
@@ -267,6 +280,7 @@ describe("Compiler", () => {
             push constant 0
             return
         `;
+        testCompiler(input, expected);
     })
     test('assignment for binary operation', () => {
         const input = `
@@ -276,8 +290,7 @@ describe("Compiler", () => {
                 let b = 2*3;
                 return;
             }
-        }
-         `
+        }`
         const expected = `
             function A.a 1
                 push constant 2
@@ -314,6 +327,7 @@ describe("Compiler", () => {
                 push constant 0
                 return
         `;
+        testCompiler(input, expected);
     })
     test('assignment for subroutine call', () => {
         const input = `
@@ -340,9 +354,9 @@ describe("Compiler", () => {
                 push constant 0
                 return
         `;
+        testCompiler(input, expected);
     })
-    test('assignment for array access', () => {
-        //TODO: add let arr[1] = arr[0];
+    test.skip('assignment for array access', () => {
         const input = `
         class A{
             function void a(){
@@ -353,16 +367,63 @@ describe("Compiler", () => {
             }
         }`
         const expected = `
-           function A.a 1
+            function A.a 1
+                //  let arr = Array.new(10);
+                push constant 10
+                call Array.new 1
+                pop local 0
+                //arr[5]
+                push constant 5
+                push local 0
+                add
+                //=1
+                push constant 1
+                pop temp 0
+                //assign
+                pop pointer 1
+                push temp 0
+                pop that 0
+                //return
+                push constant 0
+                return
+        `;
+        testCompiler(input, expected);
+    })
+    test.skip('assign array value to array value', () => {
+        const input = `
+        class A{
+            function void a(){
+                var Array arr;
+                let arr = Array.new(10);
+                let arr[0] = arr[5];
+                return;
+            }
+        }`
+        
+        const expected = `
+            function A.a 1
                 // let arr = Array.new(10);
                 push constant 10
                 call Array.new 1
                 pop local 0
-                // let arr[5] = 1;
+                //arr[0]
                 push local 0
+                push constant 0
+                add
+                //arr[5]
+                push local 0
+                push constant 5
+                add
+
+                //save arr[5] in temp
                 pop pointer 1
-                push constant 1
-                pop that 5
+                push that 0
+                pop temp 0
+
+                //assign to arr[0]
+                pop pointer 1
+                push temp 0
+                pop that 0
                 //return
                 push constant 0
                 return
@@ -562,7 +623,6 @@ describe("Compiler", () => {
                 return
             function A.a 0
                 call A.b 0
-                pop temp 0
                 push constant 0
                 return
         `;
@@ -591,8 +651,6 @@ describe("Compiler", () => {
                 push pointer 0
                 //call
                 call A.b 1
-                //save result in temp
-                pop temp 0
                 //return
                 push constant 0
                 return

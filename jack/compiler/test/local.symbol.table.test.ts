@@ -13,43 +13,64 @@ describe('LocalSymbolTable', () => {
 
     test('add', () => {
         const localSymbolTable = new LocalSymbolTable();
-        const variableNames = ['a1', 'a2', 'a3', "a4", "a5"];
-        const types = ["int", "boolean", "char", "String"];
-        const scopes = [ScopeType.Argument, ScopeType.Local, ScopeType.This, ScopeType.Static];
-        variableNames.forEach(variableName => {
-            const type = types[Math.floor(Math.random() * types.length)];
-            const scope = scopes[Math.floor(Math.random() * scopes.length)];
-            localSymbolTable.define(scope, variableName, type)
-            expect(localSymbolTable.lookup(variableName)).toEqual({ name: variableName, type, scope } as VariableSymbol);
-            expect(localSymbolTable.lookup(variableName + "_")).toBeUndefined();
-        });
+        const symbols = [
+            { name: "a1", type: "int", scope: ScopeType.Local, index: 0 } as VariableSymbol,
+            { name: "a2", type: "char", scope: ScopeType.Local, index: 1 } as VariableSymbol,
+
+            { name: "a3", type: "boolean", scope: ScopeType.Argument, index: 0 } as VariableSymbol,
+            { name: "a4", type: "char", scope: ScopeType.Argument, index: 1 } as VariableSymbol,
+
+            { name: "a5", type: "int", scope: ScopeType.This, index: 0 } as VariableSymbol,
+            { name: "a6", type: "String", scope: ScopeType.This, index: 1 } as VariableSymbol,
+
+            { name: "a7", type: "A", scope: ScopeType.Static, index: 0 } as VariableSymbol,
+            { name: "a8", type: "B", scope: ScopeType.Static, index: 1 } as VariableSymbol,
+        ]
+        for (const s of symbols) {
+            localSymbolTable.define(s.scope, s.name, s.type)
+        }
+        for (const s of symbols) {
+            expect(localSymbolTable.lookup(s.name)).toEqual(s);
+            expect(localSymbolTable.lookup(s.name + "_")).toBeUndefined();
+        }
     })
 
 
     test('shadowing', () => {
         const localSymbolTable = new LocalSymbolTable();
-        localSymbolTable.define(ScopeType.This, "a", "int")
-        expect(localSymbolTable.lookup("a")).toEqual({ name: "a", type: "int", scope: ScopeType.This } as VariableSymbol);
-        localSymbolTable.define(ScopeType.Argument, "a", "int")
-        expect(localSymbolTable.lookup("a")).toEqual({ name: "a", type: "int", scope: ScopeType.Argument } as VariableSymbol);
+        const symbols = [
+            { name: "a", type: "char", scope: ScopeType.This, index: 0 } as VariableSymbol,
+            { name: "a", type: "int", scope: ScopeType.Local, index: 0 } as VariableSymbol,
+        ]
+        for (const s of symbols) {
+            localSymbolTable.define(s.scope, s.name, s.type)
+        }
+        expect(localSymbolTable.lookup("a")).toEqual(symbols[1]);
     })
 
     test('pop stack', () => {
         const localSymbolTable = new LocalSymbolTable();
-        localSymbolTable.define(ScopeType.This, "a", "int")
-        expect(localSymbolTable.lookup("a")).toEqual({ name: "a", type: "int", scope: ScopeType.This } as VariableSymbol);
+        const symbols = [
+            { name: "a", type: "int", scope: ScopeType.Local, index: 0 } as VariableSymbol,
+        ]
+        for (const s of symbols) {
+            localSymbolTable.define(s.scope, s.name, s.type)
+        }
         localSymbolTable.popStack();
-        localSymbolTable.define(ScopeType.Argument, "a", "int")
-        expect(localSymbolTable.lookup("a")).toEqual({ name: "a", type: "int", scope: ScopeType.Argument } as VariableSymbol);
+        expect(localSymbolTable.lookup("a")).toBeUndefined();
     })
 
     test('function vars', () => {
         const localSymbolTable = new LocalSymbolTable();
-        const arg = { name: "a", type: "int", scope: ScopeType.Argument } as VariableSymbol
-        const localVar = { name: "b", type: "int", scope: ScopeType.Local } as VariableSymbol
-        localSymbolTable.define(ScopeType.Argument, "a", "int")
-        localSymbolTable.define(ScopeType.Local, "b", "int")
-        expect(localSymbolTable.popStack()).toEqual({ arguments: [arg], locals: [localVar] } as SubroutineScope)
+        const symbols = [
+            { name: "a", type: "int", scope: ScopeType.Local, index: 0 } as VariableSymbol,
+            { name: "b", type: "char", scope: ScopeType.Argument, index: 0 } as VariableSymbol,
+        ]
+
+        for (const s of symbols) {
+            localSymbolTable.define(s.scope, s.name, s.type)
+        }
+        expect(localSymbolTable.popStack()).toEqual({ arguments: [symbols[1]], locals: [symbols[0]] } as SubroutineScope)
 
     })
 });
