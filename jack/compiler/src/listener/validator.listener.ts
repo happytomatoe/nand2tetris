@@ -10,15 +10,14 @@ import { CallType, getCallType } from "./common";
 /**
  * Validates Jack file
  */
-//TODO: add validation that function cannot use field var
 export class ValidatorListener implements JackParserListener {
-    localSymbolTable: LocalSymbolTable = new LocalSymbolTable();
-    subroutineShouldReturnVoidType: boolean = false;
-    controlFlowGraphNode: BinaryTreeNode = new BinaryTreeNode();
-    subroutineName: string = ""
-    className = ""
-    stopProcessingErrorsInThisScope = false;
-    subroutineType?: SubroutineType;
+    private localSymbolTable: LocalSymbolTable = new LocalSymbolTable();
+    private subroutineShouldReturnVoidType: boolean = false;
+    private controlFlowGraphNode: BinaryTreeNode = new BinaryTreeNode();
+    private subroutineName: string = ""
+    private className = ""
+    private stopProcessingErrorsInThisScope = false;
+    private subroutineType?: SubroutineType;
     constructor(private globalSymbolTable: Record<string, GenericSymbol>, public errors: JackCompilerError[] = []) { }
 
     enterClassDeclaration(ctx: ClassDeclarationContext) {
@@ -156,6 +155,7 @@ export class ValidatorListener implements JackParserListener {
             if (literalTypes.indexOf(type) != -1) {
                 const constantCtx = ctx.expression().constant()!
                 switch (type) {
+                    case "char":
                     case "int":
                         if (constantCtx.INTEGER_LITERAL() === undefined) {
                             this.#addError(new WrongLiteralTypeError(ctx.start.line, ctx.start.startIndex, type));
@@ -170,9 +170,6 @@ export class ValidatorListener implements JackParserListener {
                         if (constantCtx.booleanLiteral() === undefined) {
                             this.#addError(new WrongLiteralTypeError(ctx.start.line, ctx.start.startIndex, type));
                         }
-                        break;
-                    case "char":
-                        //TODO: add. Is char literal same as int literal?
                         break;
                     case "String":
                         if (constantCtx.STRING_LITERAL() === undefined) {

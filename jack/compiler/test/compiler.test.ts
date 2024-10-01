@@ -641,7 +641,7 @@ describe("Compiler", () => {
         `;
         testCompiler(input, expected);
     })
-    test('method call', () => {
+    test('var method call', () => {
         const input = `
             class A{
                 constructor A new(){
@@ -674,6 +674,50 @@ describe("Compiler", () => {
                 pop local 0
                 push local 0
                 call A.b 1
+                push constant 0
+                return
+        `;
+        testCompiler(input, expected);
+    })
+    test('var method call with params', () => {
+        const input = `
+            class A{
+                constructor A new(){
+                    return this;
+                }
+                method int sum(int a, int b){
+                    return a+b;
+                }
+                function void a(){
+                    var A a;
+                    var int b;
+                    let a = A.new();
+                    let b= a.sum(1,2);
+                    return;
+                }
+            }`
+        const expected = `
+            function A.new 0
+                push constant 0
+                call Memory.alloc 1
+                pop pointer 0
+                push pointer 0
+                return
+            function A.sum 0
+                push argument 0
+                pop pointer 0
+                push argument 1
+                push argument 2
+                add
+                return
+            function A.a 2
+                call A.new 0
+                pop local 0
+                push local 0
+                push constant 1
+                push constant 2
+                call A.sum 3
+                pop local 1
                 push constant 0
                 return
         `;

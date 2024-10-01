@@ -1,8 +1,8 @@
 import { TerminalNode } from "antlr4ts/tree/TerminalNode";
-import { JackCompilerError, _notImplemented as notImplemented } from "../error";
-import { ArrayAccessContext, ClassDeclarationContext, ConstantContext, EqualsContext, ExpressionContext, IfElseStatementContext, IfExpressionContext, IfStatementContext, LetStatementContext, ReturnStatementContext, StatementContext, SubroutineCallContext, SubroutineDeclarationContext, VarDeclarationContext, WhileExpressionContext, WhileStatementContext } from "../generated/JackParser";
+import { JackCompilerError } from "../error";
+import { ArrayAccessContext, ClassDeclarationContext, ConstantContext, EqualsContext, ExpressionContext, IfElseStatementContext, IfExpressionContext, IfStatementContext, LetStatementContext, ReturnStatementContext, StatementContext, SubroutineCallContext, SubroutineDeclarationContext, WhileExpressionContext, WhileStatementContext } from "../generated/JackParser";
 import { JackParserListener } from "../generated/JackParserListener";
-import { GenericSymbol, LocalSymbolTable, ScopeType, scopeTypeToString, SubroutineScope, VariableSymbol } from "../symbol";
+import { GenericSymbol, LocalSymbolTable, scopeTypeToString, VariableSymbol } from "../symbol";
 import { CallType, getCallType } from "./common";
 
 const binaryOperationToVmCmd: Record<string, string> = {
@@ -158,7 +158,6 @@ export class VMWriter implements JackParserListener {
             this.result += "pop pointer 1\n";
             this.result += "push temp 0\n";
             this.result += "pop that 0\n";
-            //FIXME
         } else {
             throw new Error(`Unknown let statement type`)
         }
@@ -200,6 +199,12 @@ export class VMWriter implements JackParserListener {
         this.result += `    label ${ctx.endLabel}\n`;
     };
 
+    enterSubroutineCall(ctx: SubroutineCallContext) {
+        const { callType, symbol } = getCallType(ctx.subroutineId(), this.className, this.localSymbolTable!)
+        if (callType === CallType.VarMethod) {
+            this.pushVarOntoStack(symbol!);
+        }
+    };
     //do
     exitSubroutineCall(ctx: SubroutineCallContext) {
         //method call
@@ -209,16 +214,18 @@ export class VMWriter implements JackParserListener {
                 const argsCount = ctx.expressionList().expression().length
                 this.result += `    call ${ctx.subroutineId().text} ${argsCount}\n`;
                 break;
-            case CallType.LocalMethod:
-                //TODO: add more arguments?
+            case CallType.LocalMethod: {
+                // //TODO: deduplicate 
+                const expressionsCount = ctx.expressionList().expression().length
                 this.result += `    push pointer 0\n`;
-                this.result += `    call ${subroutineIdText} 1\n`;
+                this.result += `    call ${subroutineIdText} ${expressionsCount + 1}\n`;
                 break;
-            case CallType.VarMethod:
-                this.pushVarOntoStack(symbol!);
+            }
+            case CallType.VarMethod: {
                 const expressionsCount = ctx.expressionList().expression().length
                 this.result += `    call ${subroutineIdText} ${expressionsCount + 1}\n`;
                 break;
+            }
             default:
                 throw new Error(`Unknown call type ${callType}`)
         }

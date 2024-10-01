@@ -31,8 +31,6 @@ function Fraction.reduce 1
     push local 0
     call Math.divide 2
     pop this 1
-    goto Fraction_0
-label Fraction_1
 label Fraction_0
     push constant 0
     return

@@ -43,7 +43,6 @@ statement:
 	| doStatement
 	| returnStatement;
 
-//TODO: check if we need right assoc for this
 letStatement:
 	LET (varName | arrayAccess) equals expression SEMICOLON;
 equals: EQUALS;
