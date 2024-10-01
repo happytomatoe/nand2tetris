@@ -3,15 +3,21 @@ parser grammar JackParser;
 options {
 	tokenVocab = JackLexer;
 }
+@header {
+	import { SubroutineScope, LocalSymbolTable } from "../symbol";
+}
 
 program: classDeclaration EOF;
-classDeclaration:
+classDeclaration
+	locals[localSymbolTable: LocalSymbolTable | undefined ]:
 	CLASS className LBRACE classVarDec* subroutineDeclaration* rBrace;
 className: IDENTIFIER;
 classVarDec: (STATIC | FIELD) fieldList SEMICOLON;
 fieldList: varType fieldName ( COMMA fieldName)*;
 fieldName: IDENTIFIER;
-subroutineDeclaration: subroutineType subroutineDecWithoutType;
+subroutineDeclaration
+	locals[symbols: SubroutineScope | undefined]:
+	subroutineType subroutineDecWithoutType;
 subroutineType: CONSTRUCTOR | METHOD | FUNCTION;
 subroutineDecWithoutType:
 	subroutineReturnType subroutineName LPAREN parameterList RPAREN subroutineBody;
@@ -37,10 +43,10 @@ statement:
 	| doStatement
 	| returnStatement;
 
-letStatement:
-	LET (varName | arrayAccess) EQUALS expression SEMICOLON;
 //TODO: check if we need right assoc for this
-
+letStatement:
+	LET (varName | arrayAccess) equals expression SEMICOLON;
+equals: EQUALS;
 ifElseStatement
 	locals[endLabel:string="";]: ifStatement elseStatement?;
 ifStatement
@@ -62,12 +68,12 @@ returnStatement: RETURN expression? SEMICOLON;
 expressionList: (expression (COMMA expression)*)?;
 
 expression:
-	expression binaryOperator expression
-	| constant
+	constant
 	| varName
 	| subroutineCall
 	| arrayAccess
 	| unaryOperation
+	| expression binaryOperator expression
 	| groupedExpression;
 
 groupedExpression: LPAREN expression RPAREN;

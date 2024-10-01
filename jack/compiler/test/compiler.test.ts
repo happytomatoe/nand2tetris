@@ -1,6 +1,9 @@
 import { Compiler } from "../src/compiler";
-import { CantAssignToArgument, JackCompilerError } from "../src/error";
-
+import { JackCompilerError } from "../src/error";
+import fs from "fs";
+import { getTestResourcePath } from "./test.helper";
+import path from "path";
+import { ProgramContext } from "../src/generated/JackParser";
 describe("Compiler", () => {
     test('empty class', () => {
         const input = `class A{}`
@@ -84,18 +87,6 @@ describe("Compiler", () => {
 
 
     //Assign
-    test("cannot assign to an argument", () => {
-        const input = `
-        class A{
-            function void a(int a){
-                    let a = a + 1;
-                    return;
-                }
-        }`
-        const res = Compiler.compile(input)
-        expect(Array.isArray(res)).toBe(true)
-        expect(res[0]).toBeInstanceOf(CantAssignToArgument)
-    })
     test('boolean literal assign', () => {
         const input = `
         class A{
@@ -356,7 +347,7 @@ describe("Compiler", () => {
                 return;
             }
         }`
-        const expected =`
+        const expected = `
             function A.a 2
                 //array new 
                 push constant 10
@@ -652,28 +643,37 @@ describe("Compiler", () => {
     })
     test('method call', () => {
         const input = `
-        class A{
-            method void b(){
-                return;
-            }
-            method void a(){
-                do b();
-                return;
-            }
-        }`
+            class A{
+                constructor A new(){
+                    return this;
+                }
+                method void b(){
+                    return;
+                }
+                function void a(){
+                    var A a;
+                    let a = A.new();
+                    do a.b();
+                    return;
+                }
+            }`
         const expected = `
+            function A.new 0
+                push constant 0
+                call Memory.alloc 1
+                pop pointer 0
+                push pointer 0
+                return
             function A.b 0
                 push argument 0
                 pop pointer 0
                 push constant 0
                 return
-            function A.a 0
-                push argument 0
-                pop pointer 0
-                push pointer 0
-                //call
+            function A.a 1
+                call A.new 0
+                pop local 0
+                push local 0
                 call A.b 1
-                //return
                 push constant 0
                 return
         `;
@@ -774,8 +774,38 @@ describe("Compiler", () => {
         `;
         testCompiler(input, expected);
     })
-})
 
+    const folders = ["Average", "ComplexArrays", "ConvertToBin", "Fraction", "HelloWorld", "List", "Pong", "Square"]
+    test.concurrent.each(folders)("%s", (folder: string) => {
+        testFilesInFolder(folder);
+    })
+})
+function testFilesInFolder(folderInTestResources: string) {
+    const testFolder = getTestResourcePath(folderInTestResources);
+    const files = fs.readdirSync(testFolder).filter(file => file.endsWith(".jack")).map(file =>
+        path.join(testFolder, file)
+    );
+    const trees: Record<string, ProgramContext> = {}
+    const compiler = new Compiler();
+    for (const f of files) {
+        const input = fs.readFileSync(f, { encoding: 'utf8', flag: 'r' });
+        const treeOrErrors = compiler.parserAndBind(input)
+        if (Array.isArray(treeOrErrors)) {
+            throw new Error(`Unexpected compilation errors: ${treeOrErrors.join("\n")}`);
+        }
+        const tree = treeOrErrors as ProgramContext;
+        trees[f] = tree;
+    }
+    for (const f of files) {
+        const expected = fs.readFileSync(f.replace(".jack", ".vm"), 'utf8');
+        const res = compiler.compile(trees[f]);
+        if (Array.isArray(res)) {
+            throw new Error(`Unexpected compilation errors: ${res.join("\n")}`);
+        } else {
+            expect(trimAndDeleteComments(res)).toEqual(trimAndDeleteComments(expected));
+        }
+    }
+}
 
 function trimMultiline(text: string): string {
     return text.split("\n").map(line => line.trim())
@@ -793,7 +823,13 @@ const compose = <T>(fn1: (a: T) => T, ...fns: Array<(a: T) => T>) =>
 
 const trimAndDeleteComments = compose(trimMultiline, deleteComments);
 function testCompiler(input: string, expected: string): void {
-    const res = Compiler.compile(input)
+    const compiler = new Compiler();
+    const treeOrErrors = compiler.parserAndBind(input)
+    if (Array.isArray(treeOrErrors)) {
+        throw new Error(`Unexpected compilation errors: ${treeOrErrors.join("\n")}`);
+    }
+    const tree = treeOrErrors as ProgramContext;
+    const res = compiler.compile(tree);
     if (Array.isArray(res)) {
         throw new Error(`Unexpected compilation errors: ${res.join("\n")}`);
     } else {

@@ -1,9 +1,10 @@
 import { SubroutineIdContext } from "../generated/JackParser";
-import { LocalSymbolTable } from "../symbol";
+import { LocalSymbolTable, VariableSymbol } from "../symbol";
 
 export interface CallTypeResult {
     callType: CallType;
     subroutineIdText: string;
+    symbol?: VariableSymbol;
 }
 
 export enum CallType {
@@ -25,7 +26,8 @@ export function getCallType(subroutineId: SubroutineIdContext, className: string
         if (symbol != undefined) {
             return {
                 callType: CallType.VarMethod,
-                subroutineIdText: symbol.type + "." + methodName
+                subroutineIdText: symbol.type + "." + methodName,
+                symbol: symbol
             } as CallTypeResult;
         } else {
             // class function/ctor

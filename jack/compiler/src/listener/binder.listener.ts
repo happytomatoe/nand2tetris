@@ -3,7 +3,7 @@ import { ClassDeclarationContext, SubroutineBodyContext, SubroutineDeclarationCo
 import { JackParserListener } from "../generated/JackParserListener";
 import { DuplicatedSubroutineError } from '../error'
 import { builtInSymbols, builtInTypes } from "../builtins";
-import { GenericSymbol, SubroutineInfo, SubroutineType } from "../symbol";
+import { GenericSymbol, GlobalSymbolTable, SubroutineInfo, SubroutineType } from "../symbol";
 
 const primitives = new Set(builtInTypes);
 export type Primitive = typeof primitives extends Set<infer S> ? S : never;
@@ -13,7 +13,7 @@ export type Primitive = typeof primitives extends Set<infer S> ? S : never;
  */
 export class BinderListener implements JackParserListener {
     // key can be class or <class>.<subroutine_name>
-    public globalSymbolTable: Record<string, GenericSymbol> = structuredClone(builtInSymbols);
+    public globalSymbolTable: GlobalSymbolTable = structuredClone(builtInSymbols);
     public className = "";
     public errors: DuplicatedSubroutineError[] = []
     private subRoutineInfo: SubroutineInfo = {} as SubroutineInfo;
@@ -52,7 +52,7 @@ export class BinderListener implements JackParserListener {
             this.stopProcessingSubroutines = true;
         } else {
             this.subroutineId = id;
-        const paramsCount = subroutineWithoutTypeCtx.parameterList().parameter().length
+            const paramsCount = subroutineWithoutTypeCtx.parameterList().parameter().length
             this.subRoutineInfo = {
                 type: subroutineType,
                 paramsCount: paramsCount,

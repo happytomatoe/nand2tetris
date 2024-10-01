@@ -170,11 +170,3 @@ export class ThisCantBeReferencedInFunction extends JackCompilerError {
         Object.setPrototypeOf(this, ThisCantBeReferencedInFunction.prototype);
     }
 }
-
-
-export class CantAssignToArgument extends JackCompilerError {
-    constructor(line: number, charPositionInLine: number) {
-        super(line, charPositionInLine, `Can't assign to a subroutine argument`);
-        Object.setPrototypeOf(this, CantAssignToArgument.prototype);
-    }
-}

@@ -1,8 +1,8 @@
 import { TerminalNode } from "antlr4ts/tree/TerminalNode";
-import { CantAssignToArgument, JackCompilerError, _notImplemented as notImplemented } from "../error";
+import { JackCompilerError, _notImplemented as notImplemented } from "../error";
 import { ArrayAccessContext, ClassDeclarationContext, ConstantContext, EqualsContext, ExpressionContext, IfElseStatementContext, IfExpressionContext, IfStatementContext, LetStatementContext, ReturnStatementContext, StatementContext, SubroutineCallContext, SubroutineDeclarationContext, VarDeclarationContext, WhileExpressionContext, WhileStatementContext } from "../generated/JackParser";
 import { JackParserListener } from "../generated/JackParserListener";
-import { GenericSymbol, LocalSymbolTable, ScopeType, scopeTypeToString, SubroutineScope } from "../symbol";
+import { GenericSymbol, LocalSymbolTable, ScopeType, scopeTypeToString, SubroutineScope, VariableSymbol } from "../symbol";
 import { CallType, getCallType } from "./common";
 
 const binaryOperationToVmCmd: Record<string, string> = {
@@ -31,7 +31,7 @@ export class VMWriter implements JackParserListener {
     private currentLabelInd: number = 0;
     private localSymbolTable: LocalSymbolTable | undefined;
     public errors: JackCompilerError[] = [];
-    afterEquals = false;
+    private afterEquals = false;
     constructor(private globalSymbolTable: Record<string, GenericSymbol>) { }
 
     enterClassDeclaration(ctx: ClassDeclarationContext) {
@@ -73,10 +73,6 @@ export class VMWriter implements JackParserListener {
         const symbol = this.localSymbolTable!.lookup(varName);
         if (symbol == undefined) {
             throw new Error(`Can't find variable ${varName} in local symbol table`)
-        }
-        //TODO: move this to validator
-        if (symbol.scope == ScopeType.Argument) {
-            this.errors.push(new CantAssignToArgument(ctx.start.line, ctx.start.startIndex));
         }
         this.result += `    push local ${symbol.index}\n`;
         this.result += `    add\n`;
@@ -131,7 +127,7 @@ export class VMWriter implements JackParserListener {
             if (symbol == undefined) {
                 throw new Error(`Cannot find variable ${varName} in arguments or local variables`);
             }
-            this.result += `    push ${scopeTypeToString(symbol.scope)} ${symbol.index}\n`;
+            this.pushVarOntoStack(symbol);
         } else if (ctx.binaryOperator() != undefined) {
             const binaryOp = ctx.binaryOperator()!.text
             if (binaryOperationToVmCmd[binaryOp] == undefined) {
@@ -146,20 +142,15 @@ export class VMWriter implements JackParserListener {
             this.result += "\t" + unaryOperationToVmCmd[unaryOp] + "\n";
         }
     };
-    enterLetStatement(ctx: LetStatementContext) {
-        if (ctx.arrayAccess() != undefined) {
-            this.assignToArray = true;
-        }
-    };
+    pushVarOntoStack(symbol: VariableSymbol) {
+        this.result += `    push ${scopeTypeToString(symbol.scope)} ${symbol.index}\n`;
+    }
     exitLetStatement(ctx: LetStatementContext) {
 
         if (ctx.varName() != undefined) {
             const symbol = this.localSymbolTable!.lookup(ctx.varName()!.IDENTIFIER().text)
             if (symbol == undefined) {
                 throw new Error(`Can't find variable ${ctx.varName()!.IDENTIFIER().text} in local symbol table`);
-            }
-            if (symbol.scope == ScopeType.Argument) {
-                this.errors.push(new CantAssignToArgument(ctx.start.line, ctx.start.startIndex));
             }
             this.result += `    pop ${scopeTypeToString(symbol.scope)} ${symbol.index}\n`;
         } else if (ctx.arrayAccess() != undefined) {
@@ -212,27 +203,25 @@ export class VMWriter implements JackParserListener {
     //do
     exitSubroutineCall(ctx: SubroutineCallContext) {
         //method call
-        const { callType, subroutineIdText } = getCallType(ctx.subroutineId(), this.className, this.localSymbolTable!)
+        const { callType, subroutineIdText, symbol } = getCallType(ctx.subroutineId(), this.className, this.localSymbolTable!)
         switch (callType) {
             case CallType.ClassFunctionOrConstructor:
                 const argsCount = ctx.expressionList().expression().length
                 this.result += `    call ${ctx.subroutineId().text} ${argsCount}\n`;
-                // this.result += "    pop temp 0\n";
                 break;
             case CallType.LocalMethod:
                 //TODO: add more arguments?
                 this.result += `    push pointer 0\n`;
                 this.result += `    call ${subroutineIdText} 1\n`;
-                // this.result += "    pop temp 0\n";
                 break;
             case CallType.VarMethod:
-                throw notImplemented();
+                this.pushVarOntoStack(symbol!);
+                const expressionsCount = ctx.expressionList().expression().length
+                this.result += `    call ${subroutineIdText} ${expressionsCount + 1}\n`;
+                break;
             default:
                 throw new Error(`Unknown call type ${callType}`)
         }
-
-        //TODO: why do we need this?
-        // this.result += "    pop temp 0\n";
     };
     //return
     exitReturnStatement(ctx: ReturnStatementContext) {
@@ -247,7 +236,7 @@ export class VMWriter implements JackParserListener {
         this.result += `    if-goto ${endLabel} \n`;
     }
     getLabel(ind: number) {
-        return `${this.className}_${ind}`;
+        return `${this.className}_${ind} `;
     }
 
     createLabel() {
