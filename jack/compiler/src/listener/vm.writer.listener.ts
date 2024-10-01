@@ -1,6 +1,6 @@
 import { TerminalNode } from "antlr4ts/tree/TerminalNode";
 import { CantAssignToArgument, JackCompilerError, _notImplemented as notImplemented } from "../error";
-import { ArrayAccessContext, ClassDeclarationContext, ConstantContext, ExpressionContext, IfElseStatementContext, IfExpressionContext, IfStatementContext, LetStatementContext, ReturnStatementContext, SubroutineCallContext, SubroutineDeclarationContext, VarDeclarationContext, WhileExpressionContext, WhileStatementContext } from "../generated/JackParser";
+import { ArrayAccessContext, ClassDeclarationContext, ConstantContext, EqualsContext, ExpressionContext, IfElseStatementContext, IfExpressionContext, IfStatementContext, LetStatementContext, ReturnStatementContext, StatementContext, SubroutineCallContext, SubroutineDeclarationContext, VarDeclarationContext, WhileExpressionContext, WhileStatementContext } from "../generated/JackParser";
 import { JackParserListener } from "../generated/JackParserListener";
 import { GenericSymbol, LocalSymbolTable, ScopeType, scopeTypeToString, SubroutineScope } from "../symbol";
 import { CallType, getCallType } from "./common";
@@ -22,19 +22,27 @@ const unaryOperationToVmCmd: Record<string, string> = {
     "~": "not",
 };
 
+/**
+ * Transforms parse tree into VM code
+ */
 export class VMWriter implements JackParserListener {
     public result: string = ""
     private className: string = "";
     private currentLabelInd: number = 0;
     private localSymbolTable: LocalSymbolTable | undefined;
     public errors: JackCompilerError[] = [];
+    afterEquals = false;
     constructor(private globalSymbolTable: Record<string, GenericSymbol>) { }
 
     enterClassDeclaration(ctx: ClassDeclarationContext) {
         if (this.className != "") {
             throw new Error("Cannot change class name")
         }
+        if (ctx.localSymbolTable == undefined) {
+            throw new Error("Local symbol table not found in parse tree")
+        }
         this.className = ctx.className()!.text;
+        this.localSymbolTable = ctx.localSymbolTable;
     }
 
     enterSubroutineDeclaration(ctx: SubroutineDeclarationContext) {
@@ -46,7 +54,8 @@ export class VMWriter implements JackParserListener {
         this.result += `function ${this.className}.${name} ${symbol.subroutineInfo!.localVarsCount}\n`;
 
         if (ctx.subroutineType().CONSTRUCTOR() != undefined) {
-            this.result += "    push constant 0\n"
+
+            this.result += `    push constant ${this.localSymbolTable!.fieldsCount()}\n`
             this.result += "    call Memory.alloc 1\n"
             this.result += "    pop pointer 0\n"
         } else if (ctx.subroutineType().METHOD() != undefined) {
@@ -57,24 +66,31 @@ export class VMWriter implements JackParserListener {
         if (ctx.symbols == undefined) {
             throw new Error("Subroutine symbols not found in parse tree")
         }
-        this.localSymbolTable = new LocalSymbolTable(ctx.symbols);
+        this.localSymbolTable!.setSubroutineScope(ctx.symbols);
     };
     exitArrayAccess(ctx: ArrayAccessContext) {
-        if (this.localSymbolTable == undefined) {
-            throw new Error("Local symbol table not found in parse tree")
-        }
         const varName = ctx.varName().IDENTIFIER().text
-        const symbol = this.localSymbolTable.lookup(varName);
+        const symbol = this.localSymbolTable!.lookup(varName);
         if (symbol == undefined) {
             throw new Error(`Can't find variable ${varName} in local symbol table`)
         }
+        //TODO: move this to validator
         if (symbol.scope == ScopeType.Argument) {
             this.errors.push(new CantAssignToArgument(ctx.start.line, ctx.start.startIndex));
         }
         this.result += `    push local ${symbol.index}\n`;
         this.result += `    add\n`;
+        if (this.afterEquals) {
+            this.result += `    pop pointer 1\n`;
+            this.result += `    push that 0\n`;
+        }
     };
-
+    enterEquals(ctx: EqualsContext) {
+        this.afterEquals = true;
+    };
+    exitStatement(ctx: StatementContext) {
+        this.afterEquals = false;
+    };
     enterConstant(ctx: ConstantContext) {
         if (ctx.INTEGER_LITERAL() != undefined) {
             this.result += `    push constant ${ctx.INTEGER_LITERAL()!.text}\n`;
@@ -90,8 +106,10 @@ export class VMWriter implements JackParserListener {
         } else if (ctx.THIS_LITERAL() != undefined) {
             this.result += `    push pointer 0\n`;
         } else if (ctx.STRING_LITERAL() != undefined) {
-            //cutoff ""
-            const str = ctx.STRING_LITERAL()!.text.slice(1, -1)
+
+            const str = ctx.STRING_LITERAL()!.text
+                //cutoff ""
+                .slice(1, -1)
             this.result += `    push constant ${str.length}\n`;
             this.result += `    call String.new 1\n`;
             for (const char of str) {
@@ -109,10 +127,7 @@ export class VMWriter implements JackParserListener {
 
         if (ctx.varName() != undefined) {
             const varName = ctx.varName()!.IDENTIFIER().text
-            if (this.localSymbolTable == undefined) {
-                throw new Error("Subroutine symbols is not defined when calling other subroutine")
-            }
-            const symbol = this.localSymbolTable.lookup(varName)
+            const symbol = this.localSymbolTable!.lookup(varName)
             if (symbol == undefined) {
                 throw new Error(`Cannot find variable ${varName} in arguments or local variables`);
             }
@@ -131,26 +146,27 @@ export class VMWriter implements JackParserListener {
             this.result += "\t" + unaryOperationToVmCmd[unaryOp] + "\n";
         }
     };
-
+    enterLetStatement(ctx: LetStatementContext) {
+        if (ctx.arrayAccess() != undefined) {
+            this.assignToArray = true;
+        }
+    };
     exitLetStatement(ctx: LetStatementContext) {
 
         if (ctx.varName() != undefined) {
-            if (this.localSymbolTable == undefined) {
-                throw new Error("Local symbol table not found in parse tree")
-            }
-            const symbol = this.localSymbolTable.lookup(ctx.varName()!.IDENTIFIER().text)
+            const symbol = this.localSymbolTable!.lookup(ctx.varName()!.IDENTIFIER().text)
             if (symbol == undefined) {
                 throw new Error(`Can't find variable ${ctx.varName()!.IDENTIFIER().text} in local symbol table`);
             }
             if (symbol.scope == ScopeType.Argument) {
                 this.errors.push(new CantAssignToArgument(ctx.start.line, ctx.start.startIndex));
             }
-            this.result += `    pop local ${symbol.index}\n`;
+            this.result += `    pop ${scopeTypeToString(symbol.scope)} ${symbol.index}\n`;
         } else if (ctx.arrayAccess() != undefined) {
-            this.result += `  pop pointer 1\n`;
-            this.result += `  push temp 0\n`;
-            this.result += `    pop pointer 1\n`;
-            this.result += `    pop that 0\n`;
+            this.result += "pop temp 0\n";
+            this.result += "pop pointer 1\n";
+            this.result += "push temp 0\n";
+            this.result += "pop that 0\n";
             //FIXME
         } else {
             throw new Error(`Unknown let statement type`)
@@ -192,13 +208,11 @@ export class VMWriter implements JackParserListener {
         this.result += `    goto ${ctx.startLabel}\n`;
         this.result += `    label ${ctx.endLabel}\n`;
     };
+
     //do
     exitSubroutineCall(ctx: SubroutineCallContext) {
-        if (this.localSymbolTable == undefined) {
-            throw new Error("Subroutine symbols is not defined when calling other subroutine")
-        }
         //method call
-        const { callType, subroutineIdText } = getCallType(ctx.subroutineId(), this.className, this.localSymbolTable)
+        const { callType, subroutineIdText } = getCallType(ctx.subroutineId(), this.className, this.localSymbolTable!)
         switch (callType) {
             case CallType.ClassFunctionOrConstructor:
                 const argsCount = ctx.expressionList().expression().length
@@ -235,13 +249,13 @@ export class VMWriter implements JackParserListener {
     getLabel(ind: number) {
         return `${this.className}_${ind}`;
     }
+
     createLabel() {
         return this.getLabel(this.currentLabelInd++);
     }
 
     //to fix compiler error
     visitTerminal?: (/*@NotNull*/ node: TerminalNode) => void;
-
 }
 class LabelManager {
 

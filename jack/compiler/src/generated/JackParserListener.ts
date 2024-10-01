@@ -1,7 +1,7 @@
 // Generated from JackParser.g4 by ANTLR 4.9.0-SNAPSHOT
 
 
-	import { SubroutineScope } from "../symbol";
+	import { SubroutineScope, LocalSymbolTable } from "../symbol";
 
 
 import { ParseTreeListener } from "antlr4ts/tree/ParseTreeListener";
@@ -29,6 +29,7 @@ import { VarNameContext } from "./JackParser";
 import { StatementsContext } from "./JackParser";
 import { StatementContext } from "./JackParser";
 import { LetStatementContext } from "./JackParser";
+import { EqualsContext } from "./JackParser";
 import { IfElseStatementContext } from "./JackParser";
 import { IfStatementContext } from "./JackParser";
 import { IfExpressionContext } from "./JackParser";
@@ -307,6 +308,17 @@ export interface JackParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	exitLetStatement?: (ctx: LetStatementContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `JackParser.equals`.
+	 * @param ctx the parse tree
+	 */
+	enterEquals?: (ctx: EqualsContext) => void;
+	/**
+	 * Exit a parse tree produced by `JackParser.equals`.
+	 * @param ctx the parse tree
+	 */
+	exitEquals?: (ctx: EqualsContext) => void;
 
 	/**
 	 * Enter a parse tree produced by `JackParser.ifElseStatement`.

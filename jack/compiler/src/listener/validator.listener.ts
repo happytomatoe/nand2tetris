@@ -6,18 +6,19 @@ import { JackParserListener } from "../generated/JackParserListener";
 import { GenericSymbol, LocalSymbolTable, ScopeType, SubroutineType } from "../symbol";
 import { CallType, getCallType } from "./common";
 
+
 /**
  * Validates Jack file
  */
+//TODO: add validation that function cannot use field var
 export class ValidatorListener implements JackParserListener {
     localSymbolTable: LocalSymbolTable = new LocalSymbolTable();
     subroutineShouldReturnVoidType: boolean = false;
     controlFlowGraphNode: BinaryTreeNode = new BinaryTreeNode();
     subroutineName: string = ""
     className = ""
-    inConstructor: boolean = false
-    inFunction: boolean = false
     stopProcessingErrorsInThisScope = false;
+    subroutineType?: SubroutineType;
     constructor(private globalSymbolTable: Record<string, GenericSymbol>, public errors: JackCompilerError[] = []) { }
 
     enterClassDeclaration(ctx: ClassDeclarationContext) {
@@ -26,6 +27,7 @@ export class ValidatorListener implements JackParserListener {
             throw new Error("Cannot change class name")
         }
         this.className = newName;
+        ctx.localSymbolTable = this.localSymbolTable;
     };
 
     enterClassVarDec(ctx: ClassVarDecContext) {
@@ -44,12 +46,16 @@ export class ValidatorListener implements JackParserListener {
     };
     enterSubroutineDeclaration(ctx: SubroutineDeclarationContext) {
         if (ctx.subroutineType().CONSTRUCTOR() != undefined) {
-            this.inConstructor = true;
+            this.subroutineType = SubroutineType.Constructor;
             if (ctx.subroutineDecWithoutType().subroutineReturnType().text !== this.className) {
                 this.#addError(new IncorrectConstructorReturnType(ctx.start.line, ctx.start.startIndex));
             }
         } else if (ctx.subroutineType().FUNCTION() != undefined) {
-            this.inFunction = true;
+            this.subroutineType = SubroutineType.Function;
+        } else if (ctx.subroutineType().METHOD != undefined) {
+            this.subroutineType = SubroutineType.Method;
+        } else {
+            throw new Error("Unknown subroutine type ")
         }
     }
     enterSubroutineDecWithoutType(ctx: SubroutineDecWithoutTypeContext) {
@@ -60,7 +66,11 @@ export class ValidatorListener implements JackParserListener {
     };
 
     enterParameter(ctx: ParameterContext) {
-        this.#localSymbolTableAdd(ctx.start.line, ctx.start.startIndex, ScopeType.Argument, ctx.parameterName().text, ctx.varType().text);
+        this.#defineArgument(ctx.start.line,
+            ctx.start.startIndex,
+            ctx.parameterName().text,
+            ctx.varType().text,
+            this.subroutineType == SubroutineType.Method);
     };
     //Var
     enterVarType(ctx: VarTypeContext) {
@@ -86,13 +96,13 @@ export class ValidatorListener implements JackParserListener {
         const symbol = this.localSymbolTable.lookup(ctx.text)
         if (symbol == undefined) {
             this.#addError(new UndeclaredVariableError(ctx.start.line, ctx.start.startIndex, ctx.text));
-        } else if (this.inFunction && symbol.scope == ScopeType.This) {
+        } else if (this.subroutineType == SubroutineType.Function && symbol.scope == ScopeType.This) {
             this.#addError(new FieldCantBeReferencedInFunction(ctx.start.line, ctx.start.startIndex));
         }
     };
 
     enterConstant(ctx: ConstantContext) {
-        if (ctx.THIS_LITERAL() != undefined && this.inFunction) {
+        if (ctx.THIS_LITERAL() != undefined && this.subroutineType == SubroutineType.Function) {
             this.#addError(new ThisCantBeReferencedInFunction(ctx.start.line, ctx.start.startIndex));
         }
     };
@@ -228,7 +238,7 @@ export class ValidatorListener implements JackParserListener {
             this.#addError(new VoidSubroutineReturnsValueError(ctx.start.line, ctx.start.startIndex));
         }
         this.controlFlowGraphNode._returns = true;
-        if (this.inConstructor) {
+        if (this.subroutineType == SubroutineType.Constructor) {
             if (returnsVoid || ctx.expression()!.expression().length > 1 ||
                 ctx.expression()!.constant() == undefined || ctx.expression()!.constant()!.THIS_LITERAL() == undefined) {
                 this.#addError(new ConstructorMushReturnThis(ctx.start.line, ctx.start.startIndex))
@@ -240,8 +250,7 @@ export class ValidatorListener implements JackParserListener {
         if (!this.controlFlowGraphNode.returns) {
             this.#addError(new SubroutineNotAllPathsReturnError(ctx.start.line, ctx.start.startIndex, this.subroutineName));
         }
-        this.inConstructor = false;
-        this.inFunction = false;
+        this.subroutineType = undefined;
 
     };
     exitSubroutineDeclaration(ctx: SubroutineDeclarationContext) {
@@ -255,6 +264,13 @@ export class ValidatorListener implements JackParserListener {
     };
 
     //Utils
+    #defineArgument(line: number, position: number, name: string, type: string, inMethod: boolean) {
+        if (this.localSymbolTable.lookup(name)) {
+            this.#addError(new DuplicatedVariableException(line, position, name));
+        } else {
+            this.localSymbolTable.defineArgument(name, type, inMethod);
+        }
+    }
     #localSymbolTableAdd(line: number, position: number, scope: ScopeType, name: string, type: string) {
         if (this.localSymbolTable.lookup(name)) {
             this.#addError(new DuplicatedVariableException(line, position, name));

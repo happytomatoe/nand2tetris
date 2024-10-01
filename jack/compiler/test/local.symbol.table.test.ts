@@ -27,12 +27,17 @@ describe('LocalSymbolTable', () => {
             { name: "a8", type: "B", scope: ScopeType.Static, index: 1 } as VariableSymbol,
         ]
         for (const s of symbols) {
-            localSymbolTable.define(s.scope, s.name, s.type)
+            if (s.scope == ScopeType.Argument) {
+                localSymbolTable.defineArgument(s.name, s.type, false);
+            } else {
+                localSymbolTable.define(s.scope, s.name, s.type)
+            }
         }
         for (const s of symbols) {
             expect(localSymbolTable.lookup(s.name)).toEqual(s);
             expect(localSymbolTable.lookup(s.name + "_")).toBeUndefined();
         }
+        expect(localSymbolTable.fieldsCount()).toBe(2);
     })
 
 
@@ -64,11 +69,15 @@ describe('LocalSymbolTable', () => {
         const localSymbolTable = new LocalSymbolTable();
         const symbols = [
             { name: "a", type: "int", scope: ScopeType.Local, index: 0 } as VariableSymbol,
-            { name: "b", type: "char", scope: ScopeType.Argument, index: 0 } as VariableSymbol,
+            { name: "b", type: "char", scope: ScopeType.Argument, index: 1 } as VariableSymbol,
         ]
 
         for (const s of symbols) {
-            localSymbolTable.define(s.scope, s.name, s.type)
+            if (s.scope == ScopeType.Argument) {
+                localSymbolTable.defineArgument(s.name, s.type, true);
+            } else {
+                localSymbolTable.define(s.scope, s.name, s.type)
+            }
         }
         expect(localSymbolTable.popStack()).toEqual({ arguments: [symbols[1]], locals: [symbols[0]] } as SubroutineScope)
 

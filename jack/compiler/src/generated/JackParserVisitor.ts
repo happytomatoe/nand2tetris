@@ -1,7 +1,7 @@
 // Generated from JackParser.g4 by ANTLR 4.9.0-SNAPSHOT
 
 
-	import { SubroutineScope } from "../symbol";
+	import { SubroutineScope, LocalSymbolTable } from "../symbol";
 
 
 import { ParseTreeVisitor } from "antlr4ts/tree/ParseTreeVisitor";
@@ -29,6 +29,7 @@ import { VarNameContext } from "./JackParser";
 import { StatementsContext } from "./JackParser";
 import { StatementContext } from "./JackParser";
 import { LetStatementContext } from "./JackParser";
+import { EqualsContext } from "./JackParser";
 import { IfElseStatementContext } from "./JackParser";
 import { IfStatementContext } from "./JackParser";
 import { IfExpressionContext } from "./JackParser";
@@ -218,6 +219,13 @@ export interface JackParserVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitLetStatement?: (ctx: LetStatementContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `JackParser.equals`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitEquals?: (ctx: EqualsContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `JackParser.ifElseStatement`.

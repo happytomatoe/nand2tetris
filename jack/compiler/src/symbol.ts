@@ -68,12 +68,6 @@ export class LocalSymbolTable {
         [ScopeType.Local]: [],
     }
     private static scopesLookupOrder = [ScopeType.Local, ScopeType.Argument, ScopeType.This, ScopeType.Static]
-    constructor(subroutineScope?: SubroutineScope) {
-        if (subroutineScope != undefined) {
-            this.scopes[ScopeType.Argument] = subroutineScope.arguments;
-            this.scopes[ScopeType.Local] = subroutineScope.locals;
-        }
-    }
     lookup(name: string): VariableSymbol | undefined {
         for (let scope of LocalSymbolTable.scopesLookupOrder) {
             const symbol = this.scopes[scope].find(v => v.name == name)
@@ -81,9 +75,19 @@ export class LocalSymbolTable {
         }
         return undefined;
     }
-
+    defineArgument(name: string, type: VariableType, inMethod: boolean) {
+        let index = this.scopes[ScopeType.Argument].length;
+        if (inMethod) {
+            //in methods first arg is this
+            index++;
+        }
+        this.scopes[ScopeType.Argument].push({ name, type, scope: ScopeType.Argument, index });
+    }
     //define symbol in scope
     define(scope: ScopeType, varName: string, type: VariableType) {
+        if (scope == ScopeType.Argument) {
+            throw new Error("Please use defineArgument method to define function arguments")
+        }
         this.scopes[scope].push({ name: varName, type, scope, index: this.scopes[scope].length });
     }
 
@@ -92,5 +96,12 @@ export class LocalSymbolTable {
         this.scopes[ScopeType.Local] = []
         this.scopes[ScopeType.Argument] = []
         return f;
+    }
+    setSubroutineScope(subroutineScope: SubroutineScope) {
+        this.scopes[ScopeType.Argument] = subroutineScope.arguments;
+        this.scopes[ScopeType.Local] = subroutineScope.locals;
+    }
+    fieldsCount() {
+        return this.scopes[ScopeType.This].length;
     }
 }

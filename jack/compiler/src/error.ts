@@ -35,7 +35,7 @@ export class DuplicatedSubroutineError extends JackCompilerError {
 
 export class DuplicatedVariableException extends JackCompilerError {
     constructor(line: number, charPositionInLine: number, variableName: string) {
-        super(line, charPositionInLine, "Duplicated variable " + variableName);
+        super(line, charPositionInLine, "Duplicated local variable, field, argument or static variable " + variableName);
     }
 }
 

@@ -59,6 +59,30 @@ describe("Compiler", () => {
         testCompiler(input, expected);
     })
 
+    test('method with parameters', () => {
+        const input = `
+        class A{
+            method void a(int a){
+                    var int b;
+                    let b = a + 1;
+                    return;
+                }
+        }`
+        const expected = `
+            function A.a 1
+                push argument 0
+                pop pointer 0
+                push argument 1
+                push constant 1
+                add
+                pop local 0
+                push constant 0
+                return
+        `;
+        testCompiler(input, expected);
+    })
+
+
     //Assign
     test("cannot assign to an argument", () => {
         const input = `
@@ -320,7 +344,41 @@ describe("Compiler", () => {
         `;
         testCompiler(input, expected);
     })
-    test.skip('assignment for array access', () => {
+
+    test('assign array value to a local var', () => {
+        const input = `
+        class A{
+            function void a(){
+                var Array arr;
+                var int a;
+                let arr = Array.new(10);
+                let a = arr[5];
+                return;
+            }
+        }`
+        const expected =`
+            function A.a 2
+                //array new 
+                push constant 10
+                call Array.new 1
+                //let arr=
+                pop local 0
+                //arr[5]
+                push constant 5
+                push local 0
+                add
+                pop pointer 1
+                push that 0
+                //let a =
+                pop local 1
+                //return
+                push constant 0
+                return
+        `;
+        testCompiler(input, expected);
+    })
+
+    test('assignment for array access', () => {
         const input = `
         class A{
             function void a(){
@@ -353,7 +411,7 @@ describe("Compiler", () => {
         `;
         testCompiler(input, expected);
     })
-    test.skip('assign array value to array value', () => {
+    test('assign array value to array value', () => {
         const input = `
         class A{
             function void a(){
@@ -363,7 +421,6 @@ describe("Compiler", () => {
                 return;
             }
         }`
-
         const expected = `
             function A.a 1
                 // let arr = Array.new(10);
@@ -371,12 +428,12 @@ describe("Compiler", () => {
                 call Array.new 1
                 pop local 0
                 //arr[0]
-                push local 0
                 push constant 0
+                push local 0
                 add
                 //arr[5]
-                push local 0
                 push constant 5
+                push local 0
                 add
 
                 //save arr[5] in temp
@@ -394,6 +451,7 @@ describe("Compiler", () => {
         `;
         testCompiler(input, expected);
     })
+    //TODO: add complex expressions
     test('assignment to -1', () => {
         const input = `
         class A{
@@ -621,7 +679,7 @@ describe("Compiler", () => {
         `;
         testCompiler(input, expected);
     })
-    test('constructor', () => {
+    test('empty class constructor', () => {
         const input = `
         class A{
             constructor A new(){
@@ -637,6 +695,25 @@ describe("Compiler", () => {
             //return this
             push pointer 0
             return
+        `;
+        testCompiler(input, expected);
+    })
+    test('class with fields and a constructor', () => {
+        const input = `
+            class A{
+                field int a,b,c;
+                field char d,e,f; 
+                constructor A new(){
+                    return this;
+                }
+            }`
+        const expected = `
+            function A.new 0
+                push constant 6
+                call Memory.alloc 1
+                pop pointer 0
+                push pointer 0
+                return
         `;
         testCompiler(input, expected);
     })
