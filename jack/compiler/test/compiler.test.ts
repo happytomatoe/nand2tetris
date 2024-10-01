@@ -1,4 +1,5 @@
 import { Compiler } from "../src/compiler";
+import { CantAssignToArgument, JackCompilerError } from "../src/error";
 
 describe("Compiler", () => {
     test('empty class', () => {
@@ -19,71 +20,24 @@ describe("Compiler", () => {
         `;
     })
     test('field', () => {
-        const input = `
-        class A{
-            field int a;
-            method void init(){
-                let a=1;
-                return;
-            }
-        }`
-        const expected = `
-
-        `;
-    })
-
-    test('empty  constructor', () => {
-        const input = `class A{
-            constructor A new(){
-                return this;
-            }
-        }`
-        const expected = `
-
-        `;
-    })
-    test('empty function', () => {
-        const input = `
-        class A{
-            function void init(){
-                return;
-            }
-        }
-        `
-        const expected = `
-
-        `;
-    })
-    test('empty method', () => {
-        const input = `
+        testCompiler(`
             class A{
+                field int a;
                 method void init(){
+                    let a=1;
                     return;
                 }
-            }`
-        const expected = `
-            
-        `;
+            }`, `
+            function A.init 0
+                push argument 0
+                pop pointer 0
+                push constant 1
+                pop this 0
+                push constant 0
+                return
+            `)
     })
 
-    test('constructor with parameters', () => {
-        const input = ``
-        const expected = `
-        
-        `;
-    })
-    test('method with parameters', () => {
-        const input = `
-            class A{
-                method void init(int a, boolean b){
-                    return;
-                }
-            }
-         `
-        const expected = `
-
-        `;
-    })
     test('function with parameters', () => {
         const input = `
         class A{
@@ -92,8 +46,7 @@ describe("Compiler", () => {
                     let b = a + 1;
                     return;
                 }
-        }
-         `
+        }`
         const expected = `
             function A.a 1
                 push argument 0
@@ -105,8 +58,20 @@ describe("Compiler", () => {
         `;
         testCompiler(input, expected);
     })
-    //TODO: add test that you cannot assign to argument
+
     //Assign
+    test("cannot assign to an argument", () => {
+        const input = `
+        class A{
+            function void a(int a){
+                    let a = a + 1;
+                    return;
+                }
+        }`
+        const res = Compiler.compile(input)
+        expect(Array.isArray(res)).toBe(true)
+        expect(res[0]).toBeInstanceOf(CantAssignToArgument)
+    })
     test('boolean literal assign', () => {
         const input = `
         class A{
@@ -132,7 +97,7 @@ describe("Compiler", () => {
     })
     test('boolean literal assign using logical operators', () => {
         const input = `
-        class A{
+        class A {
             function void a(){
                 var boolean b;
                 let b = (1>2) & (3<4) | (5>6) & (7=7);
@@ -188,14 +153,13 @@ describe("Compiler", () => {
     })
     test('null literal assign', () => {
         const input = `
-        class A{
+        class A {
             function void a(){
                 var A b;
                 let b = null;
                 return;
             }
-        }
-         `
+        }`;
         const expected = `
             function A.a 1
                 push constant 0
@@ -245,7 +209,7 @@ describe("Compiler", () => {
                 push constant 0
                 return
         `;
-          testCompiler(input, expected);
+        testCompiler(input, expected);
     })
     test('string literal assign', () => {
         const input = `
@@ -399,7 +363,7 @@ describe("Compiler", () => {
                 return;
             }
         }`
-        
+
         const expected = `
             function A.a 1
                 // let arr = Array.new(10);
