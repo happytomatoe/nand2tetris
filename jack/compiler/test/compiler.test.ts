@@ -818,6 +818,97 @@ describe("Compiler", () => {
         testCompiler(input, expected);
     })
 
+    test('nested expressions', () => {
+        const input = `
+        class A{
+            function void a(){
+                var Array a, b, c;
+        
+                let a = Array.new(10);
+                let b = Array.new(5);
+                
+                let b[a[4]] = a[3] + 3;  
+                return;
+            }
+        }`
+        const expected = `
+        function A.a 3
+            //  let a = Array.new(10);
+            push constant 10
+            call Array.new 1
+            pop local 0
+            // let b = Array.new(5);
+            push constant 5
+            call Array.new 1
+            pop local 1
+            //a[4]
+            push constant 4
+            push local 0
+            add
+            //what?
+            pop pointer 1
+            push that 0
+            push local 1
+            add
+            push constant 3
+            push local 0
+            add
+            pop pointer 1
+            push that 0
+            push constant 3
+            add
+            pop temp 0
+            pop pointer 1
+            push temp 0
+            pop that 0
+            push constant 0
+            return
+        `;
+        testCompiler(input, expected);
+    })
+    
+    test('mutate args', () => {
+        const input = `
+        class A{
+            function void fill(Array a, int size) {
+                while (size > 0) {
+                    let size = size - 1;
+                    let a[size] = Array.new(3);
+                }
+                return;
+            }
+        }`
+        const expected = `
+        function A.fill 0
+            label A_0
+                //size>0
+                push argument 1
+                push constant 0
+                gt
+                not
+                if-goto A_1
+                //let size = size - 1
+                push argument 1
+                push constant 1
+                sub
+                pop argument 1
+                //let a[size] = Array.new(3);
+                push argument 1
+                push argument 0
+                add
+                push constant 3
+                call Array.new 1
+                pop temp 0
+                pop pointer 1
+                push temp 0
+                pop that 0
+                goto A_0
+            label A_1
+                push constant 0
+                return
+        `;
+        testCompiler(input, expected);
+    })
     const folders = ["Average", "ComplexArrays", "ConvertToBin", "Fraction", "HelloWorld", "List", "Pong", "Square"]
     test.concurrent.each(folders)("%s", (folder: string) => {
         testFilesInFolder(folder);

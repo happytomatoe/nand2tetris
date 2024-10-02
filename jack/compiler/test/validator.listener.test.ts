@@ -1,5 +1,5 @@
 import { ConstructorMushReturnThis, DuplicatedVariableException as DuplicatedVariableError, FieldCantBeReferencedInFunction, FunctionCalledAsMethodError, IncorrectConstructorReturnType, IncorrectParamsNumberInSubroutineCallError, IntLiteralIsOutOfRange as IntLiteralOverflow, MethodCalledAsFunctionError, NonVoidFunctionNoReturnError, SubroutineNotAllPathsReturnError, ThisCantBeReferencedInFunction, UndeclaredVariableError, UnknownClassError, UnknownSubroutineCallError, UnreachableCodeError, VoidSubroutineReturnsValueError, WrongLiteralTypeError } from "../src/error"
-import { ErrorListener } from "../src/listener/error.listener"
+import { CustomErrorListener } from "../src/listener/error.listener"
 import { ValidatorListener } from "../src/listener/validator.listener"
 import { createSubroutineSymbol, GenericSymbol, LocalSymbolTable, SubroutineType } from "../src/symbol"
 import { listenToTheTree, parseJackFile, parseJackText, testResourcesDirs } from "./test.helper"
@@ -597,7 +597,7 @@ function testJackDir(testFolder: string): void {
     let trees: Record<string, ProgramContext> = {}
     let globalSymbolsListener: BinderListener = new BinderListener();
     for (const filePath of files) {
-        const errorListener = new ErrorListener()
+        const errorListener = new CustomErrorListener()
         errorListener.filepath = filePath;
         const tree = parseJackFile(filePath)
         trees[filePath] = tree
@@ -617,7 +617,7 @@ function testValidator<T extends { name: string }>(
     globalSymbolTable: Record<string, GenericSymbol> = {},
 ) {
     const name = expect.getState().currentTestName!
-    const errorListener = new ErrorListener();
+    const errorListener = new CustomErrorListener();
     errorListener.filepath = name;
     const tree = parseJackText(src, errorListener)
 

@@ -1,18 +1,14 @@
-import path from "path";
 import { BinderListener } from "./listener/binder.listener";
-import fs from "fs";
-import { ParseTreeWalker } from "antlr4ts/tree/ParseTreeWalker";
-import { JackParser, ProgramContext } from "./generated/JackParser";
-import { CharStreams, CommonTokenStream } from "antlr4ts";
-import { JackLexer } from "./generated/JackLexer";
-import { ErrorListener } from "./listener/error.listener";
+import { CustomErrorListener } from "./listener/error.listener";
 import { ValidatorListener } from "./listener/validator.listener";
 import { JackCompilerError } from "./error";
 import { VMWriter } from "./listener/vm.writer.listener";
+import JackParser, { ProgramContext } from "./generated/JackParser";
+import { CharStreams, CommonTokenStream, ParseTreeWalker } from "antlr4";
+import JackLexer from "./generated/JackLexer";
 export class Compiler {
-
     private binder = new BinderListener();
-    private errorListener = new ErrorListener();
+    private errorListener = new CustomErrorListener();
     //TODO: add compile for many files. This should concat the files in the end
     compile(tree: ProgramContext): string | JackCompilerError[] {
         if (Object.keys(this.binder.globalSymbolTable).length == 0) {
@@ -31,6 +27,7 @@ export class Compiler {
         }
         return vmWriter.result;
     }
+
 
 
     parserAndBind(src: string): ProgramContext | JackCompilerError[] {

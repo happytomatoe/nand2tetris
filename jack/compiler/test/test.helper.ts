@@ -1,23 +1,21 @@
-import { ANTLRErrorListener, CharStreams, CommonTokenStream, ParserRuleContext } from "antlr4ts";
-import { JackParser, ProgramContext } from "../src/generated/JackParser";
-import { JackLexer } from "../src/generated/JackLexer";
 import fs from 'fs';
 import path from "path";
-import { ParseTreeListener } from "antlr4ts/tree/ParseTreeListener";
-import { ParseTreeWalker } from "antlr4ts/tree/ParseTreeWalker";
 import { JackCompilerError } from "../src/error";
-import { ErrorListener } from "../src/listener/error.listener";
+import { CustomErrorListener } from "../src/listener/error.listener";
+import { CharStreams, CommonTokenStream, ParseTreeListener, ParseTreeWalker } from 'antlr4';
+import JackLexer from '../src/generated/JackLexer';
+import JackParser, { ProgramContext } from '../src/generated/JackParser';
 
 export function parseJackFile(filePath: string, trace = false) {
-    const errorListener: ErrorListener = new ErrorListener()
+    const errorListener: CustomErrorListener = new CustomErrorListener()
     errorListener.filepath = filePath
     const f = fs.readFileSync(filePath, 'utf8');
     return parseJackText(f, errorListener, trace);
 }
 
-export function parseJackText(src: string, errorListener?: ErrorListener, trace: boolean = false, throwOnErrors = true): ProgramContext {
+export function parseJackText(src: string, errorListener?: CustomErrorListener, trace: boolean = false, throwOnErrors = true): ProgramContext {
     if (errorListener === undefined) {
-        errorListener = new ErrorListener();
+        errorListener = new CustomErrorListener();
     }
     const inputStream = CharStreams.fromString(src);
     const lexer = new JackLexer(inputStream);
@@ -27,14 +25,15 @@ export function parseJackText(src: string, errorListener?: ErrorListener, trace:
     }
 
     const tokenStream = new CommonTokenStream(lexer);
-    expect(tokenStream.getTokens.length).toBeGreaterThan(0);
     const parser = new JackParser(tokenStream);
-    parser.isTrace = trace;
+    // parser.trace = trace;
     if (errorListener != undefined) {
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
     }
     const tree = parser.program()
+
+    expect(tokenStream.tokens.length).toBeGreaterThan(0);
     if (errorListener.errors.length > 0) {
         console.error("Parser or lexer errors found");
         handleErrors(src, errorListener.errors);

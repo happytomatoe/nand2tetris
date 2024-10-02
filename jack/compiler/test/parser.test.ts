@@ -2,7 +2,7 @@ import fs from 'fs';
 import { BinderListener } from "../src/listener/binder.listener";
 
 import path from "path";
-import { ErrorListener } from "../src/listener/error.listener";
+import { CustomErrorListener } from "../src/listener/error.listener";
 import { listenToTheTree, parseJackFile, parseJackText, testResourcesDirs } from "./test.helper";
 
 describe('Parser', () => {
@@ -40,7 +40,7 @@ describe('Parser', () => {
 function testJackDir(testFolder: string): void {
     const files = fs.readdirSync(testFolder).filter(file => file.endsWith(".jack")).map(file => path.join(testFolder, file));
     for (const filePath of files) {
-        const errorListener = new ErrorListener()
+        const errorListener = new CustomErrorListener()
         errorListener.filepath = filePath;
         const tree = parseJackFile(filePath)
         const globalSymbolsListener = listenToTheTree(tree, new BinderListener());

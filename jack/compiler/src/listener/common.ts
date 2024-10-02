@@ -17,11 +17,11 @@ export function getCallType(subroutineId: SubroutineIdContext, className: string
         //local method
         return {
             callType: CallType.LocalMethod,
-            subroutineIdText: className + "." + subroutineId.subroutineName().text
+            subroutineIdText: className + "." + subroutineId.subroutineName().getText()
         } as CallTypeResult;
     } else {
         // var method
-        const [varName, methodName] = subroutineId.text.split('.')
+        const [varName, methodName] = subroutineId.getText().split('.')
         const symbol = localSymbolTable.lookup(varName)
         if (symbol != undefined) {
             return {
@@ -33,7 +33,7 @@ export function getCallType(subroutineId: SubroutineIdContext, className: string
             // class function/ctor
             return {
                 callType: CallType.ClassFunctionOrConstructor,
-                subroutineIdText: subroutineId.text
+                subroutineIdText: subroutineId.getText()
             } as CallTypeResult;
         }
     }

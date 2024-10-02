@@ -1,9 +1,8 @@
-import { TerminalNode } from "antlr4ts/tree/TerminalNode";
 import { ClassDeclarationContext, SubroutineBodyContext, SubroutineDeclarationContext, SubroutineDecWithoutTypeContext, VarDeclarationContext, VarNameInDeclarationContext } from "../generated/JackParser";
-import { JackParserListener } from "../generated/JackParserListener";
 import { DuplicatedSubroutineError } from '../error'
 import { builtInSymbols, builtInTypes } from "../builtins";
 import { GenericSymbol, GlobalSymbolTable, SubroutineInfo, SubroutineType } from "../symbol";
+import JackParserListener from "../generated/JackParserListener";
 
 const primitives = new Set(builtInTypes);
 export type Primitive = typeof primitives extends Set<infer S> ? S : never;
@@ -11,7 +10,7 @@ export type Primitive = typeof primitives extends Set<infer S> ? S : never;
 /**
  * Creates global symbol table that contains built-in functions and found classes and subroutines
  */
-export class BinderListener implements JackParserListener {
+export class BinderListener extends JackParserListener {
     // key can be class or <class>.<subroutine_name>
     public globalSymbolTable: GlobalSymbolTable = structuredClone(builtInSymbols);
     public className = "";
@@ -20,39 +19,38 @@ export class BinderListener implements JackParserListener {
     private subroutineVarsCount: number = 0;
     private stopProcessingSubroutines = false;
     private subroutineId = "";
-    //to fix compiler error
-    visitTerminal?: (/*@NotNull*/ node: TerminalNode) => void;
 
-    enterClassDeclaration(ctx: ClassDeclarationContext) {
-        if (this.globalSymbolTable[ctx.className()!.text] != undefined) {
-            this.errors.push(new DuplicatedSubroutineError(ctx.start.line, ctx.start.startIndex, `Class "${ctx.className()!.text}" is already defined.`));
+    override enterClassDeclaration = (ctx: ClassDeclarationContext) => {
+        const className = ctx.className()!.IDENTIFIER().getText()
+        if (this.globalSymbolTable[className] != undefined) {
+            this.errors.push(new DuplicatedSubroutineError(ctx.start.line, ctx.start.start, `Class "${className}" is already defined.`));
             return;
         }
-        this.globalSymbolTable[ctx.className()!.text] = {} as GenericSymbol;
-        this.className = ctx.className()?.text;
+        this.globalSymbolTable[className] = {} as GenericSymbol;
+        this.className = className;
     };
 
-    enterSubroutineDeclaration(ctx: SubroutineDeclarationContext) {
+    override enterSubroutineDeclaration = (ctx: SubroutineDeclarationContext) => {
         let subroutineType: SubroutineType;
-        if (ctx.subroutineType().CONSTRUCTOR() != undefined) {
+        if (ctx.subroutineType().CONSTRUCTOR() != null) {
             subroutineType = SubroutineType.Constructor;
-        } else if (ctx.subroutineType().METHOD() != undefined) {
+        } else if (ctx.subroutineType().METHOD() != null) {
             subroutineType = SubroutineType.Method;
-        } else if (ctx.subroutineType().FUNCTION() != undefined) {
+        } else if (ctx.subroutineType().FUNCTION() != null) {
             subroutineType = SubroutineType.Function;
         } else {
             throw new Error("Invalid subroutine type")
         }
         const subroutineWithoutTypeCtx = ctx.subroutineDecWithoutType()
         const nameCtx = subroutineWithoutTypeCtx.subroutineName()
-        const subroutineName = nameCtx.text
+        const subroutineName = nameCtx.IDENTIFIER().getText()
         const id = this.className + "." + subroutineName
         if (this.globalSymbolTable[id] != undefined) {
-            this.errors.push(new DuplicatedSubroutineError(nameCtx.start.line, nameCtx.start.startIndex, subroutineName));
+            this.errors.push(new DuplicatedSubroutineError(nameCtx.IDENTIFIER().symbol.line, nameCtx.start.start, subroutineName));
             this.stopProcessingSubroutines = true;
         } else {
             this.subroutineId = id;
-            const paramsCount = subroutineWithoutTypeCtx.parameterList().parameter().length
+            const paramsCount = subroutineWithoutTypeCtx.parameterList().parameter_list().length
             this.subRoutineInfo = {
                 type: subroutineType,
                 paramsCount: paramsCount,
@@ -61,11 +59,11 @@ export class BinderListener implements JackParserListener {
             this.stopProcessingSubroutines = false;
         }
     }
-    enterVarNameInDeclaration(ctx: VarNameInDeclarationContext) {
+    override enterVarNameInDeclaration = (ctx: VarNameInDeclarationContext) => {
         if (this.stopProcessingSubroutines) return;
         this.subroutineVarsCount++;
     };
-    exitSubroutineBody(ctx: SubroutineBodyContext) {
+    override exitSubroutineBody = (ctx: SubroutineBodyContext) => {
         if (this.stopProcessingSubroutines) return;
         this.subRoutineInfo.localVarsCount = this.subroutineVarsCount;
         this.globalSymbolTable[this.subroutineId] = { subroutineInfo: this.subRoutineInfo }
