@@ -215,7 +215,6 @@ export class VMWriter implements JackParserListener {
                 this.result += `    call ${ctx.subroutineId().text} ${argsCount}\n`;
                 break;
             case CallType.LocalMethod: {
-                // //TODO: deduplicate 
                 const expressionsCount = ctx.expressionList().expression().length
                 this.result += `    push pointer 0\n`;
                 this.result += `    call ${subroutineIdText} ${expressionsCount + 1}\n`;
@@ -229,6 +228,7 @@ export class VMWriter implements JackParserListener {
             default:
                 throw new Error(`Unknown call type ${callType}`)
         }
+
     };
     //return
     exitReturnStatement(ctx: ReturnStatementContext) {

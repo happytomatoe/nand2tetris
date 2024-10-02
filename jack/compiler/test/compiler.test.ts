@@ -5,22 +5,21 @@ import { getTestResourcePath } from "./test.helper";
 import path from "path";
 import { ProgramContext } from "../src/generated/JackParser";
 describe("Compiler", () => {
-    test('empty class', () => {
-        const input = `class A{}`
-        const expected = ``;
-    })
 
     test('static field', () => {
-        const input = `class A{
+        testCompiler(`class A{
             static int a;
             function void init(){
                 let a=1;
                 return;
             }
-        }`
-        const expected = `
-
-        `;
+        }`, `
+            function A.init 0
+                push constant 1
+                pop static 0
+                push constant 0
+                return
+        `);
     })
     test('field', () => {
         testCompiler(`
@@ -846,6 +845,7 @@ function testFilesInFolder(folderInTestResources: string) {
         if (Array.isArray(res)) {
             throw new Error(`Unexpected compilation errors: ${res.join("\n")}`);
         } else {
+            console.log(res)
             expect(trimAndDeleteComments(res)).toEqual(trimAndDeleteComments(expected));
         }
     }

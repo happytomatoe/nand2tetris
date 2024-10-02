@@ -9,11 +9,11 @@ import { ErrorListener } from "./listener/error.listener";
 import { ValidatorListener } from "./listener/validator.listener";
 import { JackCompilerError } from "./error";
 import { VMWriter } from "./listener/vm.writer.listener";
-import { GlobalSymbolTable } from "./symbol";
 export class Compiler {
 
     private binder = new BinderListener();
     private errorListener = new ErrorListener();
+    //TODO: add compile for many files. This should concat the files in the end
     compile(tree: ProgramContext): string | JackCompilerError[] {
         if (Object.keys(this.binder.globalSymbolTable).length == 0) {
             throw new Error("Please populate global symbol table using parserAndBind method")
