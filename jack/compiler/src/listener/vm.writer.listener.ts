@@ -203,6 +203,8 @@ export class VMWriter implements JackParserListener {
         const { callType, symbol } = getCallType(ctx.subroutineId(), this.className, this.localSymbolTable!)
         if (callType === CallType.VarMethod) {
             this.pushVarOntoStack(symbol!);
+        } else if (callType === CallType.LocalMethod) {
+            this.result += `    push pointer 0\n`;
         }
     };
     //do
@@ -214,12 +216,7 @@ export class VMWriter implements JackParserListener {
                 const argsCount = ctx.expressionList().expression().length
                 this.result += `    call ${ctx.subroutineId().text} ${argsCount}\n`;
                 break;
-            case CallType.LocalMethod: {
-                const expressionsCount = ctx.expressionList().expression().length
-                this.result += `    push pointer 0\n`;
-                this.result += `    call ${subroutineIdText} ${expressionsCount + 1}\n`;
-                break;
-            }
+            case CallType.LocalMethod:
             case CallType.VarMethod: {
                 const expressionsCount = ctx.expressionList().expression().length
                 this.result += `    call ${subroutineIdText} ${expressionsCount + 1}\n`;

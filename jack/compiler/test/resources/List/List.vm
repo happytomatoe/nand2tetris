@@ -33,10 +33,8 @@ label List_0
     push local 0
     call List.getData 1
     call Output.printInt 1
-    pop temp 0
     push constant 32
     call Output.printChar 1
-    pop temp 0
     push local 0
     call List.getNext 1
     pop local 0
@@ -52,15 +50,11 @@ function List.dispose 0
     eq
     not
     not
-    if-goto List_3
+    if-goto List_2
     push this 1
     call List.dispose 1
-    pop temp 0
-    goto List_2
-label List_3
 label List_2
     push pointer 0
     call Memory.deAlloc 1
-    pop temp 0
     push constant 0
     return
