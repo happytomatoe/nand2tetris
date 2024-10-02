@@ -98,7 +98,6 @@ const config = {
   // modulePathIgnorePatterns: [],
 
   // Activates notifications for test results
-  //TODO: try out
   notify: true,
 
 
