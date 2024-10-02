@@ -68,9 +68,5 @@ export class BinderListener extends JackParserListener {
         this.subRoutineInfo.localVarsCount = this.subroutineVarsCount;
         this.globalSymbolTable[this.subroutineId] = { subroutineInfo: this.subRoutineInfo }
     };
-
-    resetErrors() {
-        this.errors = [];
-    }
 }
 
