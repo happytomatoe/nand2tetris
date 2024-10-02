@@ -21,6 +21,7 @@ const unaryOperationToVmCmd: Record<string, string> = {
     "~": "not",
 };
 
+//TODO: add allignment
 /**
  * Transforms parse tree into VM code
  */
