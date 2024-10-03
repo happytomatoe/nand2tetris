@@ -8,14 +8,13 @@ function compile() {
   const treeOrErrors = compiler.parserAndBind(code);
   if (Array.isArray(treeOrErrors)) {
     console.error('Compilation errors:', treeOrErrors);
-    document.querySelector<HTMLTextAreaElement>('#error')!.textContent = treeOrErrors.map(v => `${v.line}:${v.startInd} ${v.msg}`).join("\n");
-
+    document.querySelector<HTMLTextAreaElement>('#error')!.textContent = treeOrErrors.map(v => `${v.span.line}:${v.span.start} ${v.msg}`).join("\n");
   } else {
     const tree = treeOrErrors as ProgramContext;
     const res = compiler.compile(tree);
     if (Array.isArray(res)) {
       console.error('Compilation errors:', res);
-      document.querySelector<HTMLTextAreaElement>('#error')!.textContent = res.map(v => `${v.line}:${v.startInd} ${v.msg}`).join("\n");
+      document.querySelector<HTMLTextAreaElement>('#error')!.textContent = res.map(v => `${v.span.line}:${v.span.start} ${v.msg}`).join("\n");
     } else {
       console.log(res);
       document.querySelector<HTMLTextAreaElement>('#output')!.value = res;
