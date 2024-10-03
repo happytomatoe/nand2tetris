@@ -9,7 +9,6 @@ import JackLexer from "./generated/JackLexer";
 export class Compiler {
     private binder = new BinderListener();
     private errorListener = new CustomErrorListener();
-    //TODO: add compile for many files. This should concat the files in the end
     compile(tree: ProgramContext): string | JackCompilerError[] {
         if (Object.keys(this.binder.globalSymbolTable).length == 0) {
             throw new Error("Please populate global symbol table using parserAndBind method")

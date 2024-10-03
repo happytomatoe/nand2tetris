@@ -26,7 +26,6 @@ export class LexerOrParserError extends Error {
         super(msg);
     }
 }
-//TODO: should add filepath to other errors?
 export class DuplicatedSubroutineError extends JackCompilerError {
     constructor(line: number, charPositionInLine: number, subroutineName: string) {
         super(line, charPositionInLine, `Subroutine ${subroutineName} redeclared.`);

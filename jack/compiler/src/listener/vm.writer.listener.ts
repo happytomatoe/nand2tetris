@@ -21,7 +21,6 @@ const unaryOperationToVmCmd: Record<string, string> = {
     "~": "not",
 };
 
-//TODO: add allignment
 /**
  * Transforms parse tree into VM code
  */
@@ -54,7 +53,6 @@ export class VMWriter extends JackParserListener {
         this.result += `function ${this.className}.${name} ${symbol.subroutineInfo!.localVarsCount}\n`;
 
         if (ctx.subroutineType().CONSTRUCTOR() != null) {
-
             this.result += `    push constant ${this.localSymbolTable!.fieldsCount()}\n`
             this.result += "    call Memory.alloc 1\n"
             this.result += "    pop pointer 0\n"
@@ -245,7 +243,4 @@ export class VMWriter extends JackParserListener {
     createLabel() {
         return this.getLabel(this.currentLabelInd++);
     }
-}
-class LabelManager {
-
 }
