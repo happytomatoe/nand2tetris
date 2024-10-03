@@ -20,7 +20,7 @@ function compile() {
       document.querySelector<HTMLTextAreaElement>('#output')!.value = res;
       document.querySelector<HTMLTextAreaElement>('#error')!.textContent = "";
     }
-  }
+  } 
 }
 document.querySelector<HTMLButtonElement>('#compile')?.addEventListener('click', () => compile());
 

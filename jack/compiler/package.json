@@ -10,7 +10,7 @@
     "test": "jest",
     "test-w": "jest --watchAll",
     "fix": "eslint --fix",
-    "gen": "bash gen.sh",
+    "gen": "cd grammar && antlr4 -Dlanguage=TypeScript  JackLexer.g4 JackParser.g4 -o ../src/generated",
     "watch-jack": "nodemon -e jack,ts -w src -w test -x \"npm run test \""
   },
   "nodemonConfig": {

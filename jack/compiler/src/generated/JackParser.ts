@@ -1449,9 +1449,9 @@ export default class JackParser extends Parser {
 			_p = 0;
 		}
 
-		let parentCtxctx: ParserRuleContext = this._ctx;
-		let parentCtxState: number = this.state;
-		let localctx: ExpressionContext = new ExpressionContext(this, this._ctx, parentCtxState);
+		let _parentctx: ParserRuleContext = this._ctx;
+		let _parentState: number = this.state;
+		let localctx: ExpressionContext = new ExpressionContext(this, this._ctx, _parentState);
 		let _prevctx: ExpressionContext = localctx;
 		let _startState: number = 70;
 		this.enterRecursionRule(localctx, 70, JackParser.RULE_expression, _p);
@@ -1511,7 +1511,7 @@ export default class JackParser extends Parser {
 					_prevctx = localctx;
 					{
 					{
-					localctx = new ExpressionContext(this, parentCtxctx, parentCtxState);
+					localctx = new ExpressionContext(this, _parentctx, _parentState);
 					this.pushNewRecursionContext(localctx, _startState, JackParser.RULE_expression);
 					this.state = 282;
 					if (!(this.precpred(this._ctx, 2))) {
@@ -1540,7 +1540,7 @@ export default class JackParser extends Parser {
 			}
 		}
 		finally {
-			this.unrollRecursionContexts(parentCtxctx);
+			this.unrollRecursionContexts(_parentctx);
 		}
 		return localctx;
 	}
