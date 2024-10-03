@@ -40,8 +40,6 @@ describe('Parser', () => {
 function testJackDir(testFolder: string): void {
     const files = fs.readdirSync(testFolder).filter(file => file.endsWith(".jack")).map(file => path.join(testFolder, file));
     for (const filePath of files) {
-        const errorListener = new CustomErrorListener()
-        errorListener.filepath = filePath;
         const tree = parseJackFile(filePath)
         const globalSymbolsListener = listenToTheTree(tree, new BinderListener());
         const symbolsErrors = globalSymbolsListener.errors.join("\n")

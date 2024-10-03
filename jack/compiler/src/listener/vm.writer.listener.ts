@@ -29,7 +29,6 @@ export class VMWriter extends JackParserListener {
     private className: string = "";
     private currentLabelInd: number = 0;
     private localSymbolTable: LocalSymbolTable | undefined;
-    public errors: JackCompilerError[] = [];
     private afterEquals = false;
     constructor(private globalSymbolTable: Record<string, GenericSymbol>) { super(); }
 

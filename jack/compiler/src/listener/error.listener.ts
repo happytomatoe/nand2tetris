@@ -1,16 +1,14 @@
-import { ErrorListener, RecognitionException, Recognizer } from 'antlr4';
+import { ErrorListener, RecognitionException, Recognizer, Token } from 'antlr4';
 import { JackCompilerError, LexerOrParserError } from '../error';
-export class CustomErrorListener extends ErrorListener<any> {
-    static instance: CustomErrorListener;
-    public filepath: string = "";
+export class CustomErrorListener<TSymbol> extends ErrorListener<TSymbol> {
     public errors: JackCompilerError[] = [];
 
     /**
      * Provides a default instance of {@link ConsoleErrorListener}.
     */
-    override syntaxError = (recognizer: Recognizer<any>, offendingSymbol: any, line: number, column: number, msg: string, e: RecognitionException | undefined) => {
-        this.errors.push(new LexerOrParserError(this.filepath, line, column, msg));
-        console.error(`${this.filepath}:${line}:${column} \n${msg}`);
+    override syntaxError = (recognizer: Recognizer<TSymbol>, offendingSymbol: TSymbol, line: number, column: number, msg: string, e: RecognitionException | undefined) => {
+        const t = offendingSymbol as Token;
+        this.errors.push(new LexerOrParserError(line, column, t.stop, msg));
     };
     // reportAmbiguity(recognizer: any, dfa: any, startIndex: any, stopIndex: any, exact: any, ambigAlts: any, configs: any) {
     //     console.log(`Ambiguity detected at ${this.filepath}:${startIndex}:${stopIndex}`);

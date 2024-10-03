@@ -7,13 +7,13 @@ import JackLexer from '../src/generated/JackLexer';
 import JackParser, { ProgramContext } from '../src/generated/JackParser';
 
 export function parseJackFile(filePath: string, trace = false) {
-    const errorListener: CustomErrorListener = new CustomErrorListener()
-    errorListener.filepath = filePath
+    const errorListener: CustomErrorListener<any> = new CustomErrorListener()
     const f = fs.readFileSync(filePath, 'utf8');
     return parseJackText(f, errorListener, trace);
 }
 
-export function parseJackText(src: string, errorListener?: CustomErrorListener, trace: boolean = false, throwOnErrors = true): ProgramContext {
+
+export function parseJackText(src: string, errorListener?: CustomErrorListener<any>, trace: boolean = false, throwOnErrors = true): ProgramContext {
     if (errorListener === undefined) {
         errorListener = new CustomErrorListener();
     }
@@ -53,7 +53,7 @@ export function listenToTheTree<T extends ParseTreeListener>(tree: ProgramContex
 
 export function handleErrors(src: string, errors: JackCompilerError[]) {
     const msg = errors.map(e => {
-        return `${e.line}:${e.charPositionInLine} ${e.msg}\n${src.split("\n")[e.line]}`
+        return `${e.span.line}:${e.span.start} ${e.msg}\n${src.split("\n")[e.span.line]}`
     }).join("\n")
     console.error(msg);
     throw new Error(msg)

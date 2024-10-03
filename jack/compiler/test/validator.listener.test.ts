@@ -597,8 +597,6 @@ function testJackDir(testFolder: string): void {
     let trees: Record<string, ProgramContext> = {}
     let globalSymbolsListener: BinderListener = new BinderListener();
     for (const filePath of files) {
-        const errorListener = new CustomErrorListener()
-        errorListener.filepath = filePath;
         const tree = parseJackFile(filePath)
         trees[filePath] = tree
         listenToTheTree(tree, globalSymbolsListener)
@@ -616,9 +614,7 @@ function testValidator<T extends { name: string }>(
     expectedError?: T,
     globalSymbolTable: Record<string, GenericSymbol> = {},
 ) {
-    const name = expect.getState().currentTestName!
     const errorListener = new CustomErrorListener();
-    errorListener.filepath = name;
     const tree = parseJackText(src, errorListener)
 
     const validator = listenToTheTree(tree, new ValidatorListener(globalSymbolTable))

@@ -1,7 +1,7 @@
 import { Compiler } from "../src/compiler";
 import { JackCompilerError } from "../src/error";
 import fs from "fs";
-import { getTestResourcePath } from "./test.helper";
+import { getTestResourcePath, testResourcesDirs } from "./test.helper";
 import path from "path";
 import { ProgramContext } from "../src/generated/JackParser";
 describe("Compiler", () => {
@@ -909,8 +909,7 @@ describe("Compiler", () => {
         `;
         testCompiler(input, expected);
     })
-    const folders = ["Average", "ComplexArrays", "ConvertToBin", "Fraction", "HelloWorld", "List", "Pong", "Square"]
-    test.concurrent.each(folders)("%s", (folder: string) => {
+    test.concurrent.each(testResourcesDirs)("%s", (folder: string) => {
         testFilesInFolder(folder);
     })
 })

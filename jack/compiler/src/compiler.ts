@@ -21,9 +21,6 @@ export class Compiler {
         }
         const vmWriter = new VMWriter(this.binder.globalSymbolTable);
         ParseTreeWalker.DEFAULT.walk(vmWriter, tree);
-        if (vmWriter.errors.length > 0) {
-            return vmWriter.errors;
-        }
         return vmWriter.result;
     }
 

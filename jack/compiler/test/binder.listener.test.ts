@@ -107,5 +107,3 @@ describe('Binder', () => {
         expect(globalSymbolsListener.globalSymbolTable).toEqual(expected)
     })
 })
-
-
