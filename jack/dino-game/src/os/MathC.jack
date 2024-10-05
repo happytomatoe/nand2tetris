@@ -1,0 +1,11 @@
+ class MathC {
+            function int abs(int x){
+               return 1;
+            }
+    function int multiply(int x, int y){
+        return 1;
+    }
+            function int multitply(int a, int b){
+                return 1;
+            }    
+}
