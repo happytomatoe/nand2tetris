@@ -1,7 +1,7 @@
 class Main {
     function void main(){
         var int c;
-        let c = MathC.multiply(3, 4);
+        let c = MathC.multiply(45, 543);
         do Output.printInt(c);
         return;
     }

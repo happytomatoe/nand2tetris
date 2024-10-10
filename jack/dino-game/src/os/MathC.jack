@@ -5,20 +5,45 @@ class MathC {
         }
         return x;
     }
-    //3x4
+
     function int multiply(int x, int y){
-        var int i, res, op2;
-        let res = 0;
-        if (x > y){
-            let i = x;
-            let op2 = y;
-        } else {
-            let i = y;
-            let op2 = x;
+        var Array yInBinary;
+        var int sum, shiftedX, i;
+        let yInBinary = MathC.convertToBinary(y);
+        let sum = 0;
+        let shiftedX = x;
+        let i = 0;
+        while ((i < 15) & (shiftedX > 0)){
+            if (yInBinary[i] = 1){
+                do Output.printString("adding ");
+                do Output.printInt(i);
+                do Output.printString(" bit ");
+                let sum = sum + shiftedX;
+                do Output.printString("Sum=");
+                do Output.printInt(sum);
+                do Output.println();
+            }
+            do Output.printString("ShiftedX=");
+            do Output.printInt(shiftedX);
+            do Output.println();
+            let i = i + 1;
+            let shiftedX = shiftedX + shiftedX;
         }
-        while (i > 0){
-            let res = res + op2;
-            let i = i - 1;
+        return sum;
+    }
+
+    function Array convertToBinary(int num){
+        var Array res;
+        var int i, mask;
+        let res = Array.new(14);
+        let i = 0;
+        let mask = 1;
+        while ((num > (mask - 1)) & (i < 15)){
+            if (num & mask > 0){
+                let res[i] = 1;
+            }
+            let mask = mask + mask;
+            let i = i + 1;
         }
         return res;
     }
@@ -27,13 +52,28 @@ class MathC {
     * returns the integer part of x/y
     */
     function int divide(int x, int y){
-        return 1;
+        var int i, res, op2;
+        let i = 0;
+        let res = x;
+        while (((res - y) > 0) | ((res - y) = 0)){
+            let res = res - y;
+            let i = i + 1;
+        }
+        return i;
     }
+
     function int min(int x, int y){
-        return 1;
+        if (x < y){
+            return x;
+        }
+        return y;
     }
+
     function int max(int x, int y){
-        return 1;
+        if (x > y){
+            return x;
+        }
+        return y;
     }
     /**
     * returns the integer part of the square root of x
