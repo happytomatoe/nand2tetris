@@ -1,5 +1,5 @@
 class ErrorCodes {
-    //Cannot draw cactus out of screen.Coordinates and size 
+    //Cannot draw cactus out of screen.Coordinates and size
     function int cannotDrawCactusOfScreen(){
         return 50;
     }
@@ -14,7 +14,7 @@ class ErrorCodes {
     function int cantFindAvailableCactus(){
         return 53;
     }
-    function int  cannotDrawCloudOfScreen(){
+    function int cannotDrawCloudOfScreen(){
         return 54;
     }
 
@@ -22,5 +22,5 @@ class ErrorCodes {
         return 55;
     }
    
-    
-}   
+
+}

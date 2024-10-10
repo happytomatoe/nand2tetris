@@ -1,11 +1,44 @@
- class MathC {
-            function int abs(int x){
-               return 1;
-            }
+class MathC {
+    function int abs(int x){
+        if (x < 0){
+            return -x;
+        }
+        return x;
+    }
+    //3x4
     function int multiply(int x, int y){
+        var int i, res, op2;
+        let res = 0;
+        if (x > y){
+            let i = x;
+            let op2 = y;
+        } else {
+            let i = y;
+            let op2 = x;
+        }
+        while (i > 0){
+            let res = res + op2;
+            let i = i - 1;
+        }
+        return res;
+    }
+
+    /**
+    * returns the integer part of x/y
+    */
+    function int divide(int x, int y){
         return 1;
     }
-            function int multitply(int a, int b){
-                return 1;
-            }    
+    function int min(int x, int y){
+        return 1;
+    }
+    function int max(int x, int y){
+        return 1;
+    }
+    /**
+    * returns the integer part of the square root of x
+    */
+    function int sqrt(int x){
+        return 1;
+    }
 }

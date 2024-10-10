@@ -2,6 +2,6 @@ class Keys {
     function boolean upPressed(){
         var char key;
         let key = Keyboard.keyPressed();
-        return key=131;
+        return key = 131;
     }
 }
