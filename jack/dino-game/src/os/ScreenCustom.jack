@@ -1,0 +1,54 @@
+class ScreenCustom {
+    static Array twoToThe;
+    function void init(){
+        let twoToThe = Common.powerOfTwo(16);
+        do MathCustom.init();
+        return;
+    }
+    function void drawPixel(int x, int y){
+        var int address, value;
+        if ((x < 0) | (y < 0) | (x > 511) | (y > 255)){
+            do Sys.error(7);
+        }
+        let address = (32 * y) + (x / 16);
+        let value = Memory.peek(16384 + address);
+        do Memory.poke(16384 + address, value | twoToThe[MathCustom.mod(x, 16)]);
+        return;
+    }
+    
+    function void drawLine(int x1, int y1, int x2, int y2){
+        var int a, b, dx, dy, diff;
+        let dx = x2 - x1;
+        let dy = y2 - y1;
+        let diff = (2 * dy) - dx;
+        //xOffset
+        let a = 0;
+        //yOffset
+        let b = y1;
+        while (((a < dx) | (a = dx))){
+            do ScreenCustom.drawPixel(x1 + a, b);
+            if (diff > 0){
+                let b = b + 1;
+                let diff = diff - (2 * dx);
+            }
+            let a = a + 1;
+            let diff = diff + (2 * dy);
+        }
+        return;
+    }
+
+    function void drawCicle(int x, int y, int r){
+        var int dy, x1, x2, dx, dyAbs, rSqrt;
+        let dy = -r;
+        let rSqrt = MathCustom.multiply(r, r);
+        while (dy < (r+1)){
+            let dyAbs = MathCustom.abs(dy);
+            let dx = MathCustom.sqrt(rSqrt - MathCustom.multiply(dyAbs, dyAbs));
+            let x1 = x - dx;
+            let x2 = x + dx;
+            do ScreenCustom.drawLine(x1, y + dy, x2, y + dy);
+            let dy = dy + 1;
+        }
+        return;
+    }
+}

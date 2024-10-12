@@ -1,0 +1,15 @@
+class Common {
+    function Array powerOfTwo(int maxLen){
+        var Array result;
+        var int i, twoIn;
+        let result = Array.new(maxLen);
+        let i = 0;
+        let twoIn = 1;
+        while (i < maxLen){
+            let result[i] = twoIn;
+            let i = i + 1;
+            let twoIn = twoIn + twoIn;
+        }
+        return result;
+    }
+}

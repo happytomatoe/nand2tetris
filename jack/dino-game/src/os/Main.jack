@@ -1,8 +1,30 @@
 class Main {
     function void main(){
         var int c;
-        let c = MathC.multiply(45, 543);
-        do Output.printInt(c);
+        do ScreenCustom.init();
+        do ScreenCustom.drawCicle(50,50,30);
+        // do ScreenCustom.drawLine(0,0,255,255);
+        // do ScreenCustom.drawPixel(1,0);
+        // do ScreenCustom.drawPixel(2,0);
+        // do ScreenCustom.drawPixel(3,0);
+        // do ScreenCustom.drawPixel(4,0);
+        // do ScreenCustom.drawPixel(5,0);
+        // do ScreenCustom.drawPixel(6,0);
+        // do ScreenCustom.drawPixel(7,0);
+        // do ScreenCustom.drawPixel(8,0);
+        // do ScreenCustom.drawPixel(9,0);
+        // do ScreenCustom.drawPixel(10,0);
+        // do ScreenCustom.drawPixel(11,0);
+        // do ScreenCustom.drawPixel(12,0);
+        // do ScreenCustom.drawPixel(13,0);
+        // do ScreenCustom.drawPixel(14,0);
+        // do ScreenCustom.drawPixel(15,0);
+        // do ScreenCustom.drawPixel(16,0);
+        // do ScreenCustom.drawPixel(17,0);
+        
+        // do ScreenCustom.drawLine(1, 1, 200, 1);
+        // do ScreenCustom.drawPixel(0,3);
+        // do ScreenCustom.drawPixel(0,4);
         return;
     }
 }

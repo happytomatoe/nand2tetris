@@ -1,0 +1,104 @@
+class MathCustom {
+    static Array twoToThe;
+    function void init(){
+        let twoToThe = Common.powerOfTwo(15);
+        return;
+    }
+
+    function int abs(int x){
+        if (x < 0){
+            return -x;
+        }
+        return x;
+    }
+
+    function int multiply(int x, int y){
+        // var int sum, i;
+        // let sum = x;
+        // let i = y;
+        // while (i > 0){
+        //     let sum = sum + sum;
+        //     let i = i - 1;
+        // }
+        // return sum;
+        var int sum, shiftedX, i;
+        let sum = 0;
+        let shiftedX = x;
+        let i = 0;
+        while ((i < 15) & (shiftedX > 0)){
+            if (MathCustom.bit(y, i) = 1){
+                let sum = sum + shiftedX;
+            }
+            let i = i + 1;
+            let shiftedX = shiftedX + shiftedX;
+        }
+        return sum;
+    }
+
+    function Array bit(int num, int i){
+        if (num & twoToThe[i] > 0){
+            return 1;
+        }
+        return 0;
+    }
+    /**
+    * returns the integer part of x/y
+    */
+    function int divide(int x, int y){
+        var int q;
+        if ((y > x) | (y < 0)){
+            return 0;
+        }
+        let q = MathCustom.divide(x, 2 * y);
+        if ((x - (2 * q * y)) < y){
+            return 2 * q;
+        } else {
+            return 2 * q + 1;
+        }
+    }
+
+    function int min(int x, int y){
+        if (x < y){
+            return x;
+        }
+        return y;
+    }
+
+    function int max(int x, int y){
+        if (x > y){
+            return x;
+        }
+        return y;
+    }
+    /**
+    * returns the integer part of the square root of x
+    */
+    function int sqrt(int x){
+        var int res, i;
+        if (x < 0){
+            do Sys.error(4);
+        }
+        let i = 1;
+        let res = 1;
+        while ((res < x) | (res = x)){
+            let i = i + 1;
+            let res = MathCustom.multiply(i, i);
+        }
+        return i - 1;
+    }
+    function int mod(int n, int div){
+        var int ratio;
+        if (n = 0){
+            return 0;
+        }
+        if (div = 0){
+            do Sys.error(3);
+        }
+        // if (n < 0){
+        //     do Sys.error();
+        // }
+        let ratio = n / div;
+
+        return n - (ratio * div);
+    }
+}

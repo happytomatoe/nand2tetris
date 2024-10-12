@@ -1,0 +1,29 @@
+class MemoryCustom {
+    static Array ram;
+    static Array heap;
+    function void init(){
+        let ram = 0;
+        let heap = 2048;
+        let heap[0] = 0;
+        let heap[1] = 14335;
+        return;
+    }
+    //returns the value of the main memory at this address.
+    function int peek(int address){
+        return ram[address];
+    }
+    //sets the contents of the main memory at this address to value.
+    function void poke(int address, int value){
+        let ram[address] = value;
+        return;
+    }
+    //finds and allocates from the heap a memory block of the specified size and returns a reference to its base address.
+    function Array alloc(int size){
+        //check max heap  16384;
+        return 1;
+    }
+    //De-allocates the given object and frees its memory space.
+    function void deAlloc(Array o){
+        return;
+    }
+}
