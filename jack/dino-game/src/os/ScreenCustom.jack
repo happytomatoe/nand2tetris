@@ -5,6 +5,7 @@ class ScreenCustom {
         do MathCustom.init();
         return;
     }
+
     function void drawPixel(int x, int y){
         var int address, value;
         if ((x < 0) | (y < 0) | (x > 511) | (y > 255)){
@@ -15,11 +16,14 @@ class ScreenCustom {
         do Memory.poke(16384 + address, value | twoToThe[MathCustom.mod(x, 16)]);
         return;
     }
-    
     function void drawLine(int x1, int y1, int x2, int y2){
         var int a, b, dx, dy, diff;
         let dx = x2 - x1;
         let dy = y2 - y1;
+        if ((y1 = y2)){
+            do ScreenCustom.drawLineOnXAxis(x1, x2, y2);
+            return;
+        }
         let diff = (2 * dy) - dx;
         //xOffset
         let a = 0;
@@ -41,13 +45,52 @@ class ScreenCustom {
         var int dy, x1, x2, dx, dyAbs, rSqrt;
         let dy = -r;
         let rSqrt = MathCustom.multiply(r, r);
-        while (dy < (r+1)){
+        while (dy < (r + 1)){
             let dyAbs = MathCustom.abs(dy);
             let dx = MathCustom.sqrt(rSqrt - MathCustom.multiply(dyAbs, dyAbs));
             let x1 = x - dx;
             let x2 = x + dx;
             do ScreenCustom.drawLine(x1, y + dy, x2, y + dy);
             let dy = dy + 1;
+        }
+        return;
+    }
+    function void drawRectangle(int x1, int y1, int x2, int y2){
+        var int y;
+        let y = y1;
+        while ((y < y2) | (y = y2)){
+            do ScreenCustom.drawLine(x1, y, x2, y);
+            let y = y + 1;
+        }
+        return;
+    }
+
+    function void drawLineOnXAxis(int x1, int x2, int y){
+        var int xForNextMemoryAdress, x, endXForMemoryAdress, address, value, yOffset;
+        let x = x1;
+        // do Output.printInt(x1);
+        // do Output.println();
+        let yOffset = 32 * y;
+        if ((x1 < 0) | (x1 > 511) | (y < 0) | (x2 > 511) | (x2 < 0) | (y > 255)){
+            do Sys.error(7);
+        }
+        //+1 because x starts with 0
+        let xForNextMemoryAdress = (x1 / 16 * 16) + 15;
+        while (x < (xForNextMemoryAdress + 1)){
+            do ScreenCustom.drawPixel(x, y);
+            let x = x + 1;
+        }
+
+        let endXForMemoryAdress = ((x2 / 16) * 16) - 1;
+        while (x < endXForMemoryAdress){
+            let address = yOffset + (x / 16);
+            do Memory.poke(16384 + address, -1);
+            let x = x + 16;
+        }
+
+        while ((x < x2) | (x = x2)){
+            do ScreenCustom.drawPixel(x, y);
+            let x = x + 1;
         }
         return;
     }

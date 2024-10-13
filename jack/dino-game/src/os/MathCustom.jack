@@ -73,18 +73,15 @@ class MathCustom {
     /**
     * returns the integer part of the square root of x
     */
-    function int sqrt(int x){
-        var int res, i;
-        if (x < 0){
-            do Sys.error(4);
+    function int sqrt(int n){
+        var int x, y;
+        let x = n;
+        let y = 1;
+        while (x > y){
+            let x = (x + y) / 2;
+            let y = n / x;
         }
-        let i = 1;
-        let res = 1;
-        while ((res < x) | (res = x)){
-            let i = i + 1;
-            let res = MathCustom.multiply(i, i);
-        }
-        return i - 1;
+        return x;
     }
     function int mod(int n, int div){
         var int ratio;

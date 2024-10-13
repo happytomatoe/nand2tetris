@@ -56,7 +56,6 @@ class Dino {
     }
     return;
   }
-
   method void calcNewPos(){
     var int doubleT, timestep;
     let timestep = 1;
