@@ -22,12 +22,12 @@ class ScreenCustom {
         }
         return;
     }
-    
+
     function void drawLine(int x1, int y1, int x2, int y2){
         var int a, b, dx, dy, diff;
         let dx = x2 - x1;
         let dy = y2 - y1;
-        if ((y1 = y2)){
+        if ((y1 = y2) & (dx > 16)){
             do ScreenCustom.drawLineOnXAxis(x1, x2, y2);
             return;
         }
@@ -62,6 +62,7 @@ class ScreenCustom {
         }
         return;
     }
+
     function void drawRectangle(int x1, int y1, int x2, int y2){
         var int y;
         let y = y1;
@@ -75,8 +76,6 @@ class ScreenCustom {
     function void drawLineOnXAxis(int x1, int x2, int y){
         var int xForNextMemoryAdress, x, endXForMemoryAdress, address, value, yOffset;
         let x = x1;
-        // do Output.printInt(x1);
-        // do Output.println();
         let yOffset = 32 * y;
         if ((x1 < 0) | (x1 > 511) | (y < 0) | (x2 > 511) | (x2 < 0) | (y > 255)){
             do Sys.error(7);

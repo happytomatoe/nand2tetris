@@ -9,7 +9,6 @@ class MemoryCustom {
         let heap = heapBase;
         let heap[0] = 0;
         let heap[1] = 14334;
-        //14268 -14334
         let heapTail = 0;
         return;
     }
@@ -54,23 +53,17 @@ class MemoryCustom {
             do Sys.error(6);
         }
         //carve out segment
-        //segment index
-        // // 14335-20-2 =  14313
-        // let segmentIndex = heapBase +
         let heap[segmentIndex + 1] = heap[segmentIndex + 1] - size - 2;
         //+2 because previous segment has overhead which consists of 2 elements
         let newSegmentStart = heap[segmentIndex + 1] + 2;
         let heap[newSegmentStart] = 0;
         let heap[newSegmentStart + 1] = size;
-        // do Output.printInt(newSegmentStart + heapBase);
         return heapBase + newSegmentStart + 2;
     }
     //De-allocates the given object and frees its memory space.
     function void deAlloc(Array o){
         let heap[heapTail] = o - 2;
-        let heapTail = o - heapBase -2 ;
-        // do Output.printInt(heapTail);
-        // do Output.printString(" ");
+        let heapTail = o - heapBase - 2;
         return;
     }
 }
