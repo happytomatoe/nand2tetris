@@ -1,0 +1,210 @@
+function MathCustom.init 0
+    push constant 15
+    call Common.powerOfTwo 1
+    pop static 0
+    push constant 0
+    return
+function MathCustom.abs 0
+    push argument 0
+    push constant 0
+    lt
+    not
+    if-goto MathCustom_1
+    push argument 0
+    neg
+    return
+    goto MathCustom_0
+label MathCustom_1
+label MathCustom_0
+    push argument 0
+    return
+function MathCustom.multiply 3
+    push constant 0
+    pop local 0
+    push argument 0
+    pop local 1
+    push constant 0
+    pop local 2
+label MathCustom_2
+    push local 2
+    push constant 15
+    lt
+    push local 1
+    push constant 0
+    gt
+    and
+    not
+    if-goto MathCustom_3
+    push argument 1
+    push local 2
+    call MathCustom.bit 2
+    push constant 1
+    eq
+    not
+    if-goto MathCustom_5
+    push local 0
+    push local 1
+    add
+    pop local 0
+    goto MathCustom_4
+label MathCustom_5
+label MathCustom_4
+    push local 2
+    push constant 1
+    add
+    pop local 2
+    push local 1
+    push local 1
+    add
+    pop local 1
+    goto MathCustom_2
+label MathCustom_3
+    push local 0
+    return
+function MathCustom.bit 0
+    push argument 0
+    push argument 1
+    push static 0
+    add
+    pop pointer 1
+    push that 0
+    and
+    push constant 0
+    gt
+    not
+    if-goto MathCustom_7
+    push constant 1
+    return
+    goto MathCustom_6
+label MathCustom_7
+label MathCustom_6
+    push constant 0
+    return
+function MathCustom.divide 1
+    push argument 1
+    push argument 0
+    gt
+    push argument 1
+    push constant 0
+    lt
+    or
+    not
+    if-goto MathCustom_9
+    push constant 0
+    return
+    goto MathCustom_8
+label MathCustom_9
+label MathCustom_8
+    push argument 0
+    push constant 2
+    push argument 1
+    call Math.multiply 2
+    call MathCustom.divide 2
+    pop local 0
+    push argument 0
+    push constant 2
+    push local 0
+    call Math.multiply 2
+    push argument 1
+    call Math.multiply 2
+    sub
+    push argument 1
+    lt
+    not
+    if-goto MathCustom_11
+    push constant 2
+    push local 0
+    call Math.multiply 2
+    return
+    goto MathCustom_10
+label MathCustom_11
+    push constant 2
+    push local 0
+    call Math.multiply 2
+    push constant 1
+    add
+    return
+label MathCustom_10
+function MathCustom.min 0
+    push argument 0
+    push argument 1
+    lt
+    not
+    if-goto MathCustom_13
+    push argument 0
+    return
+    goto MathCustom_12
+label MathCustom_13
+label MathCustom_12
+    push argument 1
+    return
+function MathCustom.max 0
+    push argument 0
+    push argument 1
+    gt
+    not
+    if-goto MathCustom_15
+    push argument 0
+    return
+    goto MathCustom_14
+label MathCustom_15
+label MathCustom_14
+    push argument 1
+    return
+function MathCustom.sqrt 2
+    push argument 0
+    pop local 0
+    push constant 1
+    pop local 1
+label MathCustom_16
+    push local 0
+    push local 1
+    gt
+    not
+    if-goto MathCustom_17
+    push local 0
+    push local 1
+    add
+    push constant 2
+    call Math.divide 2
+    pop local 0
+    push argument 0
+    push local 0
+    call Math.divide 2
+    pop local 1
+    goto MathCustom_16
+label MathCustom_17
+    push local 0
+    return
+function MathCustom.mod 1
+    push argument 0
+    push constant 0
+    eq
+    not
+    if-goto MathCustom_19
+    push constant 0
+    return
+    goto MathCustom_18
+label MathCustom_19
+label MathCustom_18
+    push argument 1
+    push constant 0
+    eq
+    not
+    if-goto MathCustom_21
+    push constant 3
+    call Sys.error 1
+    pop temp 0
+    goto MathCustom_20
+label MathCustom_21
+label MathCustom_20
+    push argument 0
+    push argument 1
+    call Math.divide 2
+    pop local 0
+    push argument 0
+    push local 0
+    push argument 1
+    call Math.multiply 2
+    sub
+    return

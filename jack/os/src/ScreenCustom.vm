@@ -1,0 +1,399 @@
+function ScreenCustom.init 0
+    push constant 16
+    call Common.powerOfTwo 1
+    pop static 0
+    call MathCustom.init 0
+    pop temp 0
+    push constant 1
+    neg
+    pop static 1
+    push constant 0
+    return
+function ScreenCustom.drawPixel 2
+    push argument 0
+    push constant 0
+    lt
+    push argument 1
+    push constant 0
+    lt
+    or
+    push argument 0
+    push constant 511
+    gt
+    or
+    push argument 1
+    push constant 255
+    gt
+    or
+    not
+    if-goto ScreenCustom_1
+    push constant 7
+    call Sys.error 1
+    pop temp 0
+    goto ScreenCustom_0
+label ScreenCustom_1
+label ScreenCustom_0
+    push constant 32
+    push argument 1
+    call Math.multiply 2
+    push argument 0
+    push constant 16
+    call Math.divide 2
+    add
+    pop local 0
+    push constant 16384
+    push local 0
+    add
+    call Memory.peek 1
+    pop local 1
+    push static 1
+    not
+    if-goto ScreenCustom_3
+    push constant 16384
+    push local 0
+    add
+    push local 1
+    push argument 0
+    push constant 16
+    call MathCustom.mod 2
+    push static 0
+    add
+    pop pointer 1
+    push that 0
+    or
+    call Memory.poke 2
+    pop temp 0
+    goto ScreenCustom_2
+label ScreenCustom_3
+    push constant 16384
+    push local 0
+    add
+    push argument 0
+    push constant 16
+    call MathCustom.mod 2
+    push static 0
+    add
+    pop pointer 1
+    push that 0
+    not
+    push local 1
+    and
+    call Memory.poke 2
+    pop temp 0
+label ScreenCustom_2
+    push constant 0
+    return
+function ScreenCustom.drawLine 5
+    push argument 2
+    push argument 0
+    sub
+    pop local 2
+    push argument 3
+    push argument 1
+    sub
+    pop local 3
+    push argument 1
+    push argument 3
+    eq
+    not
+    if-goto ScreenCustom_5
+    push argument 0
+    push argument 2
+    push argument 3
+    call ScreenCustom.drawLineOnXAxis 3
+    pop temp 0
+    push constant 0
+    return
+    goto ScreenCustom_4
+label ScreenCustom_5
+label ScreenCustom_4
+    push constant 2
+    push local 3
+    call Math.multiply 2
+    push local 2
+    sub
+    pop local 4
+    push constant 0
+    pop local 0
+    push argument 1
+    pop local 1
+label ScreenCustom_6
+    push local 0
+    push local 2
+    lt
+    push local 0
+    push local 2
+    eq
+    or
+    not
+    if-goto ScreenCustom_7
+    push argument 0
+    push local 0
+    add
+    push local 1
+    call ScreenCustom.drawPixel 2
+    pop temp 0
+    push local 4
+    push constant 0
+    gt
+    not
+    if-goto ScreenCustom_9
+    push local 1
+    push constant 1
+    add
+    pop local 1
+    push local 4
+    push constant 2
+    push local 2
+    call Math.multiply 2
+    sub
+    pop local 4
+    goto ScreenCustom_8
+label ScreenCustom_9
+label ScreenCustom_8
+    push local 0
+    push constant 1
+    add
+    pop local 0
+    push local 4
+    push constant 2
+    push local 3
+    call Math.multiply 2
+    add
+    pop local 4
+    goto ScreenCustom_6
+label ScreenCustom_7
+    push constant 0
+    return
+function ScreenCustom.drawCircle 6
+    push argument 2
+    neg
+    pop local 0
+    push argument 2
+    push argument 2
+    call MathCustom.multiply 2
+    pop local 5
+label ScreenCustom_10
+    push local 0
+    push argument 2
+    push constant 1
+    add
+    lt
+    not
+    if-goto ScreenCustom_11
+    push local 0
+    call MathCustom.abs 1
+    pop local 4
+    push local 5
+    push local 4
+    push local 4
+    call MathCustom.multiply 2
+    sub
+    call MathCustom.sqrt 1
+    pop local 3
+    push argument 0
+    push local 3
+    sub
+    pop local 1
+    push argument 0
+    push local 3
+    add
+    pop local 2
+    push local 1
+    push argument 1
+    push local 0
+    add
+    push local 2
+    push argument 1
+    push local 0
+    add
+    call ScreenCustom.drawLine 4
+    pop temp 0
+    push local 0
+    push constant 1
+    add
+    pop local 0
+    goto ScreenCustom_10
+label ScreenCustom_11
+    push constant 0
+    return
+function ScreenCustom.drawRectangle 1
+    push argument 1
+    pop local 0
+label ScreenCustom_12
+    push local 0
+    push argument 3
+    lt
+    push local 0
+    push argument 3
+    eq
+    or
+    not
+    if-goto ScreenCustom_13
+    push argument 0
+    push local 0
+    push argument 2
+    push local 0
+    call ScreenCustom.drawLine 4
+    pop temp 0
+    push local 0
+    push constant 1
+    add
+    pop local 0
+    goto ScreenCustom_12
+label ScreenCustom_13
+    push constant 0
+    return
+function ScreenCustom.drawLineOnXAxis 6
+    push argument 0
+    pop local 1
+    push constant 32
+    push argument 2
+    call Math.multiply 2
+    pop local 5
+    push argument 0
+    push constant 0
+    lt
+    push argument 0
+    push constant 511
+    gt
+    or
+    push argument 2
+    push constant 0
+    lt
+    or
+    push argument 1
+    push constant 511
+    gt
+    or
+    push argument 1
+    push constant 0
+    lt
+    or
+    push argument 2
+    push constant 255
+    gt
+    or
+    not
+    if-goto ScreenCustom_15
+    push constant 7
+    call Sys.error 1
+    pop temp 0
+    goto ScreenCustom_14
+label ScreenCustom_15
+label ScreenCustom_14
+    push argument 0
+    push constant 16
+    call Math.divide 2
+    push constant 16
+    call Math.multiply 2
+    push constant 15
+    add
+    pop local 0
+label ScreenCustom_16
+    push local 1
+    push local 0
+    push constant 1
+    add
+    lt
+    not
+    if-goto ScreenCustom_17
+    push local 1
+    push argument 2
+    call ScreenCustom.drawPixel 2
+    pop temp 0
+    push local 1
+    push constant 1
+    add
+    pop local 1
+    goto ScreenCustom_16
+label ScreenCustom_17
+    push argument 1
+    push constant 16
+    call Math.divide 2
+    push constant 16
+    call Math.multiply 2
+    push constant 1
+    sub
+    pop local 2
+label ScreenCustom_18
+    push local 1
+    push local 2
+    lt
+    not
+    if-goto ScreenCustom_19
+    push local 5
+    push local 1
+    push constant 16
+    call Math.divide 2
+    add
+    pop local 3
+    push static 1
+    not
+    if-goto ScreenCustom_21
+    push constant 16384
+    push local 3
+    add
+    push constant 1
+    neg
+    call Memory.poke 2
+    pop temp 0
+    goto ScreenCustom_20
+label ScreenCustom_21
+    push constant 16384
+    push local 3
+    add
+    push constant 0
+    call Memory.poke 2
+    pop temp 0
+label ScreenCustom_20
+    push local 1
+    push constant 16
+    add
+    pop local 1
+    goto ScreenCustom_18
+label ScreenCustom_19
+label ScreenCustom_22
+    push local 1
+    push argument 1
+    lt
+    push local 1
+    push argument 1
+    eq
+    or
+    not
+    if-goto ScreenCustom_23
+    push local 1
+    push argument 2
+    call ScreenCustom.drawPixel 2
+    pop temp 0
+    push local 1
+    push constant 1
+    add
+    pop local 1
+    goto ScreenCustom_22
+label ScreenCustom_23
+    push constant 0
+    return
+function ScreenCustom.setColor 0
+    push argument 0
+    pop static 1
+    push constant 0
+    return
+function ScreenCustom.clearScreen 1
+    push static 1
+    pop local 0
+    push constant 0
+    call ScreenCustom.setColor 1
+    pop temp 0
+    push constant 0
+    push constant 0
+    push constant 511
+    push constant 255
+    call ScreenCustom.drawRectangle 4
+    pop temp 0
+    push local 0
+    call ScreenCustom.setColor 1
+    pop temp 0
+    push constant 0
+    return

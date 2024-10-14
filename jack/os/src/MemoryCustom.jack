@@ -1,14 +1,16 @@
 class MemoryCustom {
     static Array ram;
     static Array heap;
-    static int heapTail;
+    static int heapTail, heapBase;
 
     function void init(){
+        let heapBase = 2048;
         let ram = 0;
-        let heap = 2048;
+        let heap = heapBase;
         let heap[0] = 0;
-        let heap[1] = 14335;
-        let heapTail = 2048;
+        let heap[1] = 14334;
+        //14268 -14334
+        let heapTail = 0;
         return;
     }
     //returns the value of the main memory at this address.
@@ -22,9 +24,12 @@ class MemoryCustom {
     }
     //finds and allocates from the heap a memory block of the specified size and returns a reference to its base address.
     function Array alloc(int size){
-        var Array segment;
         var boolean segmentFound;
-        var int heapSize, segmentIndex;
+        var int heapSize, segmentIndex, newSegmentStart;
+        if (~(heap = 2048)){
+            do Output.printString("Unexpected heap starts memory location. Did you forget to call init()?");
+            do Sys.halt();
+        }
         if (size < 1){
             do Sys.error(5);
         }
@@ -37,31 +42,35 @@ class MemoryCustom {
         } else {
             let segmentIndex = heap[segmentIndex];
         }
-        //check rest
-        // while (~(segmentIndex = 0) & ~segmentFound){
-        //     if (heap[segmentIndex + 1] > (size + 1)){
-        //         let segmentFound = true;
-        //     } else {
-        //         let segmentIndex = heap[segmentIndex];
-        //     }
-        // }
+        // check rest
+        while (~(segmentIndex = 0) & ~segmentFound){
+            if (heap[segmentIndex + 1] > (size + 1)){
+                let segmentFound = true;
+            } else {
+                let segmentIndex = heap[segmentIndex];
+            }
+        }
         if (~segmentFound){
             do Sys.error(6);
         }
-        let heap[segmentIndex] = 0;
-
-        do Output.printInt(segmentIndex);
-        return 0;
-        // let heap[segmentIndex + 1] = size;
-        // let segment = heap[segmentIndex + 2];
-
-        // return segment;
+        //carve out segment
+        //segment index
+        // // 14335-20-2 =  14313
+        // let segmentIndex = heapBase +
+        let heap[segmentIndex + 1] = heap[segmentIndex + 1] - size - 2;
+        //+2 because previous segment has overhead which consists of 2 elements
+        let newSegmentStart = heap[segmentIndex + 1] + 2;
+        let heap[newSegmentStart] = 0;
+        let heap[newSegmentStart + 1] = size;
+        // do Output.printInt(newSegmentStart + heapBase);
+        return heapBase + newSegmentStart + 2;
     }
     //De-allocates the given object and frees its memory space.
     function void deAlloc(Array o){
-        var int len;
         let heap[heapTail] = o - 2;
-        let heapTail = ram[o - 2];
+        let heapTail = o - heapBase -2 ;
+        // do Output.printInt(heapTail);
+        // do Output.printString(" ");
         return;
     }
 }

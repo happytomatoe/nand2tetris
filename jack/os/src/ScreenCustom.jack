@@ -22,6 +22,7 @@ class ScreenCustom {
         }
         return;
     }
+    
     function void drawLine(int x1, int y1, int x2, int y2){
         var int a, b, dx, dy, diff;
         let dx = x2 - x1;
