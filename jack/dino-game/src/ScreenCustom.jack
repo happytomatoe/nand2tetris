@@ -1,4 +1,12 @@
 class ScreenCustom {
+    static Array twoToThe;
+    static boolean colorIsBlack;
+    function void init(){
+        let twoToThe = Common.powerOfTwo(16);
+        // do MathCustom.init();
+        let colorIsBlack = true;
+        return;
+    }
     function boolean visible(int x, int y, int w, int h){
         var int endX, endY, screenW, screenH;
         let screenH = 256;
@@ -6,5 +14,117 @@ class ScreenCustom {
         let endX = x + w;
         let endY = y + h;
         return ((x > 0) | (x = 0)) & ((endX < screenW) | (endX = screenW)) & ((y > 0) | (y = 0)) & ((endY < screenH) | (endY = screenH));
+    }
+  
+
+    function void drawPixel(int x, int y){
+        var int address, value;
+        if ((x < 0) | (y < 0) | (x > 511) | (y > 255)){
+            do Sys.error(7);
+        }
+        let address = (32 * y) + (x / 16);
+        let value = Memory.peek(16384 + address);
+        if (colorIsBlack){
+            do Memory.poke(16384 + address, value | twoToThe[MathCustom.mod(x, 16)]);
+        } else {
+            do Memory.poke(16384 + address, ~twoToThe[MathCustom.mod(x, 16)] & value);
+        }
+        return;
+    }
+    function void drawLine(int x1, int y1, int x2, int y2){
+        var int a, b, dx, dy, diff;
+        let dx = x2 - x1;
+        let dy = y2 - y1;
+        if ((y1 = y2)){
+            do ScreenCustom.drawLineOnXAxis(x1, x2, y2);
+            return;
+        }
+        let diff = (2 * dy) - dx;
+        //xOffset
+        let a = 0;
+        //yOffset
+        let b = y1;
+        while (((a < dx) | (a = dx))){
+            do ScreenCustom.drawPixel(x1 + a, b);
+            if (diff > 0){
+                let b = b + 1;
+                let diff = diff - (2 * dx);
+            }
+            let a = a + 1;
+            let diff = diff + (2 * dy);
+        }
+        return;
+    }
+
+    function void drawCircle(int x, int y, int r){
+        var int dy, x1, x2, dx, dyAbs, rSqrt;
+        let dy = -r;
+        let rSqrt = MathCustom.multiply(r, r);
+        while (dy < (r + 1)){
+            let dyAbs = MathCustom.abs(dy);
+            let dx = MathCustom.sqrt(rSqrt - MathCustom.multiply(dyAbs, dyAbs));
+            let x1 = x - dx;
+            let x2 = x + dx;
+            do ScreenCustom.drawLine(x1, y + dy, x2, y + dy);
+            let dy = dy + 1;
+        }
+        return;
+    }
+    function void drawRectangle(int x1, int y1, int x2, int y2){
+        var int y;
+        let y = y1;
+        while ((y < y2) | (y = y2)){
+            do ScreenCustom.drawLine(x1, y, x2, y);
+            let y = y + 1;
+        }
+        return;
+    }
+
+    function void drawLineOnXAxis(int x1, int x2, int y){
+        var int xForNextMemoryAdress, x, endXForMemoryAdress, address, value, yOffset;
+        let x = x1;
+        // do Output.printInt(x1);
+        // do Output.println();
+        let yOffset = 32 * y;
+        if ((x1 < 0) | (x1 > 511) | (y < 0) | (x2 > 511) | (x2 < 0) | (y > 255)){
+            do Sys.error(7);
+        }
+        //+1 because x starts with 0
+        let xForNextMemoryAdress = (x1 / 16 * 16) + 15;
+        while (x < (xForNextMemoryAdress + 1)){
+            do ScreenCustom.drawPixel(x, y);
+            let x = x + 1;
+        }
+
+        let endXForMemoryAdress = ((x2 / 16) * 16) - 1;
+        while (x < endXForMemoryAdress){
+            let address = yOffset + (x / 16);
+            if (colorIsBlack){
+                do Memory.poke(16384 + address, -1);
+            } else {
+                do Memory.poke(16384 + address, 0);
+            }
+
+            let x = x + 16;
+        }
+
+        while ((x < x2) | (x = x2)){
+            do ScreenCustom.drawPixel(x, y);
+            let x = x + 1;
+        }
+        return;
+    }
+
+    function void setColor(boolean isBlack){
+        let colorIsBlack = isBlack;
+        return;
+    }
+    function void clearScreen(){
+        var boolean isBlack;
+        let isBlack = colorIsBlack;
+        do ScreenCustom.setColor(false);
+        do ScreenCustom.drawRectangle(0, 0, 511, 255);
+        do ScreenCustom.setColor(isBlack);
+        return;
     }
 }

@@ -1,8 +1,10 @@
 class ScreenCustom {
     static Array twoToThe;
+    static boolean colorIsBlack;
     function void init(){
         let twoToThe = Common.powerOfTwo(16);
         do MathCustom.init();
+        let colorIsBlack = true;
         return;
     }
 
@@ -13,7 +15,11 @@ class ScreenCustom {
         }
         let address = (32 * y) + (x / 16);
         let value = Memory.peek(16384 + address);
-        do Memory.poke(16384 + address, value | twoToThe[MathCustom.mod(x, 16)]);
+        if (colorIsBlack){
+            do Memory.poke(16384 + address, value | twoToThe[MathCustom.mod(x, 16)]);
+        } else {
+            do Memory.poke(16384 + address, ~twoToThe[MathCustom.mod(x, 16)] & value);
+        }
         return;
     }
     function void drawLine(int x1, int y1, int x2, int y2){
@@ -41,7 +47,7 @@ class ScreenCustom {
         return;
     }
 
-    function void drawCicle(int x, int y, int r){
+    function void drawCircle(int x, int y, int r){
         var int dy, x1, x2, dx, dyAbs, rSqrt;
         let dy = -r;
         let rSqrt = MathCustom.multiply(r, r);
@@ -84,7 +90,12 @@ class ScreenCustom {
         let endXForMemoryAdress = ((x2 / 16) * 16) - 1;
         while (x < endXForMemoryAdress){
             let address = yOffset + (x / 16);
-            do Memory.poke(16384 + address, -1);
+            if (colorIsBlack){
+                do Memory.poke(16384 + address, -1);
+            } else {
+                do Memory.poke(16384 + address, 0);
+            }
+
             let x = x + 16;
         }
 
@@ -92,6 +103,19 @@ class ScreenCustom {
             do ScreenCustom.drawPixel(x, y);
             let x = x + 1;
         }
+        return;
+    }
+
+    function void setColor(boolean isBlack){
+        let colorIsBlack = isBlack;
+        return;
+    }
+    function void clearScreen(){
+        var boolean isBlack;
+        let isBlack = colorIsBlack;
+        do ScreenCustom.setColor(false);
+        do ScreenCustom.drawRectangle(0, 0, 511, 255);
+        do ScreenCustom.setColor(isBlack);
         return;
     }
 }

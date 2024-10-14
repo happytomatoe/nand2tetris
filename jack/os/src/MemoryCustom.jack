@@ -1,0 +1,67 @@
+class MemoryCustom {
+    static Array ram;
+    static Array heap;
+    static int heapTail;
+
+    function void init(){
+        let ram = 0;
+        let heap = 2048;
+        let heap[0] = 0;
+        let heap[1] = 14335;
+        let heapTail = 2048;
+        return;
+    }
+    //returns the value of the main memory at this address.
+    function int peek(int address){
+        return ram[address];
+    }
+    //sets the contents of the main memory at this address to value.
+    function void poke(int address, int value){
+        let ram[address] = value;
+        return;
+    }
+    //finds and allocates from the heap a memory block of the specified size and returns a reference to its base address.
+    function Array alloc(int size){
+        var Array segment;
+        var boolean segmentFound;
+        var int heapSize, segmentIndex;
+        if (size < 1){
+            do Sys.error(5);
+        }
+        let segmentFound = false;
+        //find segment using first fit
+        //check first segment
+        let segmentIndex = 0;
+        if (heap[segmentIndex + 1] > (size + 1)){
+            let segmentFound = true;
+        } else {
+            let segmentIndex = heap[segmentIndex];
+        }
+        //check rest
+        // while (~(segmentIndex = 0) & ~segmentFound){
+        //     if (heap[segmentIndex + 1] > (size + 1)){
+        //         let segmentFound = true;
+        //     } else {
+        //         let segmentIndex = heap[segmentIndex];
+        //     }
+        // }
+        if (~segmentFound){
+            do Sys.error(6);
+        }
+        let heap[segmentIndex] = 0;
+
+        do Output.printInt(segmentIndex);
+        return 0;
+        // let heap[segmentIndex + 1] = size;
+        // let segment = heap[segmentIndex + 2];
+
+        // return segment;
+    }
+    //De-allocates the given object and frees its memory space.
+    function void deAlloc(Array o){
+        var int len;
+        let heap[heapTail] = o - 2;
+        let heapTail = ram[o - 2];
+        return;
+    }
+}

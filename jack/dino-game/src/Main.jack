@@ -4,13 +4,14 @@ class Main {
 	field Array cactusPool, cloudsPool;
 	field Pebbles pebbles;
 	field boolean exit, waitForStart, dead;
-	field int timestep, dinoY, cactusPoolSize, cloudsPoolSize, nextCactusX, cactusCounter, nextCloudX;
+	// cloudsPoolSize,nextCloudX
+	field int timestep, dinoY, cactusPoolSize, nextCactusX, cactusCounter;
 	static String startMessage;
 
 	constructor Main new(){
 		var int i, qSize;
 		let cactusPoolSize = 10;
-		let cloudsPoolSize = 10;
+		// let cloudsPoolSize = 10;
 
 		let startMessage = "Press Up to start";
 		let waitForStart = true;
@@ -28,13 +29,13 @@ class Main {
 			let i = i + 1;
 		}
 
-		let cloudsPool = Array.new(cloudsPoolSize);
+		// let cloudsPool = Array.new(cloudsPoolSize);
 
-		let i = 0;
-		while (i < cloudsPoolSize){
-			let cloudsPool[i] = Cloud.new(10);
-			let i = i + 1;
-		}
+		// let i = 0;
+		// while (i < cloudsPoolSize){
+		// 	let cloudsPool[i] = Cloud.new(10);
+		// 	let i = i + 1;
+		// }
 
 		return this;
 	}
@@ -64,10 +65,10 @@ class Main {
 				let sceneX = 0;
 				let cactusCounter = 0;
 				do hideCactuses();
-				do hideClouds();
+				// do hideClouds();
 
 				let nextCactusX = 500;
-				let nextCloudX = 500;
+				// let nextCloudX = 500;
 				// do Output.moveCursor(0,0);
 			}
 			while (~dead){
@@ -79,8 +80,8 @@ class Main {
 				do addVisibleCactuses(obstaclesSpeed, sceneX);
 				do updateCactuses();
 
-				do addVisibleClouds(obstaclesSpeed, sceneX);
-				do updateClouds();
+				// do addVisibleClouds(obstaclesSpeed, sceneX);
+				// do updateClouds();
 
 				do Main.drawTrail(180);
 				do pebbles.update();
@@ -127,17 +128,17 @@ class Main {
 		}
 		return;
 	}
-	method void hideClouds(){
-		var Cloud c;
-		var int i;
-		let i = 0;
-		while (i < cloudsPoolSize){
-			let c = cloudsPool[i];
-			do c.setVisible(false);
-			let i = i + 1;
-		}
-		return;
-	}
+	// method void hideClouds(){
+	// 	var Cloud c;
+	// 	var int i;
+	// 	let i = 0;
+	// 	while (i < cloudsPoolSize){
+	// 		let c = cloudsPool[i];
+	// 		do c.setVisible(false);
+	// 		let i = i + 1;
+	// 	}
+	// 	return;
+	// }
 
 	method void updateCactuses(){
 		var Cactus cactus;
@@ -153,19 +154,19 @@ class Main {
 		return;
 	}
 
-	method void updateClouds(){
-		var Cloud c;
-		var int i;
-		let i = 0;
-		while (i < cloudsPoolSize){
-			let c = cloudsPool[i];
-			if (c.isVisible()){
-				do c.update();
-			}
-			let i = i + 1;
-		}
-		return;
-	}
+	// method void updateClouds(){
+	// 	var Cloud c;
+	// 	var int i;
+	// 	let i = 0;
+	// 	while (i < cloudsPoolSize){
+	// 		let c = cloudsPool[i];
+	// 		if (c.isVisible()){
+	// 			do c.update();
+	// 		}
+	// 		let i = i + 1;
+	// 	}
+	// 	return;
+	// }
 	method void addVisibleCactuses(int obstaclesSpeed, int sceneX){
 		var Cactus cactus;
 		var int i, t;
@@ -212,33 +213,33 @@ class Main {
 		return null;
 	}
 
-	method void addVisibleClouds(int obstaclesSpeed, int sceneX){
-		var Cloud c;
+	// method void addVisibleClouds(int obstaclesSpeed, int sceneX){
+	// 	var Cloud c;
 
-		while (ScreenCustom.visible(nextCloudX - sceneX, 0, Cloud.getW(), 0)){
-			let c = getAvailableCloud();
-			if (c = null){
-				do Sys.error(ErrorCodes.cantFindAvailableCloud());
-			}
-			do c.setX(511 - Cloud.getW());
-			do c.setVisible(true);
-			let nextCloudX = nextCloudX + 2000;
-		}
-		return;
-	}
-	method Cloud getAvailableCloud(){
-		var Cloud c;
-		var int i;
-		let i = 0;
-		while (i < cloudsPoolSize){
-			let c = cloudsPool[i];
-			if (~c.isVisible()){
-				return c;
-			}
-			let i = i + 1;
-		}
-		return null;
-	}
+	// 	while (ScreenCustom.visible(nextCloudX - sceneX, 0, Cloud.getW(), 0)){
+	// 		let c = getAvailableCloud();
+	// 		if (c = null){
+	// 			do Sys.error(ErrorCodes.cantFindAvailableCloud());
+	// 		}
+	// 		do c.setX(511 - Cloud.getW());
+	// 		do c.setVisible(true);
+	// 		let nextCloudX = nextCloudX + 2000;
+	// 	}
+	// 	return;
+	// }
+	// method Cloud getAvailableCloud(){
+	// 	var Cloud c;
+	// 	var int i;
+	// 	let i = 0;
+	// 	while (i < cloudsPoolSize){
+	// 		let c = cloudsPool[i];
+	// 		if (~c.isVisible()){
+	// 			return c;
+	// 		}
+	// 		let i = i + 1;
+	// 	}
+	// 	return null;
+	// }
 	function void drawTrail(int y){
 		do Screen.drawLine(0, y, 512, y);
 		return;

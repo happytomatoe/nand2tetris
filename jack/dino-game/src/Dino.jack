@@ -14,6 +14,7 @@ class Dino {
     let runStepChangeNTick = 3;
     return this;
   }
+  
   method void move(int x_, int y_){
     let x = x_;
     let y = y_;

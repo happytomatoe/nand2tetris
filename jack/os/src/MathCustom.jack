@@ -13,14 +13,6 @@ class MathCustom {
     }
 
     function int multiply(int x, int y){
-        // var int sum, i;
-        // let sum = x;
-        // let i = y;
-        // while (i > 0){
-        //     let sum = sum + sum;
-        //     let i = i - 1;
-        // }
-        // return sum;
         var int sum, shiftedX, i;
         let sum = 0;
         let shiftedX = x;
