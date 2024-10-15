@@ -1,43 +1,41 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/12/OutputCustomTest/Main.jack
+// File name: projects/12/OutputTest/Main.jack
 
 /** Test program for the OS OutputCustom class. */
 class Main {
 
-    /** OutputCustoms the entire character set to the screen using all the
+    /** Outputs the entire character set to the screen using all the
      *  methods of the OutputCustom class. */
     function void main() {
-        var String s;   
+        var String s;
         do OutputCustom.init();
+    	let s = String.new(1);
+    	do s.appendChar(String.doubleQuote());
     
-    	// let s = String.new(1);
-    	// do s.appendChar(String.doubleQuote());
-    
-        // do OutputCustom.moveCursor(0, 63);
-        // do OutputCustom.printChar(66);
-        // do OutputCustom.moveCursor(22, 0);
-        // do OutputCustom.printChar(67);
-        // do OutputCustom.moveCursor(22, 63);
-        // do OutputCustom.printChar(68);
-        //TODO: fix this printing small a
-        do OutputCustom.printChar(65);
+        do OutputCustom.moveCursor(0, 63);
+        do OutputCustom.printChar(66);
+        do OutputCustom.moveCursor(22, 0);
+        do OutputCustom.printChar(67);
+        do OutputCustom.moveCursor(22, 63);
+        do OutputCustom.printChar(68);
+        do Output.printChar(65);
         
-        // do OutputCustom.moveCursor(2, 0);
-        // do OutputCustom.printString("0123456789");
-        // do OutputCustom.println();
+        do OutputCustom.moveCursor(2, 0);
+        do OutputCustom.printString("0123456789");
+        do OutputCustom.println();
         
-        // do OutputCustom.printString("ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz");
-        // do OutputCustom.println();
+        do OutputCustom.printString("ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz");
+        do OutputCustom.println();
         
-        // do OutputCustom.printString("!#$%&'()*+,-./:;<=>?@[\]^_`{|}~");
-        // do OutputCustom.printString(s);
-        // do OutputCustom.println();
+        do OutputCustom.printString("!#$%&'()*+,-./:;<=>?@[\]^_`{|}~");
+        do OutputCustom.printString(s);
+        do OutputCustom.println();
         
-        // do OutputCustom.printInt(-12345);
-        // do OutputCustom.backSpace();
-        // do OutputCustom.printInt(6789);
+        do OutputCustom.printInt(-12345);
+        do OutputCustom.backSpace();
+        do OutputCustom.printInt(6789);
         
         return;
     }

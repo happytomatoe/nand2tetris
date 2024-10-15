@@ -95,6 +95,10 @@ function ScreenCustom.drawLine 5
     push argument 1
     push argument 3
     eq
+    push local 2
+    push constant 16
+    gt
+    and
     not
     if-goto ScreenCustom_5
     push argument 0
