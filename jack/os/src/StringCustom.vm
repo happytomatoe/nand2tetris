@@ -199,12 +199,6 @@ label StringCustom_14
     push local 1
     call StringCustom.charAt 2
     pop local 2
-    push constant 18005
-    push local 1
-    add
-    push local 2
-    call Memory.poke 2
-    pop temp 0
     push local 2
     push constant 48
     lt
@@ -234,15 +228,6 @@ label StringCustom_16
     pop local 1
     goto StringCustom_14
 label StringCustom_15
-    push constant 18000
-    push constant 2
-    neg
-    call Memory.poke 2
-    pop temp 0
-    push constant 18005
-    push local 0
-    call Memory.poke 2
-    pop temp 0
     push pointer 0
     push constant 0
     call StringCustom.charAt 2

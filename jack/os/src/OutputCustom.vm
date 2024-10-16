@@ -17,8 +17,6 @@ function OutputCustom.init 0
     push constant 5
     call Array.new 1
     pop static 2
-    call ScreenCustom.init 0
-    pop temp 0
     call OutputCustom.initMap 0
     pop temp 0
     push constant 0

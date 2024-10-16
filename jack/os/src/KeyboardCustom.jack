@@ -9,7 +9,6 @@ class KeyboardCustom {
 
     /** Initializes the keyboard. */
     function void init(){
-        do OutputCustom.init();
         return;
     }
 

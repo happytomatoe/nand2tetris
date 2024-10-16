@@ -1,6 +1,6 @@
 class MemoryCustom {
-    static Array ram;
-    static Array heap;
+    static ArrayCustom ram;
+    static ArrayCustom heap;
     static int heapTail, heapBase;
 
     function void init(){
@@ -22,7 +22,7 @@ class MemoryCustom {
         return;
     }
     //finds and allocates from the heap a memory block of the specified size and returns a reference to its base address.
-    function Array alloc(int size){
+    function ArrayCustom alloc(int size){
         var boolean segmentFound;
         var int heapSize, segmentIndex, newSegmentStart;
         if (~(heap = 2048)){

@@ -3,7 +3,6 @@ class ScreenCustom {
     static boolean colorIsBlack;
     function void init(){
         let twoToThe = Common.powerOfTwo(16);
-        do MathCustom.init();
         let colorIsBlack = true;
         return;
     }

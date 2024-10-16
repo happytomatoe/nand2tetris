@@ -2,8 +2,6 @@ function ScreenCustom.init 0
     push constant 16
     call Common.powerOfTwo 1
     pop static 0
-    call MathCustom.init 0
-    pop temp 0
     push constant 1
     neg
     pop static 1

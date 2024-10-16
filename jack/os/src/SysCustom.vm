@@ -1,0 +1,67 @@
+function SysCustom.init 0
+    call KeyboardCustom.init 0
+    pop temp 0
+    call MathCustom.init 0
+    pop temp 0
+    call OutputCustom.init 0
+    pop temp 0
+    call ScreenCustom.init 0
+    pop temp 0
+    call StringCustom.init 0
+    pop temp 0
+    push constant 0
+    return
+function SysCustom.halt 0
+    push constant 0
+    return
+function SysCustom.wait 4
+    push constant 20000
+    pop local 3
+    push argument 0
+    push local 3
+    call Math.multiply 2
+    pop local 2
+label SysCustom_0
+    push local 0
+    push local 2
+    lt
+    not
+    if-goto SysCustom_1
+label SysCustom_2
+    push local 1
+    push local 2
+    lt
+    not
+    if-goto SysCustom_3
+    push local 0
+    push constant 1
+    add
+    pop local 1
+    goto SysCustom_2
+label SysCustom_3
+    push local 0
+    push constant 1
+    add
+    pop local 0
+    goto SysCustom_0
+label SysCustom_1
+    push constant 0
+    return
+function SysCustom.error 0
+    push constant 3
+    call String.new 1
+    push constant 69
+    call String.appendChar 2
+    push constant 82
+    call String.appendChar 2
+    push constant 82
+    call String.appendChar 2
+    call OutputCustom.printString 1
+    pop temp 0
+    push argument 0
+    call OutputCustom.printInt 1
+    pop temp 0
+    call SysCustom.halt 0
+    pop temp 0
+    push constant 0
+    return

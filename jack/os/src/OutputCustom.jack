@@ -29,7 +29,6 @@ class OutputCustom {
         let maxRow = 22;
         let toToThe = Common.powerOfTwo(6);
         let intSymbols = Array.new(5);
-        do ScreenCustom.init();
         do OutputCustom.initMap();
         //bot margin =1
         //right margin =2

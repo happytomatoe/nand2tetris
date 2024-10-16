@@ -1,118 +1,31 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/12/StringTest/Main.jack
+// File name: projects/12/SysTest/Main.jack
 
-/** Test program for the OS StringCustom class. */
+/** Test program for the OS Sys class. */
 class Main {
-    /** Performs various string manipulations and displays their results. */
-    function void main(){
-        var StringCustom i, s;
-        var Main m;
-        do OutputCustom.init();
-        do StringCustom.init();
 
-        do Memory.poke(18000, -2);
-        let s = StringCustom.new(0); // a zero-capacity string should be supported
+    /** Tests the wait method of the Sys class. */
+    function void main() {
+        var char key;
 
-        do Memory.poke(18000, -1);
-        do s.dispose();
-        do Memory.poke(18000, 1);
-        let s = StringCustom.new(6); // capacity 6, make sure that length 5 is displayed
+        do Output.printString("Wait test:");
+        do Output.println();
+        do Output.printString("Press any key. After 2 seconds, another message will be printed:");
 
-        do Memory.poke(18000, 2);
-        let s = s.appendChar(97);
+        while (key = 0) {
+	        let key = Keyboard.keyPressed();
+        }
+        while (~(key = 0)) {
+            let key = Keyboard.keyPressed();
+        }
+        
+        do Sys.wait(2000);
 
-        do Memory.poke(18000, 3);
-        let s = s.appendChar(98);
-
-        do Memory.poke(18000, 4);
-        let s = s.appendChar(99);
-
-        do Memory.poke(18000, 5);
-        let s = s.appendChar(100);
-
-        do Memory.poke(18000, 6);
-        let s = s.appendChar(101);
-
-        do Memory.poke(18000, 6);
-        do OutputCustom.printString("new,appendChar: ");
-
-        do Memory.poke(18000, 7);
-        do OutputCustom.printStringCustom(s);                // new, appendChar: abcde
-
-        do Memory.poke(18000, 8);
-        do OutputCustom.println();
-
-        do Memory.poke(18000, 9);
-        let i = StringCustom.new(6);
-        do i.setInt(12345);
-
-        do OutputCustom.printString("setInt: ");
-        do OutputCustom.printStringCustom(i);                // setInt: 12345
-        do OutputCustom.println();
-        do Memory.poke(18000, 10);
-        do i.setInt(-32767);
-        do OutputCustom.printString("setInt: ");
-        do OutputCustom.printStringCustom(i);                // setInt: -32767
-        do OutputCustom.println();
-        do Memory.poke(18000, 11);
-        do OutputCustom.printString("length: ");
-        do OutputCustom.printInt(s.length());          // length: 5
-        do OutputCustom.println();
-
-        do Memory.poke(18000, 12);
-        do OutputCustom.printString("charAt[2]: ");
-        do OutputCustom.printInt(s.charAt(2));         // charAt[2]: 99
-        do OutputCustom.println();
-
-
-        do Memory.poke(18000, 12);
-        do s.setCharAt(2, 45);
-        do OutputCustom.printString("setCharAt(2,'-'): ");
-        do OutputCustom.printStringCustom(s);                // setCharAt(2,'-'): ab-de
-        do OutputCustom.println();
-
-        do Memory.poke(18000, 13);
-        do s.eraseLastChar();
-        do OutputCustom.printString("eraseLastChar: ");
-        do OutputCustom.printStringCustom(s);                // eraseLastChar: ab-d
-        do OutputCustom.println();
-
-
-        do Memory.poke(18000, 14);
-        do s.setString("456");
-        do OutputCustom.printString("intValue: ");
-        // do OutputCustom.printStringCustom(s);
-        do OutputCustom.printInt(s.intValue());        // intValue: 456
-        do OutputCustom.println();
-        do Memory.poke(18000, 15);
-        do s.setString("-32123");
-        do OutputCustom.printString("intValue: ");
-        do OutputCustom.printInt(s.intValue());        // intValue: -32123
-        do OutputCustom.println();
-
-        do Memory.poke(18000, 16);
-        do OutputCustom.printString("backSpace: ");
-        do OutputCustom.printInt(StringCustom.backSpace());  // backSpace: 129
-        do OutputCustom.println();
-
-        do Memory.poke(18000, 17);
-        do OutputCustom.printString("doubleQuote: ");
-        do OutputCustom.printInt(StringCustom.doubleQuote());// doubleQuote: 34
-        do OutputCustom.println();
-
-        do Memory.poke(18000, 18);
-        do OutputCustom.printString("newLine: ");
-        do OutputCustom.printInt(StringCustom.newLine());    // newLine: 128
-        do OutputCustom.println();
-
-        do Memory.poke(18000, 19);
-        do i.dispose();
-        do s.dispose();
-
-        do Memory.poke(18000, 20);
-
+        do Output.println();
+        do Output.printString("Time is up. Make sure that 2 seconds elapsed.");
+        
         return;
     }
 }
