@@ -251,7 +251,20 @@ class OutputCustom {
     function void printString(String s){
         var int i;
         let i = 0;
+        do Memory.poke(17000,s.length());
         while (i < s.length()){
+            do Memory.poke(17000+i,s.charAt(i));
+            do OutputCustom.printChar(s.charAt(i));
+            let i = i + 1;
+        }
+        return;
+    }
+    function void printStringCustom(StringCustom s){
+        var int i;
+        let i = 0;
+        do Memory.poke(17000,s.length());
+        while (i < s.length()){
+            do Memory.poke(18030+i,s.charAt(i));
             do OutputCustom.printChar(s.charAt(i));
             let i = i + 1;
         }

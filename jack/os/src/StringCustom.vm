@@ -1,0 +1,353 @@
+function StringCustom.init 0
+    push constant 5
+    call Array.new 1
+    pop static 0
+    push constant 0
+    return
+function StringCustom.new 0
+    push constant 3
+    call Memory.alloc 1
+    pop pointer 0
+    push constant 0
+    pop this 1
+    push argument 0
+    pop this 2
+    push argument 0
+    push constant 0
+    gt
+    not
+    if-goto StringCustom_1
+    push argument 0
+    call Array.new 1
+    pop this 0
+    goto StringCustom_0
+label StringCustom_1
+label StringCustom_0
+    push pointer 0
+    return
+function StringCustom.dispose 0
+    push argument 0
+    pop pointer 0
+    push this 0
+    call Array.dispose 1
+    pop temp 0
+    push constant 0
+    return
+function StringCustom.length 0
+    push argument 0
+    pop pointer 0
+    push this 1
+    return
+function StringCustom.charAt 0
+    push argument 0
+    pop pointer 0
+    push argument 1
+    push constant 0
+    lt
+    push argument 1
+    push this 1
+    push constant 1
+    sub
+    gt
+    or
+    not
+    if-goto StringCustom_3
+    push constant 15
+    call Sys.error 1
+    pop temp 0
+    goto StringCustom_2
+label StringCustom_3
+label StringCustom_2
+    push argument 1
+    push this 0
+    add
+    pop pointer 1
+    push that 0
+    return
+function StringCustom.setCharAt 0
+    push argument 0
+    pop pointer 0
+    push argument 1
+    push constant 0
+    lt
+    push argument 1
+    push this 1
+    push constant 1
+    sub
+    gt
+    or
+    not
+    if-goto StringCustom_5
+    push constant 16
+    call Sys.error 1
+    pop temp 0
+    goto StringCustom_4
+label StringCustom_5
+label StringCustom_4
+    push argument 1
+    push this 0
+    add
+    push argument 2
+    pop temp 0
+    pop pointer 1
+    push temp 0
+    pop that 0
+    push constant 0
+    return
+function StringCustom.appendChar 0
+    push argument 0
+    pop pointer 0
+    push this 1
+    push this 2
+    eq
+    not
+    if-goto StringCustom_7
+    push constant 17
+    call Sys.error 1
+    pop temp 0
+    goto StringCustom_6
+label StringCustom_7
+label StringCustom_6
+    push this 1
+    push this 0
+    add
+    push argument 1
+    pop temp 0
+    pop pointer 1
+    push temp 0
+    pop that 0
+    push this 1
+    push constant 1
+    add
+    pop this 1
+    push pointer 0
+    return
+function StringCustom.eraseLastChar 0
+    push argument 0
+    pop pointer 0
+    push this 1
+    push constant 0
+    eq
+    not
+    if-goto StringCustom_9
+    push constant 18
+    call Sys.error 1
+    pop temp 0
+    goto StringCustom_8
+label StringCustom_9
+label StringCustom_8
+    push this 1
+    push constant 1
+    sub
+    pop this 1
+    push constant 0
+    return
+function StringCustom.setString 1
+    push argument 0
+    pop pointer 0
+    push constant 0
+    pop this 1
+    push constant 0
+    pop local 0
+label StringCustom_10
+    push local 0
+    push argument 1
+    call String.length 1
+    lt
+    not
+    if-goto StringCustom_11
+    push pointer 0
+    push argument 1
+    push local 0
+    call String.charAt 2
+    call StringCustom.appendChar 2
+    pop temp 0
+    push local 0
+    push constant 1
+    add
+    pop local 0
+    goto StringCustom_10
+label StringCustom_11
+    push constant 0
+    return
+function StringCustom.intValue 3
+    push argument 0
+    pop pointer 0
+    push constant 0
+    pop local 0
+    push pointer 0
+    push constant 0
+    call StringCustom.charAt 2
+    push constant 45
+    eq
+    not
+    if-goto StringCustom_13
+    push constant 1
+    pop local 1
+    goto StringCustom_12
+label StringCustom_13
+    push constant 0
+    pop local 1
+label StringCustom_12
+label StringCustom_14
+    push local 1
+    push this 1
+    lt
+    not
+    if-goto StringCustom_15
+    push pointer 0
+    push local 1
+    call StringCustom.charAt 2
+    pop local 2
+    push constant 18005
+    push local 1
+    add
+    push local 2
+    call Memory.poke 2
+    pop temp 0
+    push local 2
+    push constant 48
+    lt
+    push local 2
+    push constant 57
+    gt
+    or
+    not
+    if-goto StringCustom_17
+    push constant 21
+    call Sys.error 1
+    pop temp 0
+    goto StringCustom_16
+label StringCustom_17
+label StringCustom_16
+    push local 0
+    push constant 10
+    call Math.multiply 2
+    push local 2
+    push constant 48
+    sub
+    add
+    pop local 0
+    push local 1
+    push constant 1
+    add
+    pop local 1
+    goto StringCustom_14
+label StringCustom_15
+    push constant 18000
+    push constant 2
+    neg
+    call Memory.poke 2
+    pop temp 0
+    push constant 18005
+    push local 0
+    call Memory.poke 2
+    pop temp 0
+    push pointer 0
+    push constant 0
+    call StringCustom.charAt 2
+    push constant 45
+    eq
+    not
+    if-goto StringCustom_19
+    push local 0
+    neg
+    pop local 0
+    goto StringCustom_18
+label StringCustom_19
+label StringCustom_18
+    push local 0
+    return
+function StringCustom.setInt 2
+    push argument 0
+    pop pointer 0
+    push constant 0
+    pop this 1
+    push constant 17000
+    push constant 1
+    neg
+    call Memory.poke 2
+    pop temp 0
+    push argument 1
+    push constant 0
+    lt
+    not
+    if-goto StringCustom_21
+    push pointer 0
+    push constant 45
+    call StringCustom.appendChar 2
+    pop temp 0
+    goto StringCustom_20
+label StringCustom_21
+label StringCustom_20
+    push argument 1
+    call Math.abs 1
+    pop local 0
+label StringCustom_22
+    push local 0
+    push constant 0
+    gt
+    not
+    if-goto StringCustom_23
+    push local 1
+    push static 0
+    add
+    push local 0
+    push local 0
+    push constant 10
+    call Math.divide 2
+    push constant 10
+    call Math.multiply 2
+    sub
+    pop temp 0
+    pop pointer 1
+    push temp 0
+    pop that 0
+    push local 0
+    push constant 10
+    call Math.divide 2
+    pop local 0
+    push local 1
+    push constant 1
+    add
+    pop local 1
+    goto StringCustom_22
+label StringCustom_23
+    push local 1
+    push constant 1
+    sub
+    pop local 0
+label StringCustom_24
+    push local 0
+    push constant 1
+    neg
+    gt
+    not
+    if-goto StringCustom_25
+    push pointer 0
+    push local 0
+    push static 0
+    add
+    pop pointer 1
+    push that 0
+    push constant 48
+    add
+    call StringCustom.appendChar 2
+    pop temp 0
+    push local 0
+    push constant 1
+    sub
+    pop local 0
+    goto StringCustom_24
+label StringCustom_25
+    push constant 0
+    return
+function StringCustom.newLine 0
+    push constant 128
+    return
+function StringCustom.backSpace 0
+    push constant 129
+    return
+function StringCustom.doubleQuote 0
+    push constant 34
+    return

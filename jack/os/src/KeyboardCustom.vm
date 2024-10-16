@@ -1,0 +1,58 @@
+function KeyboardCustom.init 0
+    call OutputCustom.init 0
+    pop temp 0
+    push constant 0
+    return
+function KeyboardCustom.keyPressed 0
+    push constant 24576
+    call MemoryCustom.peek 1
+    return
+function KeyboardCustom.readChar 1
+label KeyboardCustom_0
+    push local 0
+    push constant 0
+    eq
+    not
+    if-goto KeyboardCustom_1
+    push constant 10
+    call Sys.wait 1
+    pop temp 0
+    call KeyboardCustom.keyPressed 0
+    pop local 0
+    goto KeyboardCustom_0
+label KeyboardCustom_1
+    push local 0
+    return
+function KeyboardCustom.readLine 2
+    push argument 0
+    call OutputCustom.printString 1
+    pop temp 0
+    call KeyboardCustom.keyPressed 0
+    pop local 0
+label KeyboardCustom_2
+    push local 0
+    call String.newLine 0
+    eq
+    not
+    not
+    if-goto KeyboardCustom_3
+    push local 0
+    call OutputCustom.printChar 1
+    pop temp 0
+    push local 1
+    push local 0
+    call String.appendChar 2
+    pop temp 0
+    call KeyboardCustom.keyPressed 0
+    pop local 0
+    goto KeyboardCustom_2
+label KeyboardCustom_3
+    push local 1
+    return
+function KeyboardCustom.readInt 1
+    push argument 0
+    call KeyboardCustom.readLine 1
+    pop local 0
+    push local 0
+    call String.intValue 1
+    return

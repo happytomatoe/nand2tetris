@@ -1700,6 +1700,11 @@ label OutputCustom_10
 function OutputCustom.printString 1
     push constant 0
     pop local 0
+    push constant 17000
+    push argument 0
+    call String.length 1
+    call Memory.poke 2
+    pop temp 0
 label OutputCustom_14
     push local 0
     push argument 0
@@ -1707,6 +1712,14 @@ label OutputCustom_14
     lt
     not
     if-goto OutputCustom_15
+    push constant 17000
+    push local 0
+    add
+    push argument 0
+    push local 0
+    call String.charAt 2
+    call Memory.poke 2
+    pop temp 0
     push argument 0
     push local 0
     call String.charAt 2
@@ -1720,6 +1733,42 @@ label OutputCustom_14
 label OutputCustom_15
     push constant 0
     return
+function OutputCustom.printStringCustom 1
+    push constant 0
+    pop local 0
+    push constant 17000
+    push argument 0
+    call StringCustom.length 1
+    call Memory.poke 2
+    pop temp 0
+label OutputCustom_16
+    push local 0
+    push argument 0
+    call StringCustom.length 1
+    lt
+    not
+    if-goto OutputCustom_17
+    push constant 18030
+    push local 0
+    add
+    push argument 0
+    push local 0
+    call StringCustom.charAt 2
+    call Memory.poke 2
+    pop temp 0
+    push argument 0
+    push local 0
+    call StringCustom.charAt 2
+    call OutputCustom.printChar 1
+    pop temp 0
+    push local 0
+    push constant 1
+    add
+    pop local 0
+    goto OutputCustom_16
+label OutputCustom_17
+    push constant 0
+    return
 function OutputCustom.printInt 2
     push constant 1
     neg
@@ -1728,22 +1777,22 @@ function OutputCustom.printInt 2
     push constant 0
     lt
     not
-    if-goto OutputCustom_17
+    if-goto OutputCustom_19
     push constant 45
     call OutputCustom.printChar 1
     pop temp 0
-    goto OutputCustom_16
-label OutputCustom_17
-label OutputCustom_16
+    goto OutputCustom_18
+label OutputCustom_19
+label OutputCustom_18
     push argument 0
     call Math.abs 1
     pop local 1
-label OutputCustom_18
+label OutputCustom_20
     push local 1
     push constant 0
     gt
     not
-    if-goto OutputCustom_19
+    if-goto OutputCustom_21
     push local 0
     push constant 1
     add
@@ -1766,17 +1815,17 @@ label OutputCustom_18
     push constant 10
     call Math.divide 2
     pop local 1
-    goto OutputCustom_18
-label OutputCustom_19
+    goto OutputCustom_20
+label OutputCustom_21
     push local 0
     pop local 1
-label OutputCustom_20
+label OutputCustom_22
     push local 1
     push constant 1
     neg
     gt
     not
-    if-goto OutputCustom_21
+    if-goto OutputCustom_23
     push local 1
     push static 2
     add
@@ -1790,8 +1839,8 @@ label OutputCustom_20
     push constant 1
     sub
     pop local 1
-    goto OutputCustom_20
-label OutputCustom_21
+    goto OutputCustom_22
+label OutputCustom_23
     push constant 0
     return
 function OutputCustom.println 0
@@ -1801,16 +1850,16 @@ function OutputCustom.println 0
     add
     lt
     not
-    if-goto OutputCustom_23
+    if-goto OutputCustom_25
     push static 3
     push constant 1
     add
     pop static 3
     push constant 0
     pop static 4
-    goto OutputCustom_22
-label OutputCustom_23
-label OutputCustom_22
+    goto OutputCustom_24
+label OutputCustom_25
+label OutputCustom_24
     push constant 0
     return
 function OutputCustom.backSpace 0
@@ -1822,27 +1871,27 @@ function OutputCustom.backSpace 0
     gt
     or
     not
-    if-goto OutputCustom_25
+    if-goto OutputCustom_27
     push static 4
     push constant 0
     eq
     not
-    if-goto OutputCustom_27
+    if-goto OutputCustom_29
     push static 3
     push constant 1
     sub
     pop static 3
     push static 7
     pop static 4
-    goto OutputCustom_26
-label OutputCustom_27
+    goto OutputCustom_28
+label OutputCustom_29
     push static 4
     push constant 1
     sub
     pop static 4
+label OutputCustom_28
+    goto OutputCustom_26
+label OutputCustom_27
 label OutputCustom_26
-    goto OutputCustom_24
-label OutputCustom_25
-label OutputCustom_24
     push constant 0
     return
